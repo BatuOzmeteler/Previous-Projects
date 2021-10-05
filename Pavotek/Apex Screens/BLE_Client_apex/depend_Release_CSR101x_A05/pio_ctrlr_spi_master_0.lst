@@ -1,0 +1,183 @@
+                   ; Interface with PIO
+0000:              .flag SCLK,         P0.5            ; Port connected to SPI 
+0000:              .flag MOSI,         P0.7            ; Port connected to Mast
+0000:              .flag MISO,         P1.1            ; Port connected to Mast
+                   
+                   ; CSR10xx specific SFRs to control port direction
+                   ; (not used directly but defined for reference)
+0000:              .equ P0_DRIVE_EN,   0c0h            ; Port 0 bit direction
+0000:              .equ P1_DRIVE_EN,   0c8h            ; Port 1 bit direction
+0000:              .equ P2_DRIVE_EN,   0d8h            ; Port 2 bit direction
+0000:              .equ P3_DRIVE_EN,   0e8h            ; Port 3 bit direction
+                   
+                   ; Special Function Register definitions
+0000:              .equ WAKE_XAP,      9eh             ; CSR10xx specific SFR t
+                   
+                   ; Interface with XAP (address locations 0x40 to 0x7f inclusi
+                   
+                   ; Configuration registers
+                   ; These are aligned on 16-bit boundaries so the XAP can acce
+                   ; having to pack octets or worry about masking. LSB is the "
+0000:              .equ XFER_SIZE,     40h             ; Number of bytes to tra
+                               ; An interrupt will be raised on the XAP when th
+                               ; complete. The XAP application is responsible f
+                               ; value before triggering PIO Controller Externa
+0000:              .equ INT_ACK,       46h             ; Interrupt acknowledgem
+                               ; The XAP interrupt is level triggered so severa
+                               ; generated before the PIO Controller is able to
+                               ; signal. To accommodate this, use a flag (INT_A
+                               ; Controller and cleared by the XAP to handshake
+0000:              .equ BYTE_DELAY,    48h             ; Count to affect inter 
+                               ; Set a count to introduce additional delay betw
+                               ; Setting this count to 0x00 will introduce maxi
+                               ; while setting it to 0x01 will introduce minimu
+                   
+                   ; Buffers used to exchange data with the XAP.
+                   ; Data read from the SPI slave is stored in the READ_BUFFER
+                   ; Data to be sent to the SPI slave is stored in the WRITE_BU
+                   ; Buffer memory runs from 50h to 7fh inclusive.
+                   ; The two buffers must be the same size.
+0000:              .equ READ_BUFFER,   50h             ; Start of read buffer
+0000:              .equ WRITE_BUFFER,  68h             ; Start of write buffer
+0000:              .equ BUFFER_SIZE,   18h             ; Size of each buffer in
+                   
+                   ; ***********************
+                   ; Setup interrupt vectors
+                   ; ***********************
+                   
+                               ; This ISR is called when the PIO controller is 
+0000:                          .org    0000h           ; Reset interrupt vector
+0000: 02 00 05                 ljmp    MAIN            ; Jump to start of main 
+                    
+                               ; This ISR is called when the XAP sends an inter
+                               ; The XAP interrupt is only available on externa
+0003:                          .org    0003h           ; External interrupt 0 v
+0003: 80 3B                    sjmp    XFER_INIT       ; Commence next transfer
+                   
+                               ; No subsequent interrupt vectors in use so no n
+                               ; rest of the interrupt vector table.
+                   
+                   ; *********************
+                   ; Main code begins here
+                   ; *********************
+                   
+                   MAIN:       ; Set all outputs to open collector
+0005: 75 80 FF                 mov     P0, #11111111b  ; set to all inputs/high
+0008: 75 90 FF                 mov     P1, #11111111b  ; set to all inputs/high
+000B: 75 A0 FF                 mov     P2, #11111111b  ; set to all inputs/high
+000E: 75 B0 FF                 mov     P3, #11111111b  ; set to all inputs/high
+                               
+                               ; Configure MOSI and SCLK as outputs. This requi
+                               ; appropriate bits in the drive enable registers
+                               ; registers are write only, so the entire regist
+                               ; be prepared before writing.
+                   
+                               ; The drive enable register address is calculate
+                               ; address. Ports 0 to 3 are at address 80, 90, a
+                               ; respectively. The drive enable registers are a
+                               ; and e8 respectively. To convert from the port 
+                               ; enable address, add 40h to the port address an
+                               ; either of bits 4 or 5 are set.
+                               
+                               ; Each of the 8 bits in the drive enable registe
+                               ; the I/O lines connected to that port. Which bi
+                               ; calculated from the port bit number.
+                               
+                               ; Check whether MOSI and SCLK are on the same po
+                               ; top nibble.
+0011: 74 80                    mov     A, #(MOSI & 0f0h)
+0013: B4 80 05                 cjne    A, #(SCLK & 0f0h), DIFF_PORT
+                   
+                               ; MOSI and SCLK signals are on the same port, so
+                               ; enable register needs to be set.
+0016: 75 C0 A0     SAME_PORT:  mov     (MOSI & 0f0h) + 40h - (((MOSI & 10h) >> 
+0019: 80 06                    sjmp    INIT_BUFFER
+                   
+                               ; MOSI and SCLK signals are on different ports, 
+                               ; enable register separately.
+001B: 75 C0 80     DIFF_PORT:  mov     (MOSI & 0f0h) + 40h - (((MOSI & 10h) >> 
+001E: 75 C0 20                 mov     (SCLK & 0f0h) + 40h - (((SCLK & 10h) >> 
+                   
+                               ; Initialise buffer registers
+0021: 78 50        INIT_BUFFER:mov     R0, #READ_BUFFER; R0 points to next addr
+                                                       ; into
+0023: 79 68                    mov     R1, #WRITE_BUFFER; R1 points to next add
+                                                       ; from
+0025: 7A 00                    mov     R2, #00h        ; Reset byte counter
+0027: 7B 18                    mov     R3, #BUFFER_SIZE; Reset buffer counter
+                               
+                               ; Clear interrupt acknowledgement flag
+0029: 75 46 00                 mov     INT_ACK, #0
+002C: 75 47 00                 mov     INT_ACK+1, #0   ; Clear MSB (so XAP can 
+                               
+                               ; Initialise transfer length register
+002F: 75 40 00                 mov     XFER_SIZE, #0
+0032: 75 41 00                 mov     XFER_SIZE+1, #0 ; Clear MSB (so XAP can 
+                   
+                               ; Set up the output lines for idle state (SPI mo
+0035: C2 85                    clr     SCLK            ; Clock signal idle
+                   
+                               ; Initialise interrupts
+0037: D2 88                    setb    IT0             ; Make external interrup
+                                                       ; i.e. interrupt is gene
+                                                       ; signal goes from high 
+0039: C2 89                    clr     IE0             ; Reset external interru
+                                                       ; (otherwise a spurious 
+                                                       ; received)
+003B: 75 A8 81                 mov     IE, #81h        ; Enable external interr
+                   
+                               ; SPI master loop
+003E: 80 FE        IDLE:       sjmp    *               ; Busy loop. Wait for EX
+                   
+                               ; Begin next transfer
+0040: E5 40        XFER_INIT:  mov     A, XFER_SIZE    ; Sanity check - if ther
+0042: 60 27                    jz      XFER_EXIT       ; to transfer exit the l
+0044: FE                       mov     R6, A           ; Initialise byte loop c
+                   
+                               ; Transfer next byte
+0045: 7F 08        XFER_BYTE:  mov     R7, #08h        ; Initialise bit loop co
+0047: E7                       mov     A, @R1          ; Move next byte to send
+                                                       ; register
+0048: 33                       rlc     A               ; Load Carry flag with s
+0049: 92 87        XFER_LOOP:  mov     MOSI, C         ; Put shift register msb
+004B: 00                       nop                     ; Delay by 1 clock cycle
+004C: 00                       nop                     ; Delay by 1 clock cycle
+004D: D2 85                    setb    SCLK            ; Assert SCLK
+004F: A2 91                    mov     C, MISO         ; Copy MISO into Carry f
+0051: 33                       rlc     A               ; Shift the accumulator 
+                                                       ; received from the slav
+                                                       ; the accumulator and th
+                                                       ; sent into the Carry fl
+0052: 00                       nop                     ; Delay by 1 clock cycle
+0053: 00                       nop                     ; Delay by 1 clock cycle
+0054: C2 85                    clr     SCLK            ; De-assert SCLK
+0056: DF F1                    djnz    R7, XFER_LOOP   ; Next iteration
+0058: F6                       mov     @R0, A          ; Store the most recentl
+                   
+                               ; Perform inter-byte delay
+0059: AD 48                    mov     R5, BYTE_DELAY  ; Load the desired delay
+005B: DD FE                    djnz    R5, *           ; Wait for the desired d
+                   
+                               ; Check whether buffers have wrapped and reset i
+005D: DB 08                    djnz    R3, SKIP_RESET  ; Check whether the buff
+005F: 78 50                    mov     R0, #READ_BUFFER; Reset read buffer poin
+0061: 79 68                    mov     R1, #WRITE_BUFFER;Reset write buffer poi
+0063: 7B 18                    mov     R3, #BUFFER_SIZE; Reset buffer counter
+0065: 80 02                    sjmp    CHECK_DONE      ; Skip to transfer compl
+                               
+                               ; Advance buffer pointers
+0067: 08           SKIP_RESET: inc     R0              ; Point to next read buf
+0068: 09                       inc     R1              ; Point to next write bu
+                               
+                               ; Check whether the required number of bytes hav
+0069: DE DA        CHECK_DONE: djnz    R6, XFER_BYTE   ; Next iteration
+                   
+                               ; SPI transfer complete. Trigger a XAP interrupt
+                               ; transfer to begin
+006B: D2 87        XFER_EXIT:  setb    MOSI            ; Reset MOSI to reduce c
+006D: 75 46 01                 mov     INT_ACK, #1     ; Set acknowledgement fl
+0070: 75 9E 01                 mov     WAKE_XAP, #1    ; Trigger XAP interrupt
+0073: 75 9E 00                 mov     WAKE_XAP, #0    ; Clear XAP interrupt
+0076: E4                       clr     A               ; Wait for interrupt...
+0077: B5 46 FD                 cjne    A, INT_ACK, *   ; ...to be acknowledged
+007A: 32                       reti                    ; Return from ISR

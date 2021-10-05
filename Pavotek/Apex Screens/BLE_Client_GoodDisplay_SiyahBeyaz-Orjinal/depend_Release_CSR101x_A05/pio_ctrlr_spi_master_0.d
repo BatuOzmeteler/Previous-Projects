@@ -1,0 +1,2 @@
+depend_Release_CSR101x_A05/pio_ctrlr_spi_master_0.o:  \
+ depend_Release_CSR101x_A05/pio_ctrlr_spi_master_0.s

@@ -1,0 +1,168 @@
+body {
+    margin: 0;
+    padding: 0;
+    background: #efefef;
+    background-image: url("gradientWallpaper.jpg");
+    font-size: 16px;
+    color: #777;
+    font-family: sans-serif;
+    font-weight: 300;
+}
+
+#main-box {
+    position: relative;
+    margin-top: 30px;
+    height: 300px;
+    width: auto;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 2px 4px rgb(0, 0, 0);
+
+}
+
+#nurse-box {
+    position: relative;
+    margin-top: 30px;
+    height: 340px;
+    width: auto;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 2px 4px rgb(0, 0, 0);
+}
+
+.login-box {
+    position: relative;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    padding: 70px;
+    width: 1000px;
+    height: 300px;
+}
+
+.nurse-table {
+    position: relative;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    padding: 70px;
+    width: 1000px;
+    height: 300px;
+}
+
+h1 {
+    top: auto;
+    left: auto;
+    margin: -40px 0 20px 0;
+    font-weight: 900;
+    font-size: 40px;
+    color: #454545;
+}
+
+h2 {
+    top: auto;
+    left: auto;
+    margin: -40px 0 20px 0;
+    font-weight: 900;
+    font-size: 40px;
+    color: #454545;
+}
+
+label[type="text"] {
+    position: relative;
+    top: auto;
+    left: auto;
+    padding-bottom: 4px;
+    width: 250px;
+    height: 32px;
+    font-family: sans-serif;
+    font-size: 25px;
+    color: #454545;
+}
+
+table[id="table-header"] {
+    position: relative;
+    margin-top: -40px;
+    margin-bottom: 10px;
+}
+
+table[id="table-body"] {
+    position: relative;
+}
+
+th {
+    text-align: center;
+    font-family: sans-serif;
+    font-size: 20px;
+    padding-bottom: 4px;
+    color: #454545;
+}
+
+td {
+    text-align: center;
+    font-family: sans-serif;
+    font-size: 15px;
+    padding-bottom: 4px;
+}
+
+th[name="secret-numbers"],
+td[name="secret-numbers"]{
+    visibility: hidden;
+}
+
+input[type="button"] {
+    margin-bottom: 28px;
+    width: 250px;
+    height: 50px;
+    background: #262626;
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    text-transform: uppercase;
+    transition: 0.2s ease;
+    cursor: pointer;
+}
+
+input[type="button"]:hover,
+input[type="button"]:focus {
+    background: #b30000;
+    transition: 0.5s ease;
+}
+
+td[id="nurse-available"] {
+    color: #00de2f;
+}
+
+td[id="nurse-unavailable"] {
+    color: red;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,32 @@
+Device Connection String
+HostName=IoTHubMehmet.azure-devices.net;DeviceId=myDeviceID97;SharedAccessKey=yyKnknmbEh34CHVcHX0bs6+ZInCYvo6MxAvWL/HdYHw=
+
+IoTHub Connection String
+HostName=IoTHubMehmet.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=vneK/269RV3Tk3vhTSl8AbIIc2ijnVBqjcLIZKMhOks=
+
+These links can be checked: 
+https://www.10thmagnitude.com/step-step-guide-creating-functions-within-azures-iot-hub/
+https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-monitoring-notifications-with-azure-logic-apps
+
+******Application Code*******needs the dependencies in "Project.json"******
+#r "Newtonsoft.Json"s
+using System;
+using Microsoft.Azure.Devices;
+using Newtonsoft.Json;
+using System.Text;
+using System.Threading.Tasks;
+
+static ServiceClient serviceClient;
+
+public static void Run(string myQueueItem, TraceWriter log)
+{
+    log.Info($"C# ServiceBus queue trigger function processed message: {myQueueItem}");
+
+string messageString = "IT IS OVER 25 DEGREES!!!";
+
+var connectionString = Environment.GetEnvironmentVariable("AZURE_IOTHUB");
+serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
+
+var commandMessage = new Message(Encoding.ASCII.GetBytes(messageString));
+serviceClient.SendAsync("myDeviceID97", commandMessage);
+}

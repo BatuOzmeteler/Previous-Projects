@@ -1,0 +1,2016 @@
+   1                 		.file	"barcode_generator.c"
+   2                 		.variant xap2+
+   3                 	
+   4                 		.small
+   5                 	
+   6                 		.section	.debug_abbrev,"",@progbits
+   7                 	.Ldebug_abbrev0:
+   8                 		.section	.debug_info,"",@progbits
+   9                 	.Ldebug_info0:
+  10                 		.section	.debug_line,"",@progbits
+  11                 	.Ldebug_line0:
+  12 0000 00 00 00 00 		.text
+  12      00 02 00 00 
+  12      00 00 01 01 
+  12      FB 0E 0D 00 
+  12      01 01 01 01 
+  13                 	.Ltext0:
+  14                 		.section	.text.calculateChecksum,"ax",@progbits
+  15                 		.global	calculateChecksum
+  16                 		.type	calculateChecksum, @function
+  17                 	calculateChecksum:
+  18                 	.LFB2:
+  19                 		.file 1 "barcode_generator.c"
+   0:barcode_generator.c **** #include <types.h>          /* Commonly used type definitions */
+   1:barcode_generator.c **** 
+   2:barcode_generator.c **** #include "barcode_generator.h"
+   3:barcode_generator.c **** #include "platform_config.h"
+   4:barcode_generator.c **** 
+   5:barcode_generator.c **** 
+   6:barcode_generator.c **** /*
+   7:barcode_generator.c ****  * EAN13 barkod standardýný checksum hesabý konusunda inceleyiniz.
+   8:barcode_generator.c ****  */
+   9:barcode_generator.c **** 
+  10:barcode_generator.c **** /*
+  11:barcode_generator.c **** bool checkChecksum(char *barcode) {
+  12:barcode_generator.c ****     int i, temp = 0;
+  13:barcode_generator.c ****     
+  14:barcode_generator.c ****     for(i = 0; i < 11; i+=2) temp += barcode[i] - 48;
+  15:barcode_generator.c ****     for(i = 1; i < 12; i+=2) temp += 3 * (barcode[i] - 48);
+  16:barcode_generator.c ****     
+  17:barcode_generator.c ****     temp = 10 - (temp % 10);
+  18:barcode_generator.c ****     
+  19:barcode_generator.c ****     return barcode[12] == (uint8)(temp + 48);
+  20:barcode_generator.c **** }
+  21:barcode_generator.c **** */
+  22:barcode_generator.c **** void calculateChecksum(char *_barcode) {
+  20                 	
+  21                 		enter	#0x0001
+  22 0000 01 0B       	.LCFI0:
+  23                 		st	AL,@0xfffa
+  24 0001 FA 25       		.loc 1 23 0
+  25                 		ld	AL,#0x0000
+  26 0002 00 14       	.LVL1:
+  27                 		st	AL,@0xfff8
+  28 0003 F8 25       	.LVL2:
+  29                 	.L2:
+  30                 		.loc 1 26 0
+  23:barcode_generator.c ****     int i, temp = 0;
+  24:barcode_generator.c ****     
+  25:barcode_generator.c ****     for(i = 0; i < 11; i+=2) temp += _barcode[i] - 48;
+  31                 	ffa
+  32 0004 FA 19       		add	X,@$XAP_AL
+  33 0005 00 00 00 39 		ld	AH,@0xfff8
+  34 0007 F8 11       		add	AH,@(0,X)
+  35 0008 00 32       		add	AH,#0xffd0
+  36 0009 D0 30       		st	AH,@0xfff8
+  37 000a F8 21       		add	AL,#0x0002
+  38 000b 02 34       		cmp	AL,#0x000c
+  39 000c 0C 84       		bne	.L2
+  40 000d 00 00 00 00 		ld	AL,#0x0001
+  40      00 F0 
+  41 0010 01 14       	.LVL3:
+  42                 		st	AL,@0xfff9
+  43 0011 F9 25       	.LVL4:
+  44                 	.L3:
+  45                 		.loc 1 27 0
+  26:barcode_generator.c ****     for(i = 1; i < 12; i+=2) temp += 3 * (_barcode[i] - 48);
+  46                 	add	X,@0xfff9
+  47 0012 FA 19       		ld	AL,@(0,X)
+  48 0013 F9 39       		smult	#0x0003
+  49 0014 00 16       		add	AL,#0xff70
+  50 0015 03 90       		add	AL,@0xfff8
+  51 0016 FF 00 70 34 		st	AL,@0xfff8
+  52 0018 F8 35       		ld	X,@0xfff9
+  53 0019 F8 25       		add	X,#0x0002
+  54 001a F9 19       		st	X,@0xfff9
+  55 001b 02 38       		cmp	X,#0x000d
+  56 001c F9 29       		bne	.L3
+  57 001d 0D 88       		.loc 1 23 0
+  58 001e 00 00 00 00 		ld	AH,@$XAP_AL
+  58      00 F0 
+  23:barcode_generator.c ****     int i, temp = 0;
+  59                 		asr	#0x0010
+  60 0021 00 00 00 11 		sdiv	#0x000a
+  61 0023 10 A4       		nadd	AH,#0x0000
+  62 0024 0A 94       		.loc 1 32 0
+  63 0025 00 70       		ld	AL,@$XAP_AH
+  27:barcode_generator.c ****     
+  28:barcode_generator.c ****     temp = 10 - (temp % 10);
+  29:barcode_generator.c ****     
+  30:barcode_generator.c ****     
+  31:barcode_generator.c ****     temp = temp + 48;
+  64                 	003a
+  65 0026 00 00 00 15 		.loc 1 33 0
+  66                 		cmp	AL,#0x0039
+  67 0028 3A 34       		ble	.L4
+  32:barcode_generator.c ****     if(temp>=58) temp = temp - 10;
+  68                 		AL,#0xfff6
+  69 0029 39 84       	.L4:
+  70 002a 00 00 00 00 		.loc 1 34 0
+  70      00 28 
+  71 002d F6 34       		ld	X,@0xfffa
+  72                 		st	AL,@(0x000c,X)
+  33:barcode_generator.c ****     _barcode[12] = temp;
+  73                 	 1 36 0
+  74 002e FA 19       		leave	#0x0001
+  75 002f 0C 26       	.LFE2:
+  34:barcode_generator.c ****     
+  35:barcode_generator.c **** }
+  76                 	ize	calculateChecksum, .-calculateChecksum
+  77 0030 01 0F       		.global	__size_of_calculateChecksum
+  78                 		.equ	__size_of_calculateChecksum,. - calculateChecksum
+  79                 		.section	.text.calculateByteBit,"ax",@progbits
+  80                 		.global	calculateByteBit
+  81                 		.type	calculateByteBit, @function
+  82                 	calculateByteBit:
+  83                 	.LFB3:
+  84                 		.loc 1 41 0
+  85                 		enter	#0x0001
+  86                 	.LCFI1:
+  36:barcode_generator.c **** 
+  37:barcode_generator.c **** /*
+  38:barcode_generator.c ****  * Çizilecek çizginin kaçýncý byte ve byte'ýn kaçýncý biti olduðunu hesapla
+  39:barcode_generator.c ****  */
+  40:barcode_generator.c **** void calculateByteBit(void) {
+  87                 	0
+  88 0000 01 0B       		ld	X,@startY
+  89                 		.loc 1 43 0
+  41:barcode_generator.c ****     byte = startY - 1;
+  90                 		AH,@$XAP_UXL
+  91 0001 00 00 00 19 		add	AH,#0xffff
+  42:barcode_generator.c ****     byte /= 8;
+  92                 	sr	#0x0010
+  93 0003 00 00 00 11 		sdiv	#0x0008
+  94 0005 FF 30       		ld	AH,@$XAP_AL
+  95 0006 10 A4       		st	AL,@byte
+  96 0007 08 94       		.loc 1 44 0
+  97 0008 00 00 00 11 		ld	AL,@$XAP_UXL
+  98 000a 00 00 00 25 		and	AL,#0x0007
+  43:barcode_generator.c ****     if((startY) % 8 == 0) byte++;
+  99                 	9
+ 100 000c 00 00 00 15 		add	AH,#0x0001
+ 101 000e 07 C4       		st	AH,@byte
+ 102 000f 00 00 00 00 	.L9:
+ 102      00 F0 
+ 103 0012 01 30       		.loc 1 46 0
+ 104 0013 00 00 00 21 		ld	AH,@$XAP_UXL
+ 105                 		asr	#0x0010
+  44:barcode_generator.c ****     
+  45:barcode_generator.c ****     bit = startY % 8;
+ 106                 	0x0008
+ 107 0015 00 00 00 11 		st	AH,@bit
+ 108 0017 10 A4       		.loc 1 47 0
+ 109 0018 08 94       		leave	#0x0001
+ 110 0019 00 00 00 21 	.LFE3:
+  46:barcode_generator.c **** }
+ 111                 	e	calculateByteBit, .-calculateByteBit
+ 112 001b 01 0F       		.global	__size_of_calculateByteBit
+ 113                 		.equ	__size_of_calculateByteBit,. - calculateByteBit
+ 114                 		.section	.text.drawBlackLine,"ax",@progbits
+ 115                 		.global	drawBlackLine
+ 116                 		.type	drawBlackLine, @function
+ 117                 	drawBlackLine:
+ 118                 	.LFB4:
+ 119                 		.loc 1 54 0
+ 120                 	.LVL6:
+ 121                 		enter	#0x0002
+  47:barcode_generator.c **** 
+  48:barcode_generator.c **** /*
+  49:barcode_generator.c ****  * EAN13 te bazý çizgiler normalden uzun olabiliyor.
+  50:barcode_generator.c ****  * Birbirinden ayýrt etmek için 0'dan baþka olan normal deðerleri normal uzunluktaki çizgilere teka
+  51:barcode_generator.c ****  * normal deðeri 0 ise sýkýntý yok.
+  52:barcode_generator.c ****  */
+  53:barcode_generator.c **** void drawBlackLine(int normal) {
+ 122                 	oc 1 58 0
+ 123                 		tst	@$XAP_AL
+ 124 0000 02 0B       		beq	.L12
+ 125                 		ld	AL,#0x0012
+  54:barcode_generator.c ****     int i, height;
+  55:barcode_generator.c ****     
+  56:barcode_generator.c ****     height = HEIGHT;
+  57:barcode_generator.c ****     if(normal) height += 8;
+ 126                 	7:
+ 127 0001 00 00 00 99 		bra	.L17
+ 128 0003 00 00 00 00 	.LVL8:
+ 128      00 F4 
+ 129 0006 12 14       	.L12:
+ 130                 		ld	AL,#0x000a
+ 131 0007 00 00 00 00 	.LVL9:
+ 131      00 E0 
+ 132                 	.L17:
+ 133                 		st	AL,@(0,Y)
+ 134 000a 0A 14       	.LVL10:
+ 135                 		.loc 1 60 0
+ 136                 		bsr	calculateByteBit
+ 137 000b 00 27       		.loc 1 61 0
+ 138                 		ld	AL,@startX
+  58:barcode_generator.c ****     
+  59:barcode_generator.c ****     calculateByteBit();
+ 139                 	8
+ 140 000c 00 00 00 00 	.LVL11:
+ 140      00 9C 
+  60:barcode_generator.c ****     for(i = startX; i < height + startX; i++) final[(i*22) + (COLUMN - 1 - byte)]  = final[(i*22) +
+ 141                 	d	AL,#0x0001
+ 142 000f 00 00 00 15 		asl	@bit
+ 143 0011 F8 25       		st	AL,@0xfff9
+ 144                 		ld	AL,@0xfff8
+ 145 0012 01 14       		smult	#0x0016
+ 146 0013 00 00 00 A1 		ld	X,@$XAP_AL
+ 147 0015 F9 25       		sub	X,@byte
+ 148 0016 F8 15       		add	X,#final+21
+ 149 0017 16 90       		ld	AH,@0xfff8
+ 150 0018 00 00 00 19 		bra	.L14
+ 151 001a 00 00 00 59 	.LVL12:
+ 152 001c 00 00 00 38 	.L15:
+ 153 001e F8 11       		ld	AL,@(0,X)
+ 154 001f 00 00 00 00 		or	AL,@0xfff9
+ 154      00 E0 
+ 155                 		st	AL,@(0,X)
+ 156                 		add	AH,#0x0001
+ 157 0022 00 16       		add	X,#0x0016
+ 158 0023 F9 B5       	.LVL13:
+ 159 0024 00 26       	.L14:
+ 160 0025 01 30       		ld	AL,@(0,Y)
+ 161 0026 16 38       		add	AL,@0xfff8
+ 162                 		cmp	AH,@$XAP_AL
+ 163                 		blt	.L15
+ 164 0027 00 17       		.loc 1 62 0
+ 165 0028 F8 35       		ld	AL,@startY
+ 166 0029 00 00 00 81 		add	AL,#0x0001
+ 167 002b 00 00 00 00 		st	AL,@startY
+ 167      00 E4 
+  61:barcode_generator.c ****     startY++;
+ 168                 	
+ 169 002e 00 00 00 15 	.LFE4:
+ 170 0030 01 34       		.size	drawBlackLine, .-drawBlackLine
+ 171 0031 00 00 00 25 		.global	__size_of_drawBlackLine
+  62:barcode_generator.c **** }
+ 172                 	qu	__size_of_drawBlackLine,. - drawBlackLine
+ 173 0033 02 0F       		.section	.text.drawWhiteLine,"ax",@progbits
+ 174                 		.global	drawWhiteLine
+ 175                 		.type	drawWhiteLine, @function
+ 176                 	drawWhiteLine:
+ 177                 	.LFB5:
+ 178                 		.loc 1 65 0
+ 179                 	.LVL14:
+ 180                 		enter	#0x0002
+ 181                 	.LCFI3:
+ 182                 		.loc 1 69 0
+  63:barcode_generator.c **** 
+  64:barcode_generator.c **** void drawWhiteLine(int normal) {
+ 183                 	AL
+ 184                 		beq	.L19
+ 185 0000 02 0B       		ld	AL,#0x0012
+ 186                 	.LVL15:
+  65:barcode_generator.c ****     int i, height;
+  66:barcode_generator.c ****     
+  67:barcode_generator.c ****     height = HEIGHT;
+  68:barcode_generator.c ****     if(normal) height += 8;
+ 187                 		.L24
+ 188 0001 00 00 00 99 	.LVL16:
+ 189 0003 00 00 00 00 	.L19:
+ 189      00 F4 
+ 190 0006 12 14       		ld	AL,#0x000a
+ 191                 	.LVL17:
+ 192 0007 00 00 00 00 	.L24:
+ 192      00 E0 
+ 193                 		st	AL,@(0,Y)
+ 194                 	.LVL18:
+ 195 000a 0A 14       		.loc 1 71 0
+ 196                 		bsr	calculateByteBit
+ 197                 		.loc 1 72 0
+ 198 000b 00 27       		ld	AL,@startX
+ 199                 		st	AL,@0xfff9
+  69:barcode_generator.c ****     
+  70:barcode_generator.c ****     calculateByteBit();
+ 200                 	L,#0x0001
+ 201 000c 00 00 00 00 		asl	@bit
+ 201      00 9C 
+  71:barcode_generator.c ****     for(i = startX; i < height + startX; i++) final[(i*22) + (COLUMN - 1 - byte)] = final[(i*22) + 
+ 202                 	or	AL,#0xffff
+ 203 000f 00 00 00 15 		st	AL,@0xfff8
+ 204 0011 F9 25       		ld	AL,@0xfff9
+ 205                 		smult	#0x0016
+ 206 0012 01 14       		ld	X,@$XAP_AL
+ 207 0013 00 00 00 A1 		sub	X,@byte
+ 208 0015 FF D4       		add	X,#final+21
+ 209 0016 F8 25       		ld	AH,@0xfff9
+ 210 0017 F9 15       		bra	.L21
+ 211 0018 16 90       	.LVL20:
+ 212 0019 00 00 00 19 	.L22:
+ 213 001b 00 00 00 59 		ld	AL,@(0,X)
+ 214 001d 00 00 00 38 		and	AL,@0xfff8
+ 215 001f F9 11       		st	AL,@(0,X)
+ 216 0020 00 00 00 00 		add	AH,#0x0001
+ 216      00 E0 
+ 217                 		add	X,#0x0016
+ 218                 	.LVL21:
+ 219 0023 00 16       	.L21:
+ 220 0024 F8 C5       		ld	AL,@(0,Y)
+ 221 0025 00 26       		add	AL,@0xfff9
+ 222 0026 01 30       		cmp	AH,@$XAP_AL
+ 223 0027 16 38       		blt	.L22
+ 224                 		.loc 1 73 0
+ 225                 		ld	AL,@startY
+ 226 0028 00 17       		add	AL,#0x0001
+ 227 0029 F9 35       		st	AL,@startY
+ 228 002a 00 00 00 81 		.loc 1 74 0
+ 229 002c 00 00 00 00 		leave	#0x0002
+ 229      00 E4 
+  72:barcode_generator.c ****     startY++;
+ 230                 	 .-drawWhiteLine
+ 231 002f 00 00 00 15 		.global	__size_of_drawWhiteLine
+ 232 0031 01 34       		.equ	__size_of_drawWhiteLine,. - drawWhiteLine
+ 233 0032 00 00 00 25 		.section	.text.drawLines,"ax",@progbits
+  73:barcode_generator.c **** }
+ 234                 	obal	drawLines
+ 235 0034 02 0F       		.type	drawLines, @function
+ 236                 	drawLines:
+ 237                 	.LFB6:
+ 238                 		.loc 1 75 0
+ 239                 	.LVL22:
+ 240                 		enter	#0x0003
+ 241                 	.LCFI4:
+ 242                 		st	AH,@0xfff8
+ 243                 		ld	X,@(0x0003,Y)
+ 244                 		.loc 1 82 0
+  74:barcode_generator.c **** void drawLines(char firstDigit, char ch, int index, int right) {
+ 245                 	04,Y)
+ 246                 		bne	.L26
+ 247 0000 03 0B       	.LVL23:
+ 248                 		.loc 1 87 0
+ 249 0001 F8 21       		smult	#0x0006
+ 250 0002 03 1B       	.LVL24:
+  75:barcode_generator.c ****     char /*firstDigit, */ LGR, LGR_Index;
+  76:barcode_generator.c ****     int i;
+  77:barcode_generator.c ****     
+  78:barcode_generator.c **** //    firstDigit = barcode[0];
+  79:barcode_generator.c ****     firstDigit -= 48;
+  80:barcode_generator.c ****     
+  81:barcode_generator.c ****     if(right) LGR_Index = 2;
+ 251                 	,@$XAP_AL
+ 252 0003 04 9B       		ld	AL,@(EAN13_Structure-288+0,X)
+ 253 0004 00 00 00 00 		cmp	AL,#0x004c
+ 253      00 F0 
+ 254                 		beq	.L29
+  82:barcode_generator.c ****     else {
+  83:barcode_generator.c ****         
+  84:barcode_generator.c ****         LGR = EAN13_Structure[firstDigit][index];
+  85:barcode_generator.c ****         
+  86:barcode_generator.c ****         switch(LGR) {
+ 255                 		AL,#0x0052
+ 256 0007 06 90       		beq	.L26
+ 257                 		cmp	AL,#0x0047
+ 258 0008 00 00 00 39 		bne	.L27
+ 259 000a 00 00 00 16 		bra	.L35
+ 260 000c 4C 84       	.L29:
+ 261 000d 00 00 00 00 		ld	X,#0x0000
+ 261      00 F4 
+ 262 0010 52 84       	.LVL25:
+ 263 0011 00 00 00 00 		bra	.L27
+ 263      00 F4 
+ 264 0014 47 84       	.LVL26:
+ 265 0015 00 00 00 00 	.L35:
+ 265      00 F0 
+ 266 0018 00 00 00 00 		ld	X,#0x0001
+ 266      00 E0 
+ 267                 	.LVL27:
+ 268 001b 00 18       		bra	.L27
+ 269                 	.LVL28:
+ 270 001c 00 00 00 00 	.L26:
+ 270      00 E0 
+ 271                 		.loc 1 93 0
+ 272                 		ld	X,#0x0002
+ 273 001f 01 18       	.LVL29:
+ 274                 	.L27:
+ 275 0020 00 00 00 00 		ld	AL,@0xfff8
+ 275      00 E0 
+ 276                 	.LVL30:
+ 277                 		smult	#0x0015
+  87:barcode_generator.c ****         case 'L':
+  88:barcode_generator.c ****             LGR_Index = 0;
+  89:barcode_generator.c ****             break;
+  90:barcode_generator.c ****         case 'G':
+  91:barcode_generator.c ****             LGR_Index = 1;
+  92:barcode_generator.c ****             break;
+ 278                 	XAP_UXL
+ 279 0023 02 18       		smult	#0x0007
+ 280                 		ld	X,@$XAP_AL
+ 281                 	.LVL31:
+ 282 0024 F8 15       		add	X,@(0,Y)
+ 283                 		add	X,#EAN13_Digits-1008
+ 284 0025 15 90       		st	X,@(0,Y)
+ 285 0026 00 27       		ld	X,#0x0000
+ 286 0027 00 00 00 15 		st	X,@(0x0001,Y)
+ 287 0029 07 90       	.LVL32:
+ 288 002a 00 00 00 19 	.L32:
+ 289                 		.loc 1 104 0
+ 290 002c 00 3B       		ld	X,@(0,Y)
+ 291 002d 00 00 00 38 		ld	AL,@(0,X)
+ 292 002f 00 2B       		cmp	AL,#0x0031
+ 293 0030 00 18       		bne	.L30
+ 294 0031 01 2B       		.loc 1 105 0
+ 295                 		ld	AL,#0x0000
+ 296                 		bsr	drawBlackLine
+  93:barcode_generator.c ****         case 'R':
+  94:barcode_generator.c ****             LGR_Index = 2;
+  95:barcode_generator.c ****             break;
+  96:barcode_generator.c ****             default:
+  97:barcode_generator.c ****             //printf("drawLines metodunda sorun var\n");
+  98:barcode_generator.c ****             break;
+  99:barcode_generator.c ****         }
+ 100:barcode_generator.c ****     }
+ 101:barcode_generator.c ****     
+ 102:barcode_generator.c ****     for(i = 0; i < 7; i++) {
+ 103:barcode_generator.c ****         if(EAN13_Digits[ch - 48][LGR_Index][i] == '1')    {
+ 297                 	LVL34:
+ 298 0032 00 1B       	.L30:
+ 299 0033 00 16       		.loc 1 108 0
+ 300 0034 31 84       		ld	AL,#0x0000
+ 301 0035 00 00 00 00 		bsr	drawWhiteLine
+ 301      00 F0 
+ 104:barcode_generator.c ****             drawBlackLine(NORMAL);
+ 302                 	5:
+ 303 0038 00 14       	.L31:
+ 304 0039 00 00 00 00 		.loc 1 103 0
+ 304      00 9C 
+ 305                 		ld	AL,@(0x0001,Y)
+ 306 003c 00 00 00 00 		add	AL,#0x0001
+ 306      00 E0 
+ 307                 		st	AL,@(0x0001,Y)
+ 308                 	.LVL36:
+ 105:barcode_generator.c ****           //  drawBlackLine(NORMAL);
+ 106:barcode_generator.c ****         }else{
+ 107:barcode_generator.c ****             drawWhiteLine(NORMAL);
+ 309                 	(0,Y)
+ 310 003f 00 14       		add	X,#0x0001
+ 311 0040 00 00 00 00 		st	X,@(0,Y)
+ 311      00 9C 
+ 312                 		cmp	AL,#0x0007
+ 313                 		bne	.L32
+ 103:barcode_generator.c ****     for(i = 0; i < 7; i++) {
+ 314                 	 1 112 0
+ 315 0043 01 17       		leave	#0x0003
+ 316 0044 01 34       	.LFE6:
+ 317 0045 01 27       		.size	drawLines, .-drawLines
+ 318                 		.global	__size_of_drawLines
+ 319 0046 00 1B       		.equ	__size_of_drawLines,. - drawLines
+ 320 0047 01 38       		.section	.text.bitmapBarcode,"ax",@progbits
+ 321 0048 00 2B       		.global	bitmapBarcode
+ 322 0049 07 84       		.type	bitmapBarcode, @function
+ 323 004a 00 00 00 00 	bitmapBarcode:
+ 323      00 F0 
+ 108:barcode_generator.c ****          //   drawWhiteLine(NORMAL);
+ 109:barcode_generator.c ****         }
+ 110:barcode_generator.c ****     }
+ 111:barcode_generator.c **** }
+ 324                 	oc 1 114 0
+ 325 004d 03 0F       	.LVL37:
+ 326                 		enter	#0x0005
+ 327                 	.LCFI5:
+ 328                 		st	AL,@(0x0003,Y)
+ 329                 		.loc 1 117 0
+ 330                 		st	AH,@startX
+ 331                 		.loc 1 118 0
+ 332                 		ld	AL,@(0x0005,Y)
+ 333                 	.LVL38:
+ 334                 		st	AL,@startY
+ 112:barcode_generator.c **** 
+ 113:barcode_generator.c **** void bitmapBarcode(char code[13], int x, int y) {
+ 335                 	 0
+ 336                 		ld	AL,#0x0001
+ 337 0000 05 0B       		bsr	drawBlackLine
+ 338                 	.LVL39:
+ 339 0001 03 27       		.loc 1 123 0
+ 114:barcode_generator.c ****     int i;
+ 115:barcode_generator.c ****     
+ 116:barcode_generator.c ****     startX = x;
+ 340                 	L,#0x0001
+ 341 0002 00 00 00 21 		bsr	drawWhiteLine
+ 117:barcode_generator.c ****     startY = y;
+ 342                 	loc 1 124 0
+ 343 0004 05 17       		ld	AL,#0x0001
+ 344                 		bsr	drawBlackLine
+ 345 0005 00 00 00 25 		ld	X,#0x0001
+ 118:barcode_generator.c ****     
+ 119:barcode_generator.c **** //    memcpy(barcode, code, 13);
+ 120:barcode_generator.c ****     
+ 121:barcode_generator.c ****     drawBlackLine(LONG);//	drawBlackLine(LONG);
+ 346                 	X,@(0x0002,Y)
+ 347 0007 01 14       	.LVL40:
+ 348 0008 00 00 00 00 	.L37:
+ 348      00 9C 
+ 349                 		.loc 1 126 0
+ 122:barcode_generator.c ****     drawWhiteLine(LONG);//	drawWhiteLine(LONG);
+ 350                 	AH,@(0x0003,Y)
+ 351 000b 01 14       		add	AH,@(0x0002,Y)
+ 352 000c 00 00 00 00 		ld	AL,@(0x0002,Y)
+ 352      00 9C 
+ 123:barcode_generator.c ****     drawBlackLine(LONG);//	drawBlackLine(LONG);
+ 353                 	d	AL,#0xffff
+ 354 000f 01 14       		st	AL,@(0,Y)
+ 355 0010 00 00 00 00 		ld	X,#0x0000
+ 355      00 9C 
+ 356 0013 01 18       		st	X,@(0x0001,Y)
+ 357 0014 02 2B       		ld	X,@(0x0003,Y)
+ 358                 		ld	AL,@(0,X)
+ 359                 		ld	X,@$XAP_AH
+ 124:barcode_generator.c ****     
+ 125:barcode_generator.c ****     for(i = 1; i < 7; i++) drawLines(code[0], code[i], i-1, LEFT);
+ 360                 	@(0,X)
+ 361 0015 03 13       		bsr	drawLines
+ 362 0016 02 33       		ld	AL,@(0x0002,Y)
+ 363 0017 02 17       		add	AL,#0x0001
+ 364 0018 FF 34       		st	AL,@(0x0002,Y)
+ 365 0019 00 27       	.LVL41:
+ 366 001a 00 18       		cmp	AL,#0x0007
+ 367 001b 01 2B       		bne	.L37
+ 368 001c 03 1B       		.loc 1 128 0
+ 369 001d 00 16       		ld	AL,#0x0001
+ 370 001e 00 00 00 19 		bsr	drawWhiteLine
+ 371 0020 00 12       		.loc 1 129 0
+ 372 0021 00 00 00 00 		ld	AL,#0x0001
+ 372      00 9C 
+ 373 0024 02 17       		bsr	drawBlackLine
+ 374 0025 01 34       		.loc 1 130 0
+ 375 0026 02 27       		ld	AL,#0x0001
+ 376                 		bsr	drawWhiteLine
+ 377 0027 07 84       		.loc 1 131 0
+ 378 0028 00 00 00 00 		ld	AL,#0x0001
+ 378      00 F0 
+ 126:barcode_generator.c ****     
+ 127:barcode_generator.c ****     drawWhiteLine(LONG);//	drawWhiteLine(LONG);
+ 379                 		.loc 1 132 0
+ 380 002b 01 14       		ld	AL,#0x0001
+ 381 002c 00 00 00 00 		bsr	drawWhiteLine
+ 381      00 9C 
+ 128:barcode_generator.c ****     drawBlackLine(LONG);//	drawBlackLine(LONG);
+ 382                 	8:
+ 383 002f 01 14       		.loc 1 134 0
+ 384 0030 00 00 00 00 		ld	AH,@(0x0003,Y)
+ 384      00 9C 
+ 129:barcode_generator.c ****     drawWhiteLine(LONG);//	drawWhiteLine(LONG);
+ 385                 	d	AH,@(0x0002,Y)
+ 386 0033 01 14       		ld	X,@(0x0002,Y)
+ 387 0034 00 00 00 00 		add	X,#0xfff9
+ 387      00 9C 
+ 130:barcode_generator.c ****     drawBlackLine(LONG);//	drawBlackLine(LONG);
+ 388                 		X,@(0,Y)
+ 389 0037 01 14       		ld	AL,#0x0001
+ 390 0038 00 00 00 00 		st	AL,@(0x0001,Y)
+ 390      00 9C 
+ 131:barcode_generator.c ****     drawWhiteLine(LONG);//	drawWhiteLine(LONG);
+ 391                 		X,@(0x0003,Y)
+ 392 003b 01 14       		ld	AL,@(0,X)
+ 393 003c 00 00 00 00 		ld	X,@$XAP_AH
+ 393      00 9C 
+ 394                 		ld	AH,@(0,X)
+ 132:barcode_generator.c ****     
+ 133:barcode_generator.c ****     for(i = 7; i < 13; i++) drawLines(code[0], code[i], i-7, RIGHT);
+ 395                 		drawLines
+ 396 003f 03 13       		ld	AL,@(0x0002,Y)
+ 397 0040 02 33       		add	AL,#0x0001
+ 398 0041 02 1B       		st	AL,@(0x0002,Y)
+ 399 0042 F9 38       	.LVL42:
+ 400 0043 00 2B       		cmp	AL,#0x000d
+ 401 0044 01 14       		bne	.L38
+ 402 0045 01 27       		.loc 1 136 0
+ 403 0046 03 1B       		ld	AL,#0x0001
+ 404 0047 00 16       		bsr	drawBlackLine
+ 405 0048 00 00 00 19 		.loc 1 137 0
+ 406 004a 00 12       		ld	AL,#0x0001
+ 407 004b 00 00 00 00 		bsr	drawWhiteLine
+ 407      00 9C 
+ 408 004e 02 17       		.loc 1 138 0
+ 409 004f 01 34       		ld	AL,#0x0001
+ 410 0050 02 27       		bsr	drawBlackLine
+ 411                 		.loc 1 139 0
+ 412 0051 0D 84       		leave	#0x0005
+ 413 0052 00 00 00 00 	.LFE7:
+ 413      00 F0 
+ 134:barcode_generator.c ****     
+ 135:barcode_generator.c ****     drawBlackLine(LONG);//	drawBlackLine(LONG);
+ 414                 	e, .-bitmapBarcode
+ 415 0055 01 14       		.global	__size_of_bitmapBarcode
+ 416 0056 00 00 00 00 		.equ	__size_of_bitmapBarcode,. - bitmapBarcode
+ 416      00 9C 
+ 136:barcode_generator.c ****     drawWhiteLine(LONG);//	drawWhiteLine(LONG);
+ 417                 	lobal	EAN13_Structure
+ 418 0059 01 14       		.section	.rodata.EAN13_Structure,"a",@progbits
+ 419 005a 00 00 00 00 		.type	EAN13_Structure, @object
+ 419      00 9C 
+ 137:barcode_generator.c ****     drawBlackLine(LONG);//	drawBlackLine(LONG);
+ 420                 	ize	EAN13_Structure, 60
+ 421 005d 01 14       	EAN13_Structure:
+ 422 005e 00 00 00 00 		.ascii "LLLLLL"
+ 422      00 9C 
+ 138:barcode_generator.c **** }
+ 423                 	scii "LLGLGG"
+ 424 0061 05 0F       		.ascii "LLGGLG"
+ 425                 		.ascii "LLGGGL"
+ 426                 		.ascii "LGLLGG"
+ 427                 		.ascii "LGGLLG"
+ 428                 		.ascii "LGGGLL"
+ 429                 		.ascii "LGLGLG"
+ 430                 		.ascii "LGLGGL"
+ 431                 		.ascii "LGGLGL"
+ 432                 		.global	EAN13_Digits
+ 433                 		.section	.rodata.EAN13_Digits,"a",@progbits
+ 434 0000 00 4C 00 4C 		.type	EAN13_Digits, @object
+ 434      00 4C 00 4C 
+ 434      00 4C 00 4C 
+ 435 0006 00 4C 00 4C 		.size	EAN13_Digits, 210
+ 435      00 47 00 4C 
+ 435      00 47 00 47 
+ 436 000c 00 4C 00 4C 	EAN13_Digits:
+ 436      00 47 00 47 
+ 436      00 4C 00 47 
+ 437 0012 00 4C 00 4C 		.ascii "0001101"
+ 437      00 47 00 47 
+ 437      00 47 00 4C 
+ 438 0018 00 4C 00 47 		.ascii "0100111"
+ 438      00 4C 00 4C 
+ 438      00 47 00 47 
+ 439 001e 00 4C 00 47 		.ascii "1110010"
+ 439      00 47 00 4C 
+ 439      00 4C 00 47 
+ 440 0024 00 4C 00 47 		.ascii "0011001"
+ 440      00 47 00 47 
+ 440      00 4C 00 4C 
+ 441 002a 00 4C 00 47 		.ascii "0110011"
+ 441      00 4C 00 47 
+ 441      00 4C 00 47 
+ 442 0030 00 4C 00 47 		.ascii "1100110"
+ 442      00 4C 00 47 
+ 442      00 47 00 4C 
+ 443 0036 00 4C 00 47 		.ascii "0010011"
+ 443      00 47 00 4C 
+ 443      00 47 00 4C 
+ 444                 		.ascii "0011011"
+ 445                 		.ascii "1101100"
+ 446                 		.ascii "0111101"
+ 447                 		.ascii "0100001"
+ 448                 		.ascii "1000010"
+ 449 0000 00 30 00 30 		.ascii "0100011"
+ 449      00 30 00 31 
+ 449      00 31 00 30 
+ 449      00 31 
+ 450 0007 00 30 00 31 		.ascii "0011101"
+ 450      00 30 00 30 
+ 450      00 31 00 31 
+ 450      00 31 
+ 451 000e 00 31 00 31 		.ascii "1011100"
+ 451      00 31 00 30 
+ 451      00 30 00 31 
+ 451      00 30 
+ 452 0015 00 30 00 30 		.ascii "0110001"
+ 452      00 31 00 31 
+ 452      00 30 00 30 
+ 452      00 31 
+ 453 001c 00 30 00 31 		.ascii "0111001"
+ 453      00 31 00 30 
+ 453      00 30 00 31 
+ 453      00 31 
+ 454 0023 00 31 00 31 		.ascii "1001110"
+ 454      00 30 00 30 
+ 454      00 31 00 31 
+ 454      00 30 
+ 455 002a 00 30 00 30 		.ascii "0101111"
+ 455      00 31 00 30 
+ 455      00 30 00 31 
+ 455      00 31 
+ 456 0031 00 30 00 30 		.ascii "0000101"
+ 456      00 31 00 31 
+ 456      00 30 00 31 
+ 456      00 31 
+ 457 0038 00 31 00 31 		.ascii "1010000"
+ 457      00 30 00 31 
+ 457      00 31 00 30 
+ 457      00 30 
+ 458 003f 00 30 00 31 		.ascii "0111011"
+ 458      00 31 00 31 
+ 458      00 31 00 30 
+ 458      00 31 
+ 459 0046 00 30 00 31 		.ascii "0010001"
+ 459      00 30 00 30 
+ 459      00 30 00 30 
+ 459      00 31 
+ 460 004d 00 31 00 30 		.ascii "1000100"
+ 460      00 30 00 30 
+ 460      00 30 00 31 
+ 460      00 30 
+ 461 0054 00 30 00 31 		.ascii "0110111"
+ 461      00 30 00 30 
+ 461      00 30 00 31 
+ 461      00 31 
+ 462 005b 00 30 00 30 		.ascii "0001001"
+ 462      00 31 00 31 
+ 462      00 31 00 30 
+ 462      00 31 
+ 463 0062 00 31 00 30 		.ascii "1001000"
+ 463      00 31 00 31 
+ 463      00 31 00 30 
+ 463      00 30 
+ 464 0069 00 30 00 31 		.ascii "0001011"
+ 464      00 31 00 30 
+ 464      00 30 00 30 
+ 464      00 31 
+ 465 0070 00 30 00 31 		.ascii "0010111"
+ 465      00 31 00 31 
+ 465      00 30 00 30 
+ 465      00 31 
+ 466 0077 00 31 00 30 		.ascii "1110100"
+ 466      00 30 00 31 
+ 466      00 31 00 31 
+ 466      00 30 
+ 467 007e 00 30 00 31 		.comm startX, 1, 1
+ 467      00 30 00 31 
+ 467      00 31 00 31 
+ 467      00 31 
+ 468 0085 00 30 00 30 	
+ 468      00 30 00 30 
+ 468      00 31 00 30 
+ 468      00 31 
+ 469 008c 00 31 00 30 		.comm startY, 1, 1
+ 469      00 31 00 30 
+ 469      00 30 00 30 
+ 469      00 30 
+ 470 0093 00 30 00 31 	
+ 470      00 31 00 31 
+ 470      00 30 00 31 
+ 470      00 31 
+ 471 009a 00 30 00 30 		.comm byte, 1, 1
+ 471      00 31 00 30 
+ 471      00 30 00 30 
+ 471      00 31 
+ 472 00a1 00 31 00 30 	
+ 472      00 30 00 30 
+ 472      00 31 00 30 
+ 472      00 30 
+ 473 00a8 00 30 00 31 		.comm bit, 1, 1
+ 473      00 31 00 30 
+ 473      00 31 00 31 
+ 473      00 31 
+ 474 00af 00 30 00 30 	
+ 474      00 30 00 31 
+ 474      00 30 00 30 
+ 474      00 31 
+ 475 00b6 00 31 00 30 		.section	.debug_frame,"",@progbits
+ 475      00 30 00 31 
+ 475      00 30 00 30 
+ 475      00 30 
+ 476 00bd 00 30 00 30 	.Lframe0:
+ 476      00 30 00 31 
+ 476      00 30 00 31 
+ 476      00 31 
+ 477 00c4 00 30 00 30 		.4byte	.LECIE0-.LSCIE0
+ 477      00 31 00 30 
+ 477      00 31 00 31 
+ 477      00 31 
+ 478 00cb 00 31 00 31 	.LSCIE0:
+ 478      00 31 00 30 
+ 478      00 31 00 30 
+ 478      00 30 
+ 479                 		.4byte	0xffffffff
+ 480                 		.1byte	0x1
+ 481                 		.ascii "\000"
+ 482                 		.1byte	0x1
+ 483                 		.1byte	0x7f
+ 484                 		.1byte	0x3
+ 485                 		.1byte	0xc
+ 486                 		.1byte	0x5
+ 487                 		.1byte	0x0
+ 488                 		.p2align	2
+ 489 0000 00 00 00 00 	.LECIE0:
+ 490                 	.LSFDE0:
+ 491 0002 FF FF FF FF 		.4byte	.LEFDE0-.LASFDE0
+ 492 0004 01          	.LASFDE0:
+ 493 0004 00          		.4byte	.Lframe0
+ 494 0005 01          		.4byte	.LFB2
+ 495 0005 7F          		.4byte	.LFE2-.LFB2
+ 496 0006 03          		.1byte	0x4
+ 497 0006 0C          		.4byte	.LCFI0-.LFB2
+ 498 0007 05          		.1byte	0xe
+ 499 0007 00          		.1byte	0x1
+ 500                 		.1byte	0x83
+ 501                 		.1byte	0x1
+ 502                 		.p2align	2
+ 503 0008 00 00 00 00 	.LEFDE0:
+ 504                 	.LSFDE2:
+ 505 000a 00 00 00 00 		.4byte	.LEFDE2-.LASFDE2
+ 506 000c 00 00 00 00 	.LASFDE2:
+ 507 000e 00 00 00 00 		.4byte	.Lframe0
+ 508 0010 41          		.4byte	.LFB3
+ 509                 		.4byte	.LFE3-.LFB3
+ 510 0010 0E          		.1byte	0x4
+ 511 0011 01          		.4byte	.LCFI1-.LFB3
+ 512 0011 83          		.1byte	0xe
+ 513 0012 01          		.1byte	0x1
+ 514 0012 00 00 00    		.1byte	0x83
+ 515                 		.1byte	0x1
+ 516                 		.p2align	2
+ 517 0014 00 00 00 00 	.LEFDE2:
+ 518                 	.LSFDE4:
+ 519 0016 00 00 00 00 		.4byte	.LEFDE4-.LASFDE4
+ 520 0018 00 00 00 00 	.LASFDE4:
+ 521 001a 00 00 00 00 		.4byte	.Lframe0
+ 522 001c 41          		.4byte	.LFB4
+ 523                 		.4byte	.LFE4-.LFB4
+ 524 001c 0E          		.1byte	0x4
+ 525 001d 01          		.4byte	.LCFI2-.LFB4
+ 526 001d 83          		.1byte	0xe
+ 527 001e 01          		.1byte	0x2
+ 528 001e 00 00 00    		.1byte	0x83
+ 529                 		.1byte	0x1
+ 530                 		.p2align	2
+ 531 0020 00 00 00 00 	.LEFDE4:
+ 532                 	.LSFDE6:
+ 533 0022 00 00 00 00 		.4byte	.LEFDE6-.LASFDE6
+ 534 0024 00 00 00 00 	.LASFDE6:
+ 535 0026 00 00 00 00 		.4byte	.Lframe0
+ 536 0028 41          		.4byte	.LFB5
+ 537                 		.4byte	.LFE5-.LFB5
+ 538 0028 0E          		.1byte	0x4
+ 539 0029 02          		.4byte	.LCFI3-.LFB5
+ 540 0029 83          		.1byte	0xe
+ 541 002a 01          		.1byte	0x2
+ 542 002a 00 00 00    		.1byte	0x83
+ 543                 		.1byte	0x1
+ 544                 		.p2align	2
+ 545 002c 00 00 00 00 	.LEFDE6:
+ 546                 	.LSFDE8:
+ 547 002e 00 00 00 00 		.4byte	.LEFDE8-.LASFDE8
+ 548 0030 00 00 00 00 	.LASFDE8:
+ 549 0032 00 00 00 00 		.4byte	.Lframe0
+ 550 0034 41          		.4byte	.LFB6
+ 551                 		.4byte	.LFE6-.LFB6
+ 552 0034 0E          		.1byte	0x4
+ 553 0035 02          		.4byte	.LCFI4-.LFB6
+ 554 0035 83          		.1byte	0xe
+ 555 0036 01          		.1byte	0x3
+ 556 0036 00 00 00    		.1byte	0x83
+ 557                 		.1byte	0x1
+ 558                 		.p2align	2
+ 559 0038 00 00 00 00 	.LEFDE8:
+ 560                 	.LSFDE10:
+ 561 003a 00 00 00 00 		.4byte	.LEFDE10-.LASFDE10
+ 562 003c 00 00 00 00 	.LASFDE10:
+ 563 003e 00 00 00 00 		.4byte	.Lframe0
+ 564 0040 41          		.4byte	.LFB7
+ 565                 		.4byte	.LFE7-.LFB7
+ 566 0040 0E          		.1byte	0x4
+ 567 0041 03          		.4byte	.LCFI5-.LFB7
+ 568 0041 83          		.1byte	0xe
+ 569 0042 01          		.1byte	0x5
+ 570 0042 00 00 00    		.1byte	0x83
+ 571                 		.1byte	0x1
+ 572                 		.p2align	2
+ 573 0044 00 00 00 00 	.LEFDE10:
+ 574                 		.text
+ 575 0046 00 00 00 00 	.Letext0:
+ 576 0048 00 00 00 00 		.section	.debug_loc,"",@progbits
+ 577 004a 00 00 00 00 	.Ldebug_loc0:
+ 578 004c 41          	.LLST0:
+ 579                 		.4byte	.LFB2
+ 580 004c 0E          		.4byte	.LCFI0
+ 581 004d 05          		.2byte	0x1
+ 582 004d 83          		.1byte	0x55
+ 583 004e 01          		.4byte	.LCFI0
+ 584 004e 00 00 00    		.4byte	.LFE2
+ 585                 		.2byte	0x2
+ 586                 		.1byte	0x75
+ 587                 		.1byte	0x1
+ 588                 		.4byte	0x0
+ 589                 		.4byte	0x0
+ 590                 	.LLST1:
+ 591 0000 00 00 00 00 		.4byte	.LVL0
+ 592 0002 00 00 00 00 		.4byte	.LVL1
+ 593 0004 00 01       		.2byte	0x1
+ 594 0005 55          		.1byte	0x51
+ 595 0005 00 00 00 00 		.4byte	.LVL1
+ 596 0007 00 00 00 00 		.4byte	.LFE2
+ 597 0009 00 02       		.2byte	0x1
+ 598 000a 75          		.1byte	0x59
+ 599 000b 01          		.4byte	0x0
+ 600 000b 00 00 00 00 		.4byte	0x0
+ 601 000d 00 00 00 00 	.LLST2:
+ 602                 		.4byte	.LVL1
+ 603 000f 00 00 00 00 		.4byte	.LVL3
+ 604 0011 00 00 00 00 		.2byte	0x1
+ 605 0013 00 01       		.1byte	0x51
+ 606 0014 51          		.4byte	.LVL4
+ 607 0015 00 00 00 00 		.4byte	.LFE2
+ 608 0017 00 00 00 00 		.2byte	0x1
+ 609 0019 00 01       		.1byte	0x58
+ 610 001a 59          		.4byte	0x0
+ 611 001a 00 00 00 00 		.4byte	0x0
+ 612 001c 00 00 00 00 	.LLST3:
+ 613                 		.4byte	.LVL2
+ 614 001e 00 00 00 00 		.4byte	.LVL5
+ 615 0020 00 00 00 00 		.2byte	0x1
+ 616 0022 00 01       		.1byte	0x57
+ 617 0023 51          		.4byte	.LVL5
+ 618 0024 00 00 00 00 		.4byte	.LFE2
+ 619 0026 00 00 00 00 		.2byte	0x1
+ 620 0028 00 01       		.1byte	0x51
+ 621 0029 58          		.4byte	0x0
+ 622 0029 00 00 00 00 		.4byte	0x0
+ 623 002b 00 00 00 00 	.LLST4:
+ 624                 		.4byte	.LFB3
+ 625 002d 00 00 00 00 		.4byte	.LCFI1
+ 626 002f 00 00 00 00 		.2byte	0x1
+ 627 0031 00 01       		.1byte	0x55
+ 628 0032 57          		.4byte	.LCFI1
+ 629 0033 00 00 00 00 		.4byte	.LFE3
+ 630 0035 00 00 00 00 		.2byte	0x2
+ 631 0037 00 01       		.1byte	0x75
+ 632 0038 51          		.1byte	0x1
+ 633 0038 00 00 00 00 		.4byte	0x0
+ 634 003a 00 00 00 00 		.4byte	0x0
+ 635                 	.LLST5:
+ 636 003c 00 00 00 00 		.4byte	.LFB4
+ 637 003e 00 00 00 00 		.4byte	.LCFI2
+ 638 0040 00 01       		.2byte	0x1
+ 639 0041 55          		.1byte	0x55
+ 640 0042 00 00 00 00 		.4byte	.LCFI2
+ 641 0044 00 00 00 00 		.4byte	.LFE4
+ 642 0046 00 02       		.2byte	0x2
+ 643 0047 75          		.1byte	0x75
+ 644 0047 01          		.1byte	0x2
+ 645 0048 00 00 00 00 		.4byte	0x0
+ 646 004a 00 00 00 00 		.4byte	0x0
+ 647                 	.LLST6:
+ 648 004c 00 00 00 00 		.4byte	.LVL6
+ 649 004e 00 00 00 00 		.4byte	.LVL7
+ 650 0050 00 01       		.2byte	0x1
+ 651 0051 55          		.1byte	0x51
+ 652 0051 00 00 00 00 		.4byte	.LVL8
+ 653 0053 00 00 00 00 		.4byte	.LVL9
+ 654 0055 00 02       		.2byte	0x1
+ 655 0056 75          		.1byte	0x51
+ 656 0057 02          		.4byte	0x0
+ 657 0057 00 00 00 00 		.4byte	0x0
+ 658 0059 00 00 00 00 	.LLST7:
+ 659                 		.4byte	.LVL11
+ 660 005b 00 00 00 00 		.4byte	.LVL12
+ 661 005d 00 00 00 00 		.2byte	0x1
+ 662 005f 00 01       		.1byte	0x57
+ 663 0060 51          		.4byte	.LVL12
+ 664 0061 00 00 00 00 		.4byte	.LFE4
+ 665 0063 00 00 00 00 		.2byte	0x1
+ 666 0065 00 01       		.1byte	0x50
+ 667 0066 51          		.4byte	0x0
+ 668 0066 00 00 00 00 		.4byte	0x0
+ 669 0068 00 00 00 00 	.LLST8:
+ 670                 		.4byte	.LFB5
+ 671 006a 00 00 00 00 		.4byte	.LCFI3
+ 672 006c 00 00 00 00 		.2byte	0x1
+ 673 006e 00 01       		.1byte	0x55
+ 674 006f 57          		.4byte	.LCFI3
+ 675 0070 00 00 00 00 		.4byte	.LFE5
+ 676 0072 00 00 00 00 		.2byte	0x2
+ 677 0074 00 01       		.1byte	0x75
+ 678 0075 50          		.1byte	0x2
+ 679 0075 00 00 00 00 		.4byte	0x0
+ 680 0077 00 00 00 00 		.4byte	0x0
+ 681                 	.LLST9:
+ 682 0079 00 00 00 00 		.4byte	.LVL14
+ 683 007b 00 00 00 00 		.4byte	.LVL15
+ 684 007d 00 01       		.2byte	0x1
+ 685 007e 55          		.1byte	0x51
+ 686 007f 00 00 00 00 		.4byte	.LVL16
+ 687 0081 00 00 00 00 		.4byte	.LVL17
+ 688 0083 00 02       		.2byte	0x1
+ 689 0084 75          		.1byte	0x51
+ 690 0084 02          		.4byte	0x0
+ 691 0085 00 00 00 00 		.4byte	0x0
+ 692 0087 00 00 00 00 	.LLST10:
+ 693                 		.4byte	.LVL19
+ 694 0089 00 00 00 00 		.4byte	.LVL20
+ 695 008b 00 00 00 00 		.2byte	0x1
+ 696 008d 00 01       		.1byte	0x58
+ 697 008e 51          		.4byte	.LVL20
+ 698 008e 00 00 00 00 		.4byte	.LFE5
+ 699 0090 00 00 00 00 		.2byte	0x1
+ 700 0092 00 01       		.1byte	0x50
+ 701 0093 51          		.4byte	0x0
+ 702 0094 00 00 00 00 		.4byte	0x0
+ 703 0096 00 00 00 00 	.LLST11:
+ 704                 		.4byte	.LFB6
+ 705 0098 00 00 00 00 		.4byte	.LCFI4
+ 706 009a 00 00 00 00 		.2byte	0x1
+ 707 009c 00 01       		.1byte	0x55
+ 708 009d 58          		.4byte	.LCFI4
+ 709 009d 00 00 00 00 		.4byte	.LFE6
+ 710 009f 00 00 00 00 		.2byte	0x2
+ 711 00a1 00 01       		.1byte	0x75
+ 712 00a2 50          		.1byte	0x3
+ 713 00a3 00 00 00 00 		.4byte	0x0
+ 714 00a5 00 00 00 00 		.4byte	0x0
+ 715                 	.LLST12:
+ 716 00a7 00 00 00 00 		.4byte	.LVL22
+ 717 00a9 00 00 00 00 		.4byte	.LVL24
+ 718 00ab 00 01       		.2byte	0x1
+ 719 00ac 55          		.1byte	0x51
+ 720 00ac 00 00 00 00 		.4byte	.LVL28
+ 721 00ae 00 00 00 00 		.4byte	.LVL30
+ 722 00b0 00 02       		.2byte	0x1
+ 723 00b1 75          		.1byte	0x51
+ 724 00b2 03          		.4byte	0x0
+ 725 00b2 00 00 00 00 		.4byte	0x0
+ 726 00b4 00 00 00 00 	.LLST13:
+ 727                 		.4byte	.LVL22
+ 728 00b6 00 00 00 00 		.4byte	.LVL23
+ 729 00b8 00 00 00 00 		.2byte	0x1
+ 730 00ba 00 01       		.1byte	0x50
+ 731 00bb 51          		.4byte	.LVL23
+ 732 00bc 00 00 00 00 		.4byte	.LVL33
+ 733 00be 00 00 00 00 		.2byte	0x1
+ 734 00c0 00 01       		.1byte	0x57
+ 735 00c1 51          		.4byte	.LVL34
+ 736 00c1 00 00 00 00 		.4byte	.LVL35
+ 737 00c3 00 00 00 00 		.2byte	0x1
+ 738                 		.1byte	0x57
+ 739 00c5 00 00 00 00 		.4byte	0x0
+ 740 00c7 00 00 00 00 		.4byte	0x0
+ 741 00c9 00 01       	.LLST14:
+ 742 00ca 50          		.4byte	.LVL22
+ 743 00cb 00 00 00 00 		.4byte	.LVL23
+ 744 00cd 00 00 00 00 		.2byte	0x2
+ 745 00cf 00 01       		.1byte	0x91
+ 746 00d0 57          		.1byte	0x0
+ 747 00d0 00 00 00 00 		.4byte	.LVL23
+ 748 00d2 00 00 00 00 		.4byte	.LVL25
+ 749 00d4 00 01       		.2byte	0x1
+ 750 00d5 57          		.1byte	0x53
+ 751 00d6 00 00 00 00 		.4byte	.LVL26
+ 752 00d8 00 00 00 00 		.4byte	.LVL27
+ 753                 		.2byte	0x1
+ 754 00da 00 00 00 00 		.1byte	0x53
+ 755 00dc 00 00 00 00 		.4byte	.LVL28
+ 756 00de 00 02       		.4byte	.LVL29
+ 757 00df 91          		.2byte	0x1
+ 758 00df 00          		.1byte	0x53
+ 759 00e0 00 00 00 00 		.4byte	.LVL29
+ 760 00e2 00 00 00 00 		.4byte	.LFE6
+ 761 00e4 00 01       		.2byte	0x2
+ 762 00e5 53          		.1byte	0x76
+ 763 00e5 00 00 00 00 		.1byte	0x3
+ 764 00e7 00 00 00 00 		.4byte	0x0
+ 765 00e9 00 01       		.4byte	0x0
+ 766 00ea 53          	.LLST15:
+ 767 00eb 00 00 00 00 		.4byte	.LVL22
+ 768 00ed 00 00 00 00 		.4byte	.LVL23
+ 769 00ef 00 01       		.2byte	0x2
+ 770 00f0 53          		.1byte	0x91
+ 771 00f0 00 00 00 00 		.1byte	0x1
+ 772 00f2 00 00 00 00 		.4byte	.LVL23
+ 773 00f4 00 02       		.4byte	.LFE6
+ 774 00f5 76          		.2byte	0x2
+ 775 00f6 03          		.1byte	0x76
+ 776 00f6 00 00 00 00 		.1byte	0x4
+ 777 00f8 00 00 00 00 		.4byte	0x0
+ 778                 		.4byte	0x0
+ 779 00fa 00 00 00 00 	.LLST16:
+ 780 00fc 00 00 00 00 		.4byte	.LVL25
+ 781 00fe 00 02       		.4byte	.LVL26
+ 782 00ff 91          		.2byte	0x1
+ 783 0100 01          		.1byte	0x53
+ 784 0100 00 00 00 00 		.4byte	.LVL27
+ 785 0102 00 00 00 00 		.4byte	.LVL28
+ 786 0104 00 02       		.2byte	0x1
+ 787 0105 76          		.1byte	0x53
+ 788 0106 04          		.4byte	.LVL29
+ 789 0106 00 00 00 00 		.4byte	.LVL31
+ 790 0108 00 00 00 00 		.2byte	0x1
+ 791                 		.1byte	0x53
+ 792 010a 00 00 00 00 		.4byte	0x0
+ 793 010c 00 00 00 00 		.4byte	0x0
+ 794 010e 00 01       	.LLST17:
+ 795 010f 53          		.4byte	.LFB7
+ 796 0110 00 00 00 00 		.4byte	.LCFI5
+ 797 0112 00 00 00 00 		.2byte	0x1
+ 798 0114 00 01       		.1byte	0x55
+ 799 0115 53          		.4byte	.LCFI5
+ 800 0115 00 00 00 00 		.4byte	.LFE7
+ 801 0117 00 00 00 00 		.2byte	0x2
+ 802 0119 00 01       		.1byte	0x75
+ 803 011a 53          		.1byte	0x5
+ 804 011b 00 00 00 00 		.4byte	0x0
+ 805 011d 00 00 00 00 		.4byte	0x0
+ 806                 	.LLST18:
+ 807 011f 00 00 00 00 		.4byte	.LVL37
+ 808 0121 00 00 00 00 		.4byte	.LVL38
+ 809 0123 00 01       		.2byte	0x1
+ 810 0124 55          		.1byte	0x51
+ 811 0124 00 00 00 00 		.4byte	.LVL38
+ 812 0126 00 00 00 00 		.4byte	.LFE7
+ 813 0128 00 02       		.2byte	0x2
+ 814 0129 75          		.1byte	0x76
+ 815 012a 05          		.1byte	0x3
+ 816 012a 00 00 00 00 		.4byte	0x0
+ 817 012c 00 00 00 00 		.4byte	0x0
+ 818                 	.LLST19:
+ 819 012e 00 00 00 00 		.4byte	.LVL37
+ 820 0130 00 00 00 00 		.4byte	.LVL39
+ 821 0132 00 01       		.2byte	0x1
+ 822 0133 51          		.1byte	0x50
+ 823 0134 00 00 00 00 		.4byte	0x0
+ 824 0136 00 00 00 00 		.4byte	0x0
+ 825 0138 00 02       	.LLST20:
+ 826 0139 76          		.4byte	.LVL37
+ 827 0139 03          		.4byte	.LVL40
+ 828 013a 00 00 00 00 		.2byte	0x2
+ 829 013c 00 00 00 00 		.1byte	0x91
+ 830                 		.1byte	0x0
+ 831 013e 00 00 00 00 		.4byte	.LVL40
+ 832 0140 00 00 00 00 		.4byte	.LFE7
+ 833 0142 00 01       		.2byte	0x2
+ 834 0143 50          		.1byte	0x76
+ 835 0143 00 00 00 00 		.1byte	0x5
+ 836 0145 00 00 00 00 		.4byte	0x0
+ 837                 		.4byte	0x0
+ 838 0147 00 00 00 00 		.file 2 "barcode_generator.h"
+ 839 0149 00 00 00 00 		.file 3 "platform_config.h"
+ 840 014b 00 02       		.file 4 "C:/CSR_uEnergy_SDK-2.3.0.31/tools/include/CSR101x_A05/types.h"
+ 841 014c 91          		.section	.debug_info
+ 842 014d 00          		.4byte	0x2e5
+ 843 014d 00 00 00 00 		.2byte	0x2
+ 844 014f 00 00 00 00 		.4byte	.Ldebug_abbrev0
+ 845 0151 00 02       		.1byte	0x4
+ 846 0152 76          		.1byte	0x1
+ 847 0153 05          		.4byte	.LASF28
+ 848 0153 00 00 00 00 		.1byte	0x1
+ 849 0155 00 00 00 00 		.4byte	.LASF29
+ 850                 		.4byte	.LASF30
+ 851                 		.4byte	0x0
+ 852                 		.4byte	0x0
+ 853                 		.4byte	.Ldebug_ranges0+0x0
+ 854 0000 00 00 02 E5 		.4byte	.Ldebug_line0
+ 855 0002 00 02       		.1byte	0x2
+ 856 0003 00 00 00 00 		.4byte	.LASF31
+ 857 0005 04          		.1byte	0x4
+ 858 0005 01          		.1byte	0x1e
+ 859 0006 00 00 00 00 		.4byte	0x34
+ 860 0008 01          		.1byte	0x3
+ 861 0008 00 00 00 00 		.1byte	0x2
+ 862 000a 00 00 00 00 		.1byte	0x8
+ 863 000c 00 00 00 00 		.4byte	.LASF0
+ 864 000e 00 00 00 00 		.1byte	0x3
+ 865 0010 00 00 00 00 		.1byte	0x2
+ 866 0012 00 00 00 00 		.1byte	0x7
+ 867 0014 02          		.4byte	.LASF1
+ 868 0015 00 00 00 00 		.1byte	0x3
+ 869 0017 04          		.1byte	0x4
+ 870 0017 1E          		.1byte	0x7
+ 871 0018 00 00 00 34 		.4byte	.LASF2
+ 872 001a 03          		.1byte	0x3
+ 873 001a 02          		.1byte	0x2
+ 874 001b 08          		.1byte	0x6
+ 875 001b 00 00 00 00 		.4byte	.LASF3
+ 876 001d 03          		.1byte	0x3
+ 877 001e 02          		.1byte	0x2
+ 878 001e 07          		.1byte	0x5
+ 879 001f 00 00 00 00 		.4byte	.LASF4
+ 880 0021 03          		.1byte	0x3
+ 881 0021 04          		.1byte	0x4
+ 882 0022 07          		.1byte	0x5
+ 883 0022 00 00 00 00 		.4byte	.LASF5
+ 884 0024 03          		.1byte	0x3
+ 885 0025 02          		.1byte	0x2
+ 886 0025 06          		.1byte	0x7
+ 887 0026 00 00 00 00 		.4byte	.LASF6
+ 888 0028 03          		.1byte	0x4
+ 889 0028 02          		.1byte	0x1
+ 890 0029 05          		.4byte	.LASF9
+ 891 0029 00 00 00 00 		.1byte	0x1
+ 892 002b 03          		.1byte	0x17
+ 893 002c 04          		.1byte	0x1
+ 894 002c 05          		.4byte	.LFB2
+ 895 002d 00 00 00 00 		.4byte	.LFE2
+ 896 002f 03          		.4byte	.LLST0
+ 897 002f 02          		.4byte	0xaa
+ 898 0030 07          		.1byte	0x5
+ 899 0030 00 00 00 00 		.4byte	.LASF11
+ 900 0032 04          		.1byte	0x1
+ 901 0033 01          		.1byte	0x17
+ 902 0033 00 00 00 00 		.4byte	0xaa
+ 903 0035 01          		.4byte	.LLST1
+ 904 0036 17          		.1byte	0x6
+ 905 0036 01          		.ascii "i\000"
+ 906 0037 00 00 00 00 		.1byte	0x1
+ 907 0039 00 00 00 00 		.1byte	0x18
+ 908 003b 00 00 00 00 		.4byte	0xb7
+ 909 003d 00 00 00 AA 		.4byte	.LLST2
+ 910 003f 05          		.1byte	0x7
+ 911 003f 00 00 00 00 		.4byte	.LASF7
+ 912 0041 01          		.1byte	0x1
+ 913 0042 17          		.1byte	0x18
+ 914 0042 00 00 00 AA 		.4byte	0xb7
+ 915 0044 00 00 00 00 		.4byte	.LLST3
+ 916 0046 06          		.1byte	0x0
+ 917 0047 69 00       		.1byte	0x8
+ 918 0048 01          		.1byte	0x2
+ 919 0048 18          		.4byte	0xb0
+ 920 0049 00 00 00 B7 		.1byte	0x3
+ 921 004b 00 00 00 00 		.1byte	0x2
+ 922 004d 07          		.1byte	0x8
+ 923 004d 00 00 00 00 		.4byte	.LASF8
+ 924 004f 01          		.1byte	0x9
+ 925 0050 18          		.1byte	0x2
+ 926 0050 00 00 00 B7 		.1byte	0x5
+ 927 0052 00 00 00 00 		.ascii "int\000"
+ 928 0054 00          		.1byte	0xa
+ 929 0055 08          		.1byte	0x1
+ 930 0055 02          		.4byte	.LASF32
+ 931 0056 00 00 00 B0 		.1byte	0x1
+ 932 0058 03          		.1byte	0x29
+ 933 0058 02          		.1byte	0x1
+ 934 0059 08          		.4byte	.LFB3
+ 935 0059 00 00 00 00 		.4byte	.LFE3
+ 936 005b 09          		.4byte	.LLST4
+ 937 005c 02          		.1byte	0x4
+ 938 005c 05          		.1byte	0x1
+ 939 005d 69 6E 74 00 		.4byte	.LASF10
+ 940 005f 0A          		.1byte	0x1
+ 941 005f 01          		.1byte	0x36
+ 942 0060 00 00 00 00 		.1byte	0x1
+ 943 0062 01          		.4byte	.LFB4
+ 944 0062 29          		.4byte	.LFE4
+ 945 0063 01          		.4byte	.LLST5
+ 946 0063 00 00 00 00 		.4byte	0x117
+ 947 0065 00 00 00 00 		.1byte	0x5
+ 948 0067 00 00 00 00 		.4byte	.LASF12
+ 949 0069 04          		.1byte	0x1
+ 950 006a 01          		.1byte	0x36
+ 951 006a 00 00 00 00 		.4byte	0xb7
+ 952 006c 01          		.4byte	.LLST6
+ 953 006d 36          		.1byte	0x6
+ 954 006d 01          		.ascii "i\000"
+ 955 006e 00 00 00 00 		.1byte	0x1
+ 956 0070 00 00 00 00 		.1byte	0x37
+ 957 0072 00 00 00 00 		.4byte	0xb7
+ 958 0074 00 00 01 17 		.4byte	.LLST7
+ 959 0076 05          		.1byte	0xb
+ 960 0076 00 00 00 00 		.4byte	.LASF13
+ 961 0078 01          		.1byte	0x1
+ 962 0079 36          		.1byte	0x37
+ 963 0079 00 00 00 B7 		.4byte	0xb7
+ 964 007b 00 00 00 00 		.1byte	0x2
+ 965 007d 06          		.1byte	0x76
+ 966 007e 69 00       		.1byte	0x0
+ 967 007f 01          		.1byte	0x0
+ 968 007f 37          		.1byte	0x4
+ 969 0080 00 00 00 B7 		.1byte	0x1
+ 970 0082 00 00 00 00 		.4byte	.LASF14
+ 971 0084 0B          		.1byte	0x1
+ 972 0084 00 00 00 00 		.1byte	0x41
+ 973 0086 01          		.1byte	0x1
+ 974 0087 37          		.4byte	.LFB5
+ 975 0087 00 00 00 B7 		.4byte	.LFE5
+ 976 0089 02          		.4byte	.LLST8
+ 977 008a 76          		.4byte	0x15b
+ 978 008a 00          		.1byte	0x5
+ 979 008b 00          		.4byte	.LASF12
+ 980 008b 04          		.1byte	0x1
+ 981 008c 01          		.1byte	0x41
+ 982 008c 00 00 00 00 		.4byte	0xb7
+ 983 008e 01          		.4byte	.LLST9
+ 984 008f 41          		.1byte	0x6
+ 985 008f 01          		.ascii "i\000"
+ 986 0090 00 00 00 00 		.1byte	0x1
+ 987 0092 00 00 00 00 		.1byte	0x42
+ 988 0094 00 00 00 00 		.4byte	0xb7
+ 989 0096 00 00 01 5B 		.4byte	.LLST10
+ 990 0098 05          		.1byte	0xb
+ 991 0098 00 00 00 00 		.4byte	.LASF13
+ 992 009a 01          		.1byte	0x1
+ 993 009b 41          		.1byte	0x42
+ 994 009b 00 00 00 B7 		.4byte	0xb7
+ 995 009d 00 00 00 00 		.1byte	0x2
+ 996 009f 06          		.1byte	0x76
+ 997 00a0 69 00       		.1byte	0x0
+ 998 00a1 01          		.1byte	0x0
+ 999 00a1 42          		.1byte	0x4
+ 1000 00a2 00 00 00 B7 		.1byte	0x1
+ 1001 00a4 00 00 00 00 		.4byte	.LASF15
+ 1002 00a6 0B          		.1byte	0x1
+ 1003 00a6 00 00 00 00 		.1byte	0x4b
+ 1004 00a8 01          		.1byte	0x1
+ 1005 00a9 42          		.4byte	.LFB6
+ 1006 00a9 00 00 00 B7 		.4byte	.LFE6
+ 1007 00ab 02          		.4byte	.LLST11
+ 1008 00ac 76          		.4byte	0x1d6
+ 1009 00ac 00          		.1byte	0x5
+ 1010 00ad 00          		.4byte	.LASF16
+ 1011 00ad 04          		.1byte	0x1
+ 1012 00ae 01          		.1byte	0x4b
+ 1013 00ae 00 00 00 00 		.4byte	0xb0
+ 1014 00b0 01          		.4byte	.LLST12
+ 1015 00b1 4B          		.1byte	0xc
+ 1016 00b1 01          		.ascii "ch\000"
+ 1017 00b2 00 00 00 00 		.1byte	0x1
+ 1018 00b4 00 00 00 00 		.1byte	0x4b
+ 1019 00b6 00 00 00 00 		.4byte	0xb0
+ 1020 00b8 00 00 01 D6 		.4byte	.LLST13
+ 1021 00ba 05          		.1byte	0x5
+ 1022 00ba 00 00 00 00 		.4byte	.LASF17
+ 1023 00bc 01          		.1byte	0x1
+ 1024 00bd 4B          		.1byte	0x4b
+ 1025 00bd 00 00 00 B0 		.4byte	0xb7
+ 1026 00bf 00 00 00 00 		.4byte	.LLST14
+ 1027 00c1 0C          		.1byte	0x5
+ 1028 00c2 63 68 00    		.4byte	.LASF18
+ 1029 00c3 01          		.1byte	0x1
+ 1030 00c4 4B          		.1byte	0x4b
+ 1031 00c4 00 00 00 B0 		.4byte	0xb7
+ 1032 00c6 00 00 00 00 		.4byte	.LLST15
+ 1033 00c8 05          		.1byte	0xd
+ 1034 00c9 00 00 00 00 		.ascii "LGR\000"
+ 1035 00cb 01          		.1byte	0x1
+ 1036 00cb 4B          		.1byte	0x4c
+ 1037 00cc 00 00 00 B7 		.4byte	0xb0
+ 1038 00ce 00 00 00 00 		.1byte	0x7
+ 1039 00d0 05          		.4byte	.LASF19
+ 1040 00d0 00 00 00 00 		.1byte	0x1
+ 1041 00d2 01          		.1byte	0x4c
+ 1042 00d3 4B          		.4byte	0xb0
+ 1043 00d3 00 00 00 B7 		.4byte	.LLST16
+ 1044 00d5 00 00 00 00 		.1byte	0xe
+ 1045 00d7 0D          		.ascii "i\000"
+ 1046 00d8 4C 47 52 00 		.1byte	0x1
+ 1047 00da 01          		.1byte	0x4d
+ 1048 00da 4C          		.4byte	0xb7
+ 1049 00db 00 00 00 B0 		.1byte	0x2
+ 1050 00dd 07          		.1byte	0x76
+ 1051 00dd 00 00 00 00 		.1byte	0x1
+ 1052 00df 01          		.1byte	0x0
+ 1053 00e0 4C          		.1byte	0x4
+ 1054 00e0 00 00 00 B0 		.1byte	0x1
+ 1055 00e2 00 00 00 00 		.4byte	.LASF20
+ 1056 00e4 0E          		.1byte	0x1
+ 1057 00e5 69 00       		.1byte	0x72
+ 1058 00e6 01          		.1byte	0x1
+ 1059 00e6 4D          		.4byte	.LFB7
+ 1060 00e7 00 00 00 B7 		.4byte	.LFE7
+ 1061 00e9 02          		.4byte	.LLST17
+ 1062 00e9 76          		.4byte	0x225
+ 1063 00ea 01          		.1byte	0x5
+ 1064 00ea 00          		.4byte	.LASF21
+ 1065 00eb 04          		.1byte	0x1
+ 1066 00eb 01          		.1byte	0x72
+ 1067 00ec 00 00 00 00 		.4byte	0xaa
+ 1068 00ee 01          		.4byte	.LLST18
+ 1069 00ee 72          		.1byte	0xc
+ 1070 00ef 01          		.ascii "x\000"
+ 1071 00ef 00 00 00 00 		.1byte	0x1
+ 1072 00f1 00 00 00 00 		.1byte	0x72
+ 1073 00f3 00 00 00 00 		.4byte	0xb7
+ 1074 00f5 00 00 02 25 		.4byte	.LLST19
+ 1075 00f7 05          		.1byte	0xc
+ 1076 00f8 00 00 00 00 		.ascii "y\000"
+ 1077 00fa 01          		.1byte	0x1
+ 1078 00fa 72          		.1byte	0x72
+ 1079 00fb 00 00 00 AA 		.4byte	0xb7
+ 1080 00fd 00 00 00 00 		.4byte	.LLST20
+ 1081 00ff 0C          		.1byte	0xe
+ 1082 00ff 78 00       		.ascii "i\000"
+ 1083 0100 01          		.1byte	0x1
+ 1084 0101 72          		.1byte	0x73
+ 1085 0101 00 00 00 B7 		.4byte	0xb7
+ 1086 0103 00 00 00 00 		.1byte	0x2
+ 1087 0105 0C          		.1byte	0x76
+ 1088 0106 79 00       		.1byte	0x2
+ 1089 0107 01          		.1byte	0x0
+ 1090 0107 72          		.1byte	0xf
+ 1091 0108 00 00 00 B7 		.4byte	.LASF22
+ 1092 010a 00 00 00 00 		.1byte	0x2
+ 1093 010c 0E          		.1byte	0x8
+ 1094 010c 69 00       		.4byte	0xb7
+ 1095 010d 01          		.1byte	0x1
+ 1096 010e 73          		.1byte	0x5
+ 1097 010e 00 00 00 B7 		.1byte	0x3
+ 1098 0110 02          		.4byte	startX
+ 1099 0111 76          		.1byte	0xf
+ 1100 0111 02          		.4byte	.LASF23
+ 1101 0112 00          		.1byte	0x2
+ 1102 0112 0F          		.1byte	0x8
+ 1103 0113 00 00 00 00 		.4byte	0xb7
+ 1104 0115 02          		.1byte	0x1
+ 1105 0115 08          		.1byte	0x5
+ 1106 0116 00 00 00 B7 		.1byte	0x3
+ 1107 0118 01          		.4byte	startY
+ 1108 0118 05          		.1byte	0xf
+ 1109 0119 03          		.4byte	.LASF24
+ 1110 0119 00 00 00 00 		.1byte	0x2
+ 1111 011b 0F          		.1byte	0x8
+ 1112 011c 00 00 00 00 		.4byte	0xb7
+ 1113 011e 02          		.1byte	0x1
+ 1114 011e 08          		.1byte	0x5
+ 1115 011f 00 00 00 B7 		.1byte	0x3
+ 1116 0121 01          		.4byte	byte
+ 1117 0121 05          		.1byte	0x10
+ 1118 0122 03          		.ascii "bit\000"
+ 1119 0122 00 00 00 00 		.1byte	0x2
+ 1120 0124 0F          		.1byte	0x8
+ 1121 0125 00 00 00 00 		.4byte	0xb7
+ 1122 0127 02          		.1byte	0x1
+ 1123 0127 08          		.1byte	0x5
+ 1124 0128 00 00 00 B7 		.1byte	0x3
+ 1125 012a 01          		.4byte	bit
+ 1126 012a 05          		.1byte	0x11
+ 1127 012b 03          		.4byte	0xb0
+ 1128 012b 00 00 00 00 		.4byte	0x283
+ 1129 012d 10          		.1byte	0x12
+ 1130 012e 62 69 74 00 		.4byte	0x283
+ 1131 0130 02          		.1byte	0x9
+ 1132 0130 08          		.1byte	0x12
+ 1133 0131 00 00 00 B7 		.4byte	0x283
+ 1134 0133 01          		.1byte	0x5
+ 1135 0133 05          		.1byte	0x0
+ 1136 0134 03          		.1byte	0x13
+ 1137 0134 00 00 00 00 		.1byte	0x2
+ 1138 0136 11          		.1byte	0x7
+ 1139 0137 00 00 00 B0 		.1byte	0xf
+ 1140 0139 00 00 02 83 		.4byte	.LASF25
+ 1141 013b 12          		.1byte	0x2
+ 1142 013b 00 00 02 83 		.1byte	0xb
+ 1143 013d 09          		.4byte	0x298
+ 1144 013e 12          		.1byte	0x1
+ 1145 013e 00 00 02 83 		.1byte	0x5
+ 1146 0140 05          		.1byte	0x3
+ 1147 0141 00          		.4byte	EAN13_Structure
+ 1148 0141 13          		.1byte	0x14
+ 1149 0142 02          		.4byte	0x26d
+ 1150 0142 07          		.1byte	0x11
+ 1151 0143 0F          		.4byte	0xb0
+ 1152 0143 00 00 00 00 		.4byte	0x2b9
+ 1153 0145 02          		.1byte	0x12
+ 1154 0146 0B          		.4byte	0x283
+ 1155 0146 00 00 02 98 		.1byte	0x9
+ 1156 0148 01          		.1byte	0x12
+ 1157 0149 05          		.4byte	0x283
+ 1158 0149 03          		.1byte	0x2
+ 1159 014a 00 00 00 00 		.1byte	0x12
+ 1160 014c 14          		.4byte	0x283
+ 1161 014c 00 00 02 6D 		.1byte	0x6
+ 1162 014e 11          		.1byte	0x0
+ 1163 014f 00 00 00 B0 		.1byte	0xf
+ 1164 0151 00 00 02 B9 		.4byte	.LASF26
+ 1165 0153 12          		.1byte	0x2
+ 1166 0153 00 00 02 83 		.1byte	0x18
+ 1167 0155 09          		.4byte	0x2cb
+ 1168 0156 12          		.1byte	0x1
+ 1169 0156 00 00 02 83 		.1byte	0x5
+ 1170 0158 02          		.1byte	0x3
+ 1171 0159 12          		.4byte	EAN13_Digits
+ 1172 0159 00 00 02 83 		.1byte	0x14
+ 1173 015b 06          		.4byte	0x29d
+ 1174 015c 00          		.1byte	0x11
+ 1175 015c 0F          		.4byte	0x29
+ 1176 015d 00 00 00 00 		.4byte	0x2db
+ 1177 015f 02          		.1byte	0x15
+ 1178 015f 18          		.1byte	0x0
+ 1179 0160 00 00 02 CB 		.1byte	0x16
+ 1180 0162 01          		.4byte	.LASF27
+ 1181 0162 05          		.1byte	0x3
+ 1182 0163 03          		.1byte	0x3d
+ 1183 0163 00 00 00 00 		.4byte	0x2d0
+ 1184 0165 14          		.1byte	0x1
+ 1185 0166 00 00 02 9D 		.1byte	0x1
+ 1186 0168 11          		.1byte	0x0
+ 1187 0168 00 00 00 29 		.section	.debug_abbrev
+ 1188 016a 00 00 02 DB 		.1byte	0x1
+ 1189 016c 15          		.1byte	0x11
+ 1190 016d 00          		.1byte	0x1
+ 1191 016d 16          		.1byte	0x25
+ 1192 016e 00 00 00 00 		.1byte	0xe
+ 1193 0170 03          		.1byte	0x13
+ 1194 0170 3D          		.1byte	0xb
+ 1195 0171 00 00 02 D0 		.1byte	0x3
+ 1196 0173 01          		.1byte	0xe
+ 1197 0173 01          		.1byte	0x1b
+ 1198 0174 00          		.1byte	0xe
+ 1199                 		.1byte	0x11
+ 1200 0000 01          		.1byte	0x1
+ 1201 0000 11          		.1byte	0x52
+ 1202 0001 01          		.1byte	0x1
+ 1203 0001 25          		.1byte	0x55
+ 1204 0002 0E          		.1byte	0x6
+ 1205 0002 13          		.1byte	0x10
+ 1206 0003 0B          		.1byte	0x6
+ 1207 0003 03          		.1byte	0x0
+ 1208 0004 0E          		.1byte	0x0
+ 1209 0004 1B          		.1byte	0x2
+ 1210 0005 0E          		.1byte	0x16
+ 1211 0005 11          		.1byte	0x0
+ 1212 0006 01          		.1byte	0x3
+ 1213 0006 52          		.1byte	0xe
+ 1214 0007 01          		.1byte	0x3a
+ 1215 0007 55          		.1byte	0xb
+ 1216 0008 06          		.1byte	0x3b
+ 1217 0008 10          		.1byte	0xb
+ 1218 0009 06          		.1byte	0x49
+ 1219 0009 00          		.1byte	0x13
+ 1220 000a 00          		.1byte	0x0
+ 1221 000a 02          		.1byte	0x0
+ 1222 000b 16          		.1byte	0x3
+ 1223 000b 00          		.1byte	0x24
+ 1224 000c 03          		.1byte	0x0
+ 1225 000c 0E          		.1byte	0xb
+ 1226 000d 3A          		.1byte	0xb
+ 1227 000d 0B          		.1byte	0x3e
+ 1228 000e 3B          		.1byte	0xb
+ 1229 000e 0B          		.1byte	0x3
+ 1230 000f 49          		.1byte	0xe
+ 1231 000f 13          		.1byte	0x0
+ 1232 0010 00          		.1byte	0x0
+ 1233 0010 00          		.1byte	0x4
+ 1234 0011 03          		.1byte	0x2e
+ 1235 0011 24          		.1byte	0x1
+ 1236 0012 00          		.1byte	0x3f
+ 1237 0012 0B          		.1byte	0xc
+ 1238 0013 0B          		.1byte	0x3
+ 1239 0013 3E          		.1byte	0xe
+ 1240 0014 0B          		.1byte	0x3a
+ 1241 0014 03          		.1byte	0xb
+ 1242 0015 0E          		.1byte	0x3b
+ 1243 0015 00          		.1byte	0xb
+ 1244 0016 00          		.1byte	0x27
+ 1245 0016 04          		.1byte	0xc
+ 1246 0017 2E          		.1byte	0x11
+ 1247 0017 01          		.1byte	0x1
+ 1248 0018 3F          		.1byte	0x12
+ 1249 0018 0C          		.1byte	0x1
+ 1250 0019 03          		.1byte	0x40
+ 1251 0019 0E          		.1byte	0x6
+ 1252 001a 3A          		.1byte	0x1
+ 1253 001a 0B          		.1byte	0x13
+ 1254 001b 3B          		.1byte	0x0
+ 1255 001b 0B          		.1byte	0x0
+ 1256 001c 27          		.1byte	0x5
+ 1257 001c 0C          		.1byte	0x5
+ 1258 001d 11          		.1byte	0x0
+ 1259 001d 01          		.1byte	0x3
+ 1260 001e 12          		.1byte	0xe
+ 1261 001e 01          		.1byte	0x3a
+ 1262 001f 40          		.1byte	0xb
+ 1263 001f 06          		.1byte	0x3b
+ 1264 0020 01          		.1byte	0xb
+ 1265 0020 13          		.1byte	0x49
+ 1266 0021 00          		.1byte	0x13
+ 1267 0021 00          		.1byte	0x2
+ 1268 0022 05          		.1byte	0x6
+ 1269 0022 05          		.1byte	0x0
+ 1270 0023 00          		.1byte	0x0
+ 1271 0023 03          		.1byte	0x6
+ 1272 0024 0E          		.1byte	0x34
+ 1273 0024 3A          		.1byte	0x0
+ 1274 0025 0B          		.1byte	0x3
+ 1275 0025 3B          		.1byte	0x8
+ 1276 0026 0B          		.1byte	0x3a
+ 1277 0026 49          		.1byte	0xb
+ 1278 0027 13          		.1byte	0x3b
+ 1279 0027 02          		.1byte	0xb
+ 1280 0028 06          		.1byte	0x49
+ 1281 0028 00          		.1byte	0x13
+ 1282 0029 00          		.1byte	0x2
+ 1283 0029 06          		.1byte	0x6
+ 1284 002a 34          		.1byte	0x0
+ 1285 002a 00          		.1byte	0x0
+ 1286 002b 03          		.1byte	0x7
+ 1287 002b 08          		.1byte	0x34
+ 1288 002c 3A          		.1byte	0x0
+ 1289 002c 0B          		.1byte	0x3
+ 1290 002d 3B          		.1byte	0xe
+ 1291 002d 0B          		.1byte	0x3a
+ 1292 002e 49          		.1byte	0xb
+ 1293 002e 13          		.1byte	0x3b
+ 1294 002f 02          		.1byte	0xb
+ 1295 002f 06          		.1byte	0x49
+ 1296 0030 00          		.1byte	0x13
+ 1297 0030 00          		.1byte	0x2
+ 1298 0031 07          		.1byte	0x6
+ 1299 0031 34          		.1byte	0x0
+ 1300 0032 00          		.1byte	0x0
+ 1301 0032 03          		.1byte	0x8
+ 1302 0033 0E          		.1byte	0xf
+ 1303 0033 3A          		.1byte	0x0
+ 1304 0034 0B          		.1byte	0xb
+ 1305 0034 3B          		.1byte	0xb
+ 1306 0035 0B          		.1byte	0x49
+ 1307 0035 49          		.1byte	0x13
+ 1308 0036 13          		.1byte	0x0
+ 1309 0036 02          		.1byte	0x0
+ 1310 0037 06          		.1byte	0x9
+ 1311 0037 00          		.1byte	0x24
+ 1312 0038 00          		.1byte	0x0
+ 1313 0038 08          		.1byte	0xb
+ 1314 0039 0F          		.1byte	0xb
+ 1315 0039 00          		.1byte	0x3e
+ 1316 003a 0B          		.1byte	0xb
+ 1317 003a 0B          		.1byte	0x3
+ 1318 003b 49          		.1byte	0x8
+ 1319 003b 13          		.1byte	0x0
+ 1320 003c 00          		.1byte	0x0
+ 1321 003c 00          		.1byte	0xa
+ 1322 003d 09          		.1byte	0x2e
+ 1323 003d 24          		.1byte	0x0
+ 1324 003e 00          		.1byte	0x3f
+ 1325 003e 0B          		.1byte	0xc
+ 1326 003f 0B          		.1byte	0x3
+ 1327 003f 3E          		.1byte	0xe
+ 1328 0040 0B          		.1byte	0x3a
+ 1329 0040 03          		.1byte	0xb
+ 1330 0041 08          		.1byte	0x3b
+ 1331 0041 00          		.1byte	0xb
+ 1332 0042 00          		.1byte	0x27
+ 1333 0042 0A          		.1byte	0xc
+ 1334 0043 2E          		.1byte	0x11
+ 1335 0043 00          		.1byte	0x1
+ 1336 0044 3F          		.1byte	0x12
+ 1337 0044 0C          		.1byte	0x1
+ 1338 0045 03          		.1byte	0x40
+ 1339 0045 0E          		.1byte	0x6
+ 1340 0046 3A          		.1byte	0x0
+ 1341 0046 0B          		.1byte	0x0
+ 1342 0047 3B          		.1byte	0xb
+ 1343 0047 0B          		.1byte	0x34
+ 1344 0048 27          		.1byte	0x0
+ 1345 0048 0C          		.1byte	0x3
+ 1346 0049 11          		.1byte	0xe
+ 1347 0049 01          		.1byte	0x3a
+ 1348 004a 12          		.1byte	0xb
+ 1349 004a 01          		.1byte	0x3b
+ 1350 004b 40          		.1byte	0xb
+ 1351 004b 06          		.1byte	0x49
+ 1352 004c 00          		.1byte	0x13
+ 1353 004c 00          		.1byte	0x2
+ 1354 004d 0B          		.1byte	0xa
+ 1355 004d 34          		.1byte	0x0
+ 1356 004e 00          		.1byte	0x0
+ 1357 004e 03          		.1byte	0xc
+ 1358 004f 0E          		.1byte	0x5
+ 1359 004f 3A          		.1byte	0x0
+ 1360 0050 0B          		.1byte	0x3
+ 1361 0050 3B          		.1byte	0x8
+ 1362 0051 0B          		.1byte	0x3a
+ 1363 0051 49          		.1byte	0xb
+ 1364 0052 13          		.1byte	0x3b
+ 1365 0052 02          		.1byte	0xb
+ 1366 0053 0A          		.1byte	0x49
+ 1367 0053 00          		.1byte	0x13
+ 1368 0054 00          		.1byte	0x2
+ 1369 0054 0C          		.1byte	0x6
+ 1370 0055 05          		.1byte	0x0
+ 1371 0055 00          		.1byte	0x0
+ 1372 0056 03          		.1byte	0xd
+ 1373 0056 08          		.1byte	0x34
+ 1374 0057 3A          		.1byte	0x0
+ 1375 0057 0B          		.1byte	0x3
+ 1376 0058 3B          		.1byte	0x8
+ 1377 0058 0B          		.1byte	0x3a
+ 1378 0059 49          		.1byte	0xb
+ 1379 0059 13          		.1byte	0x3b
+ 1380 005a 02          		.1byte	0xb
+ 1381 005a 06          		.1byte	0x49
+ 1382 005b 00          		.1byte	0x13
+ 1383 005b 00          		.1byte	0x0
+ 1384 005c 0D          		.1byte	0x0
+ 1385 005c 34          		.1byte	0xe
+ 1386 005d 00          		.1byte	0x34
+ 1387 005d 03          		.1byte	0x0
+ 1388 005e 08          		.1byte	0x3
+ 1389 005e 3A          		.1byte	0x8
+ 1390 005f 0B          		.1byte	0x3a
+ 1391 005f 3B          		.1byte	0xb
+ 1392 0060 0B          		.1byte	0x3b
+ 1393 0060 49          		.1byte	0xb
+ 1394 0061 13          		.1byte	0x49
+ 1395 0061 00          		.1byte	0x13
+ 1396 0062 00          		.1byte	0x2
+ 1397 0062 0E          		.1byte	0xa
+ 1398 0063 34          		.1byte	0x0
+ 1399 0063 00          		.1byte	0x0
+ 1400 0064 03          		.1byte	0xf
+ 1401 0064 08          		.1byte	0x34
+ 1402 0065 3A          		.1byte	0x0
+ 1403 0065 0B          		.1byte	0x3
+ 1404 0066 3B          		.1byte	0xe
+ 1405 0066 0B          		.1byte	0x3a
+ 1406 0067 49          		.1byte	0xb
+ 1407 0067 13          		.1byte	0x3b
+ 1408 0068 02          		.1byte	0xb
+ 1409 0068 0A          		.1byte	0x49
+ 1410 0069 00          		.1byte	0x13
+ 1411 0069 00          		.1byte	0x3f
+ 1412 006a 0F          		.1byte	0xc
+ 1413 006a 34          		.1byte	0x2
+ 1414 006b 00          		.1byte	0xa
+ 1415 006b 03          		.1byte	0x0
+ 1416 006c 0E          		.1byte	0x0
+ 1417 006c 3A          		.1byte	0x10
+ 1418 006d 0B          		.1byte	0x34
+ 1419 006d 3B          		.1byte	0x0
+ 1420 006e 0B          		.1byte	0x3
+ 1421 006e 49          		.1byte	0x8
+ 1422 006f 13          		.1byte	0x3a
+ 1423 006f 3F          		.1byte	0xb
+ 1424 0070 0C          		.1byte	0x3b
+ 1425 0070 02          		.1byte	0xb
+ 1426 0071 0A          		.1byte	0x49
+ 1427 0071 00          		.1byte	0x13
+ 1428 0072 00          		.1byte	0x3f
+ 1429 0072 10          		.1byte	0xc
+ 1430 0073 34          		.1byte	0x2
+ 1431 0073 00          		.1byte	0xa
+ 1432 0074 03          		.1byte	0x0
+ 1433 0074 08          		.1byte	0x0
+ 1434 0075 3A          		.1byte	0x11
+ 1435 0075 0B          		.1byte	0x1
+ 1436 0076 3B          		.1byte	0x1
+ 1437 0076 0B          		.1byte	0x49
+ 1438 0077 49          		.1byte	0x13
+ 1439 0077 13          		.1byte	0x1
+ 1440 0078 3F          		.1byte	0x13
+ 1441 0078 0C          		.1byte	0x0
+ 1442 0079 02          		.1byte	0x0
+ 1443 0079 0A          		.1byte	0x12
+ 1444 007a 00          		.1byte	0x21
+ 1445 007a 00          		.1byte	0x0
+ 1446 007b 11          		.1byte	0x49
+ 1447 007b 01          		.1byte	0x13
+ 1448 007c 01          		.1byte	0x2f
+ 1449 007c 49          		.1byte	0xb
+ 1450 007d 13          		.1byte	0x0
+ 1451 007d 01          		.1byte	0x0
+ 1452 007e 13          		.1byte	0x13
+ 1453 007e 00          		.1byte	0x24
+ 1454 007f 00          		.1byte	0x0
+ 1455 007f 12          		.1byte	0xb
+ 1456 0080 21          		.1byte	0xb
+ 1457 0080 00          		.1byte	0x3e
+ 1458 0081 49          		.1byte	0xb
+ 1459 0081 13          		.1byte	0x0
+ 1460 0082 2F          		.1byte	0x0
+ 1461 0082 0B          		.1byte	0x14
+ 1462 0083 00          		.1byte	0x26
+ 1463 0083 00          		.1byte	0x0
+ 1464 0084 13          		.1byte	0x49
+ 1465 0084 24          		.1byte	0x13
+ 1466 0085 00          		.1byte	0x0
+ 1467 0085 0B          		.1byte	0x0
+ 1468 0086 0B          		.1byte	0x15
+ 1469 0086 3E          		.1byte	0x21
+ 1470 0087 0B          		.1byte	0x0
+ 1471 0087 00          		.1byte	0x0
+ 1472 0088 00          		.1byte	0x0
+ 1473 0088 14          		.1byte	0x16
+ 1474 0089 26          		.1byte	0x34
+ 1475 0089 00          		.1byte	0x0
+ 1476 008a 49          		.1byte	0x3
+ 1477 008a 13          		.1byte	0xe
+ 1478 008b 00          		.1byte	0x3a
+ 1479 008b 00          		.1byte	0xb
+ 1480 008c 15          		.1byte	0x3b
+ 1481 008c 21          		.1byte	0xb
+ 1482 008d 00          		.1byte	0x49
+ 1483 008d 00          		.1byte	0x13
+ 1484 008e 00          		.1byte	0x3f
+ 1485 008e 16          		.1byte	0xc
+ 1486 008f 34          		.1byte	0x3c
+ 1487 008f 00          		.1byte	0xc
+ 1488 0090 03          		.1byte	0x0
+ 1489 0090 0E          		.1byte	0x0
+ 1490 0091 3A          		.1byte	0x0
+ 1491 0091 0B          		.section	.debug_pubnames,"",@progbits
+ 1492 0092 3B          		.4byte	0xc9
+ 1493 0092 0B          		.2byte	0x2
+ 1494 0093 49          		.4byte	.Ldebug_info0
+ 1495 0093 13          		.4byte	0x2e9
+ 1496 0094 3F          		.4byte	0x65
+ 1497 0094 0C          		.ascii "calculateChecksum\000"
+ 1498 0095 3C          		.4byte	0xbe
+ 1499 0095 0C          		.ascii "calculateByteBit\000"
+ 1500 0096 00          		.4byte	0xd3
+ 1501 0096 00          		.ascii "drawBlackLine\000"
+ 1502 0097 00          		.4byte	0x117
+ 1503                 		.ascii "drawWhiteLine\000"
+ 1504 0000 00 00 00 C9 		.4byte	0x15b
+ 1505 0002 00 02       		.ascii "drawLines\000"
+ 1506 0003 00 00 00 00 		.4byte	0x1d6
+ 1507 0005 00 00 02 E9 		.ascii "bitmapBarcode\000"
+ 1508 0007 00 00 00 65 		.4byte	0x225
+ 1509 0009 63 61 6C 63 		.ascii "startX\000"
+ 1509      75 6C 61 74 
+ 1509      65 43 68 65 
+ 1509      63 6B 73 75 
+ 1509      6D 00 
+ 1510 0012 00 00 00 BE 		.4byte	0x237
+ 1511 0014 63 61 6C 63 		.ascii "startY\000"
+ 1511      75 6C 61 74 
+ 1511      65 42 79 74 
+ 1511      65 42 69 74 
+ 1511      00 
+ 1512 001c 00 00 00 D3 		.4byte	0x249
+ 1513 001e 64 72 61 77 		.ascii "byte\000"
+ 1513      42 6C 61 63 
+ 1513      6B 4C 69 6E 
+ 1513      65 00 
+ 1514 0025 00 00 01 17 		.4byte	0x25b
+ 1515 0027 64 72 61 77 		.ascii "bit\000"
+ 1515      57 68 69 74 
+ 1515      65 4C 69 6E 
+ 1515      65 00 
+ 1516 002e 00 00 01 5B 		.4byte	0x286
+ 1517 0030 64 72 61 77 		.ascii "EAN13_Structure\000"
+ 1517      4C 69 6E 65 
+ 1517      73 00 
+ 1518 0035 00 00 01 D6 		.4byte	0x2b9
+ 1519 0037 62 69 74 6D 		.ascii "EAN13_Digits\000"
+ 1519      61 70 42 61 
+ 1519      72 63 6F 64 
+ 1519      65 00 
+ 1520 003e 00 00 02 25 		.4byte	0x0
+ 1521 0040 73 74 61 72 		.section	.debug_aranges,"",@progbits
+ 1521      74 58 00 
+ 1522 0044 00 00 02 37 		.4byte	0x44
+ 1523 0046 73 74 61 72 		.2byte	0x2
+ 1523      74 59 00 
+ 1524 0049 00 00 02 49 		.4byte	.Ldebug_info0
+ 1525 004b 62 79 74 65 		.1byte	0x4
+ 1525      00 
+ 1526 004e 00 00 02 5B 		.1byte	0x0
+ 1527 0050 62 69 74 00 		.2byte	0x0
+ 1528 0052 00 00 02 86 		.2byte	0x0
+ 1529 0054 45 41 4E 31 		.4byte	.LFB2
+ 1529      33 5F 53 74 
+ 1529      72 75 63 74 
+ 1529      75 72 65 00 
+ 1530 005c 00 00 02 B9 		.4byte	.LFE2-.LFB2
+ 1531 005e 45 41 4E 31 		.4byte	.LFB3
+ 1531      33 5F 44 69 
+ 1531      67 69 74 73 
+ 1531      00 
+ 1532 0064 00 00 00 00 		.4byte	.LFE3-.LFB3
+ 1533                 		.4byte	.LFB4
+ 1534 0000 00 00 00 44 		.4byte	.LFE4-.LFB4
+ 1535 0002 00 02       		.4byte	.LFB5
+ 1536 0003 00 00 00 00 		.4byte	.LFE5-.LFB5
+ 1537 0005 04          		.4byte	.LFB6
+ 1538 0005 00          		.4byte	.LFE6-.LFB6
+ 1539 0006 00 00       		.4byte	.LFB7
+ 1540 0007 00 00       		.4byte	.LFE7-.LFB7
+ 1541 0008 00 00 00 00 		.4byte	0x0
+ 1542 000a 00 00 00 00 		.4byte	0x0
+ 1543 000c 00 00 00 00 		.section	.debug_ranges,"",@progbits
+ 1544 000e 00 00 00 00 	.Ldebug_ranges0:
+ 1545 0010 00 00 00 00 		.4byte	.Ltext0
+ 1546 0012 00 00 00 00 		.4byte	.Letext0
+ 1547 0014 00 00 00 00 		.4byte	.LFB2
+ 1548 0016 00 00 00 00 		.4byte	.LFE2
+ 1549 0018 00 00 00 00 		.4byte	.LFB3
+ 1550 001a 00 00 00 00 		.4byte	.LFE3
+ 1551 001c 00 00 00 00 		.4byte	.LFB4
+ 1552 001e 00 00 00 00 		.4byte	.LFE4
+ 1553 0020 00 00 00 00 		.4byte	.LFB5
+ 1554 0022 00 00 00 00 		.4byte	.LFE5
+ 1555                 		.4byte	.LFB6
+ 1556                 		.4byte	.LFE6
+ 1557 0000 00 00 00 00 		.4byte	.LFB7
+ 1558 0002 00 00 00 00 		.4byte	.LFE7
+ 1559 0004 00 00 00 00 		.4byte	0x0
+ 1560 0006 00 00 00 00 		.4byte	0x0
+ 1561 0008 00 00 00 00 		.section	.debug_str,"MS",@progbits,1
+ 1562 000a 00 00 00 00 	.LASF18:
+ 1563 000c 00 00 00 00 		.ascii "right\000"
+ 1564 000e 00 00 00 00 	.LASF30:
+ 1565 0010 00 00 00 00 		.ascii "D:\\SVN\\Prj01051MigrosEtiketRepo\\trunk\\05_DetailedDesignProcess\\01_DetailedDesignDocum
+ 1566 0012 00 00 00 00 	.LASF28:
+ 1567 0014 00 00 00 00 		.ascii "GNU C 4.3.4 CSR version 22 for xap [1468380]\000"
+ 1568 0016 00 00 00 00 	.LASF4:
+ 1569 0018 00 00 00 00 		.ascii "short int\000"
+ 1570 001a 00 00 00 00 	.LASF25:
+ 1571 001c 00 00 00 00 		.ascii "EAN13_Structure\000"
+ 1572 001e 00 00 00 00 	.LASF17:
+ 1573                 		.ascii "index\000"
+ 1574                 	.LASF31:
+ 1575 0000 72 69 67 68 		.ascii "uint8\000"
+ 1575      74 00 
+ 1576                 	.LASF15:
+ 1577 0003 44 3A 5C 53 		.ascii "drawLines\000"
+ 1577      56 4E 5C 50 
+ 1577      72 6A 30 31 
+ 1577      30 35 31 4D 
+ 1577      69 67 72 6F 
+ 1578                 	.LASF7:
+ 1579 0052 47 4E 55 20 		.ascii "temp\000"
+ 1579      43 20 34 2E 
+ 1579      33 2E 34 20 
+ 1579      43 53 52 20 
+ 1579      76 65 72 73 
+ 1580                 	.LASF5:
+ 1581 0069 73 68 6F 72 		.ascii "long int\000"
+ 1581      74 20 69 6E 
+ 1581      74 00 
+ 1582                 	.LASF10:
+ 1583 006e 45 41 4E 31 		.ascii "drawBlackLine\000"
+ 1583      33 5F 53 74 
+ 1583      72 75 63 74 
+ 1583      75 72 65 00 
+ 1584                 	.LASF14:
+ 1585 0076 69 6E 64 65 		.ascii "drawWhiteLine\000"
+ 1585      78 00 
+ 1586                 	.LASF24:
+ 1587 0079 75 69 6E 74 		.ascii "byte\000"
+ 1587      38 00 
+ 1588                 	.LASF20:
+ 1589 007c 64 72 61 77 		.ascii "bitmapBarcode\000"
+ 1589      4C 69 6E 65 
+ 1589      73 00 
+ 1590                 	.LASF22:
+ 1591 0081 74 65 6D 70 		.ascii "startX\000"
+ 1591      00 
+ 1592                 	.LASF23:
+ 1593 0083 6C 6F 6E 67 		.ascii "startY\000"
+ 1593      20 69 6E 74 
+ 1593      00 
+ 1594                 	.LASF0:
+ 1595 0088 64 72 61 77 		.ascii "unsigned char\000"
+ 1595      42 6C 61 63 
+ 1595      6B 4C 69 6E 
+ 1595      65 00 
+ 1596                 	.LASF3:
+ 1597 008f 64 72 61 77 		.ascii "signed char\000"
+ 1597      57 68 69 74 
+ 1597      65 4C 69 6E 
+ 1597      65 00 
+ 1598                 	.LASF32:
+ 1599 0096 62 79 74 65 		.ascii "calculateByteBit\000"
+ 1599      00 
+ 1600                 	.LASF29:
+ 1601 0098 62 69 74 6D 		.ascii "barcode_generator.c\000"
+ 1601      61 70 42 61 
+ 1601      72 63 6F 64 
+ 1601      65 00 
+ 1602                 	.LASF13:
+ 1603 009f 73 74 61 72 		.ascii "height\000"
+ 1603      74 58 00 
+ 1604                 	.LASF6:
+ 1605 00a3 73 74 61 72 		.ascii "unsigned int\000"
+ 1605      74 59 00 
+ 1606                 	.LASF19:
+ 1607 00a6 75 6E 73 69 		.ascii "LGR_Index\000"
+ 1607      67 6E 65 64 
+ 1607      20 63 68 61 
+ 1607      72 00 
+ 1608                 	.LASF21:
+ 1609 00ad 73 69 67 6E 		.ascii "code\000"
+ 1609      65 64 20 63 
+ 1609      68 61 72 00 
+ 1610                 	.LASF1:
+ 1611 00b3 63 61 6C 63 		.ascii "short unsigned int\000"
+ 1611      75 6C 61 74 
+ 1611      65 42 79 74 
+ 1611      65 42 69 74 
+ 1611      00 
+ 1612                 	.LASF27:
+ 1613 00bc 62 61 72 63 		.ascii "final\000"
+ 1613      6F 64 65 5F 
+ 1613      67 65 6E 65 
+ 1613      72 61 74 6F 
+ 1613      72 2E 63 00 
+ 1614                 	.LASF8:
+ 1615 00c6 68 65 69 67 		.ascii "char\000"
+ 1615      68 74 00 
+ 1616                 	.LASF9:
+ 1617 00c9 75 6E 73 69 		.ascii "calculateChecksum\000"
+ 1617      67 6E 65 64 
+ 1617      20 69 6E 74 
+ 1617      00 
+ 1618                 	.LASF11:
+ 1619 00d0 4C 47 52 5F 		.ascii "_barcode\000"
+ 1619      49 6E 64 65 
+ 1619      78 00 
+ 1620                 	.LASF12:
+ 1621 00d5 63 6F 64 65 		.ascii "normal\000"
+ 1621      00 
+ 1622                 	.LASF2:
+ 1623 00d7 73 68 6F 72 		.ascii "long unsigned int\000"
+ 1623      74 20 75 6E 
+ 1623      73 69 67 6E 
+ 1623      65 64 20 69 
+ 1623      6E 74 00 
+ 1624                 	.LASF26:
+ 1625 00e1 66 69 6E 61 		.ascii "EAN13_Digits\000"
+ 1625      6C 00 
+ 1626                 	.LASF16:
+ 1627 00e4 63 68 61 72 		.ascii "firstDigit\000"
+ 1627      00 
+ 1628                 		.ident	"GCC: (GNU) 4.3.4 CSR version 22 for xap [1468380]"
+ 1629 00e6 63 61 6C 63 	...
+ 1629      75 6C 61 74 
+ 1629      65 43 68 65 
+ 1629      63 6B 73 75 
+ 1629      6D 00 

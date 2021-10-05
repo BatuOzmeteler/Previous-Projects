@@ -1,0 +1,42 @@
+%implements s5_b0_bgc3h_InitializeConditions "C"
+
+%function InitializeConditions(block, system) Output
+%assign cfgTxt = ""
+%openfile cfgTxt
+%assign localVarDecl = ""
+%openfile localVarDecl
+int32_T i;
+%closefile localVarDecl
+%assign tlcInitializeConditionsFcnOfS5B0 = OpaqueTLCBlockFcn("InitializeConditions", 5, 0, 0, 1)
+%<SLibInsertAsyncTaskInitializeCode(system)>
+%<SLibWriteMachineInitialize()>
+%<tlcInitializeConditionsFcnOfS5B0>\
+/* InitializeConditions for UnitDelay: '<Root>/Unit Delay' */
+mpc_v2_rtDW.UnitDelay_DSTATE = 0.0;
+/* InitializeConditions for Memory: '<S7>/last_x' */
+mpc_v2_rtDW.last_x_PreviousInput[0] = 0.0;
+mpc_v2_rtDW.last_x_PreviousInput[1] = 0.0;
+/* InitializeConditions for UnitDelay: '<S7>/last_mv' */
+mpc_v2_rtDW.last_mv_DSTATE = 0.0;
+/* InitializeConditions for Memory: '<S7>/Memory' */
+for (i = 0; i < 5; i++) {
+    mpc_v2_rtDW.Memory_PreviousInput_k[i] = false;
+}
+/* End of InitializeConditions for Memory: '<S7>/Memory' */
+
+/* InitializeConditions for Memory: '<Root>/Memory' */
+mpc_v2_rtDW.Memory_PreviousInput = 0.0;
+%closefile cfgTxt
+%<cfgTxt>
+%assign fcnProtoType = ""
+%openfile fcnProtoType
+static void InitializeConditions(\
+%assign comma = ""
+%if SLibCG_ArgAccessed(0, 1, 0)
+%<comma>int32_T tid\
+%assign comma = ", "
+%endif
+%closefile fcnProtoType
+%<SLibCG_SetFcnProtoType(0, 1, fcnProtoType)>
+%<LibSetSystemField(system, "CachedInitializeLocalVars", localVarDecl)>
+%endfunction

@@ -1,0 +1,65 @@
+%implements s5_b0_bgc3h_Start "C"
+
+%function Start(block, system) Output
+%assign cfgTxt = ""
+%openfile cfgTxt
+%assign localVarDecl = ""
+%assign tlcStartFcnOfS5B0 = OpaqueTLCBlockFcn("Start", 5, 0, 0, 0)
+%assign tlcStartFcnOfS4B0 = OpaqueTLCBlockFcn("Start", 4, 0, 0, 0)
+%assign tlcStartFcnOfS4B1 = OpaqueTLCBlockFcn("Start", 4, 1, 0, 0)
+%assign tlcStartFcnOfS4B2 = OpaqueTLCBlockFcn("Start", 4, 2, 0, 0)
+%assign tlcStartFcnOfS4B4 = OpaqueTLCBlockFcn("Start", 4, 4, 0, 0)
+%assign tlcStartFcnOfS5B5 = OpaqueTLCBlockFcn("Start", 5, 5, 0, 0)
+%assign tlcStartFcnOfS5B7 = OpaqueTLCBlockFcn("Start", 5, 7, 0, 0)
+%assign tlcStartFcnOfS5B8 = OpaqueTLCBlockFcn("Start", 5, 8, 0, 0)
+%assign tlcOutputsFcnOfS5B6 = OpaqueTLCBlockFcn("Outputs", 5, 6, 0, 0)
+%assign tlcOutputsFcnOfS5B7 = OpaqueTLCBlockFcn("Outputs", 5, 7, 0, 0)
+%assign tlcOutputsFcnOfS5B8 = OpaqueTLCBlockFcn("Outputs", 5, 8, 0, 0)
+%assign tlcOutputsFcnOfS5B9 = OpaqueTLCBlockFcn("Outputs", 5, 9, 0, 0)
+%assign tlcOutputsFcnOfS5B10 = OpaqueTLCBlockFcn("Outputs", 5, 10, 0, 0)
+%<tlcStartFcnOfS5B0>\
+/* Start for DiscretePulseGenerator: '<Root>/Pulse Generator' */
+mpc_v2_rtDW.clockTickCounter = 0;
+%assign   Start_open_data_out_5_9 = ""
+%openfile Start_open_data_out_5_9
+
+/* Start for Triggered SubSystem: '<Root>/data_out' */
+%closefile Start_open_data_out_5_9
+
+%assign    Start_body_data_out_5_9 = ""
+%openfile  Start_body_data_out_5_9
+
+%<tlcStartFcnOfS4B0>\
+%<tlcStartFcnOfS4B1>\
+%<tlcStartFcnOfS4B2>\
+%<tlcStartFcnOfS4B4>\
+%closefile Start_body_data_out_5_9
+
+%assign    Start_close_data_out_5_9 = ""
+%openfile  Start_close_data_out_5_9
+
+/* End of Start for SubSystem: '<Root>/data_out' */
+%closefile Start_close_data_out_5_9
+%<SLibCG_DumpSSCode(Start_open_data_out_5_9, Start_body_data_out_5_9, Start_close_data_out_5_9)>
+
+%<tlcStartFcnOfS5B5>\
+%<tlcStartFcnOfS5B7>\
+%<tlcStartFcnOfS5B8>\
+%<tlcOutputsFcnOfS5B6>\
+%<tlcOutputsFcnOfS5B7>\
+%<tlcOutputsFcnOfS5B8>\
+%<tlcOutputsFcnOfS5B9>\
+%<tlcOutputsFcnOfS5B10>\
+%closefile cfgTxt
+%<cfgTxt>
+%assign fcnProtoType = ""
+%openfile fcnProtoType
+static void Start(\
+%assign comma = ""
+%if SLibCG_ArgAccessed(0, 0, 0)
+%<comma>int32_T tid\
+%assign comma = ", "
+%endif
+%closefile fcnProtoType
+%<SLibCG_SetFcnProtoType(0, 0, fcnProtoType)>
+%endfunction

@@ -1,0 +1,10 @@
+** See the OpenECU Simulink User Guide, section 'Units file' for more
+** information about the contents of this file.
+**
+** Any line starting with the '**' characters is treated as a comment.
+**
+** Each line represents a unit that is allowed to be assigned to
+** one or more data dictionary entries.
+
+N.m
+km/h

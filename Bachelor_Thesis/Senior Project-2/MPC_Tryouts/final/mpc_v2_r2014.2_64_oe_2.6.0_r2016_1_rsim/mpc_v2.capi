@@ -1,0 +1,110 @@
+/*
+ *****************************************************************************
+ *
+ *  Project:        OpenECU
+ *  File:           mpc_v2.capi
+ *  Description:    Interface specification for the C-API tool.
+ *
+ *  Copyright (C) 2015 Pi Innovo
+ *  This document (program) contains proprietary information
+ *  which is the property of Pi Innovo
+ *  The contents of this document (program) must not be copied
+ *  or disclosed to a third party without the prior agreement
+ *  of an authorised officer of Pi Innovo
+ *
+ *****************************************************************************
+ */
+
+/* Select the target ECU for the application */
+target-ecu
+{
+    hw-part-number  = "01T-068276";
+    hw-issue-number = 2;
+    hw-option       = "000";
+}
+
+/* Define name, version and description data about the application */
+application
+{
+  major-version    = 1;
+  minor-version    = 0;
+  subminor-version = 0;
+
+  name             = "MPC Design";
+  description      = "(none)";
+  copyright        = "(none)";
+
+  os-native
+  {
+    stack-size = 8192;
+    watchdog   = library;
+
+
+    task
+    {
+      name     = task_10ms;
+      priority = 40;
+      period   = 10;
+      function = pkn_10ms_model_task;
+    }
+
+    task
+    {
+      name     = task_100ms;
+      priority = 39;
+      period   = 100;
+      function = pkn_100ms_model_task;
+    }
+
+  }
+}
+
+/* Specify DDEs for relevant C variables, both calibrations and displayables,
+ * that will be modifiable or viewable while the application runs on the
+ * target.
+ */
+ddes
+{
+
+    include-dde-tabbed-prefix "mpc_v2.dde_group.tmp";
+
+
+  generate-library-ddes = true;
+}
+
+
+
+can-messaging
+{
+  number-of-receive-messages  = 1;
+  number-of-transmit-messages = 1;
+}
+
+ccp-messaging
+{
+    cro             = 1785;
+    cro-ext-id      = false;
+    dto             = 1784;
+    dto-ext-id      = false;
+    station-address = 0;
+    can-bus         = 0;
+    baud            = 1000;
+    enabled-during-application-mode = true;
+
+    security-dev-mode = false;
+
+    /* No calibration security required */
+
+    /* No data acquisition security required */
+
+    /* No programming security required */
+}
+
+
+
+
+
+
+
+
+

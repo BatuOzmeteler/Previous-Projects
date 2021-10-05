@@ -1,0 +1,590 @@
+%implements s5_b0_bgc3h_TLCInterface "C"
+
+%function getInputAddr_5_0_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "NULL"
+%endfunction
+
+%function getInput_5_0_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "(*NULL)"
+%endfunction
+
+%function getInputAddr_5_0_0_0_1_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "NULL"
+%endfunction
+
+%function getInput_5_0_0_0_1_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "(*NULL)"
+%endfunction
+
+%function getInputAddr_5_0_0_0_2_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "NULL"
+%endfunction
+
+%function getInput_5_0_0_0_2_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "(*NULL)"
+%endfunction
+
+%function getOutputAddr_5_0_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtB.pcx_CANReceiveMessage_o1"
+%endfunction
+
+%function getOutput_5_0_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtB.pcx_CANReceiveMessage_o1"
+%endfunction
+
+%function getOutputAddr_5_0_0_0_1_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtB.pcx_CANReceiveMessage_o2"
+%endfunction
+
+%function getOutput_5_0_0_0_1_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtB.pcx_CANReceiveMessage_o2"
+%endfunction
+
+%function getOutputAddr_5_0_0_0_2_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtB.pcx_CANReceiveMessage_o3"
+%endfunction
+
+%function getOutput_5_0_0_0_2_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtB.pcx_CANReceiveMessage_o3"
+%endfunction
+
+%function getOutputAddr_5_0_0_0_3_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&v_raw"
+%endfunction
+
+%function getOutput_5_0_0_0_3_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "v_raw"
+%endfunction
+
+%function getOutputAddr_4_0_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+%<SLibCGIRAccessLocalVar(5, 0)> %% rtb_FromFile
+
+%return "&rtb_FromFile"
+%endfunction
+
+%function getOutput_4_0_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+%<SLibCGIRAccessLocalVar(5, 0)> %% rtb_FromFile
+
+%return "rtb_FromFile"
+%endfunction
+
+%function getDWorkAddr_4_0_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtDW.FromFile_PWORK"
+%endfunction
+
+%function getDWork_4_0_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtDW.FromFile_PWORK"
+%endfunction
+
+%function getOutputAddr_4_1_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+%<SLibCGIRAccessLocalVar(6, 0)> %% rtb_FromFile1
+
+%return "&rtb_FromFile1"
+%endfunction
+
+%function getOutput_4_1_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+%<SLibCGIRAccessLocalVar(6, 0)> %% rtb_FromFile1
+
+%return "rtb_FromFile1"
+%endfunction
+
+%function getDWorkAddr_4_1_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtDW.FromFile1_PWORK"
+%endfunction
+
+%function getDWork_4_1_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtDW.FromFile1_PWORK"
+%endfunction
+
+%function getOutputAddr_4_2_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+%<SLibCGIRAccessLocalVar(7, 0)> %% rtb_FromFile2
+
+%return "&rtb_FromFile2"
+%endfunction
+
+%function getOutput_4_2_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+%<SLibCGIRAccessLocalVar(7, 0)> %% rtb_FromFile2
+
+%return "rtb_FromFile2"
+%endfunction
+
+%function getDWorkAddr_4_2_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtDW.FromFile2_PWORK"
+%endfunction
+
+%function getDWork_4_2_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtDW.FromFile2_PWORK"
+%endfunction
+
+%function getOutputAddr_4_4_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&v_ref"
+%endfunction
+
+%function getOutput_4_4_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "v_ref"
+%endfunction
+
+%function getDWorkAddr_4_4_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtDW.FromFile3_PWORK"
+%endfunction
+
+%function getDWork_4_4_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtDW.FromFile3_PWORK"
+%endfunction
+
+%function getInputAddr_5_5_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "NULL"
+%endfunction
+
+%function getInput_5_5_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "(*NULL)"
+%endfunction
+
+%function getInputAddr_5_5_0_0_1_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtB.DataTypeConversion1"
+%endfunction
+
+%function getInput_5_5_0_0_1_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtB.DataTypeConversion1"
+%endfunction
+
+%function getInputAddr_5_5_0_0_2_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return ""
+%endfunction
+
+%function getInput_5_5_0_0_2_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return ""
+%endfunction
+
+%function getInputAddr_5_5_0_0_3_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return ""
+%endfunction
+
+%function getInput_5_5_0_0_3_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return ""
+%endfunction
+
+%function getInputAddr_5_5_0_0_4_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtB.DataTypeConversion"
+%endfunction
+
+%function getInput_5_5_0_0_4_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtB.DataTypeConversion"
+%endfunction
+
+%function getOutputAddr_5_5_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtB.pcx_CANTransmitMessage"
+%endfunction
+
+%function getOutput_5_5_0_0_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtB.pcx_CANTransmitMessage"
+%endfunction
+
+%function getInputAddr_5_0_0_1_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "NULL"
+%endfunction
+
+%function getInput_5_0_0_1_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "(*NULL)"
+%endfunction
+
+%function getInputAddr_5_0_0_1_1_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "NULL"
+%endfunction
+
+%function getInput_5_0_0_1_1_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "(*NULL)"
+%endfunction
+
+%function getInputAddr_5_0_0_1_2_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "NULL"
+%endfunction
+
+%function getInput_5_0_0_1_2_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "(*NULL)"
+%endfunction
+
+%function getOutputAddr_5_0_0_1_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtB.pcx_CANReceiveMessage_o1"
+%endfunction
+
+%function getOutput_5_0_0_1_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtB.pcx_CANReceiveMessage_o1"
+%endfunction
+
+%function getOutputAddr_5_0_0_1_1_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtB.pcx_CANReceiveMessage_o2"
+%endfunction
+
+%function getOutput_5_0_0_1_1_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtB.pcx_CANReceiveMessage_o2"
+%endfunction
+
+%function getOutputAddr_5_0_0_1_2_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtB.pcx_CANReceiveMessage_o3"
+%endfunction
+
+%function getOutput_5_0_0_1_2_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtB.pcx_CANReceiveMessage_o3"
+%endfunction
+
+%function getOutputAddr_5_0_0_1_3_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&v_raw"
+%endfunction
+
+%function getOutput_5_0_0_1_3_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "v_raw"
+%endfunction
+
+%function getInputAddr_5_0_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "NULL"
+%endfunction
+
+%function getInput_5_0_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "(*NULL)"
+%endfunction
+
+%function getInputAddr_5_0_0_2_1_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "NULL"
+%endfunction
+
+%function getInput_5_0_0_2_1_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "(*NULL)"
+%endfunction
+
+%function getInputAddr_5_0_0_2_2_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "NULL"
+%endfunction
+
+%function getInput_5_0_0_2_2_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "(*NULL)"
+%endfunction
+
+%function getOutputAddr_5_0_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtB.pcx_CANReceiveMessage_o1"
+%endfunction
+
+%function getOutput_5_0_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtB.pcx_CANReceiveMessage_o1"
+%endfunction
+
+%function getOutputAddr_5_0_0_2_1_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtB.pcx_CANReceiveMessage_o2"
+%endfunction
+
+%function getOutput_5_0_0_2_1_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtB.pcx_CANReceiveMessage_o2"
+%endfunction
+
+%function getOutputAddr_5_0_0_2_2_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtB.pcx_CANReceiveMessage_o3"
+%endfunction
+
+%function getOutput_5_0_0_2_2_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtB.pcx_CANReceiveMessage_o3"
+%endfunction
+
+%function getOutputAddr_5_0_0_2_3_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&v_raw"
+%endfunction
+
+%function getOutput_5_0_0_2_3_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "v_raw"
+%endfunction
+
+%function getOutputAddr_4_0_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+%<SLibCGIRAccessLocalVar(5, 0)> %% rtb_FromFile
+
+%return "&rtb_FromFile"
+%endfunction
+
+%function getOutput_4_0_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+%<SLibCGIRAccessLocalVar(5, 0)> %% rtb_FromFile
+
+%return "rtb_FromFile"
+%endfunction
+
+%function getDWorkAddr_4_0_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtDW.FromFile_PWORK"
+%endfunction
+
+%function getDWork_4_0_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtDW.FromFile_PWORK"
+%endfunction
+
+%function getOutputAddr_4_1_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+%<SLibCGIRAccessLocalVar(6, 0)> %% rtb_FromFile1
+
+%return "&rtb_FromFile1"
+%endfunction
+
+%function getOutput_4_1_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+%<SLibCGIRAccessLocalVar(6, 0)> %% rtb_FromFile1
+
+%return "rtb_FromFile1"
+%endfunction
+
+%function getDWorkAddr_4_1_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtDW.FromFile1_PWORK"
+%endfunction
+
+%function getDWork_4_1_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtDW.FromFile1_PWORK"
+%endfunction
+
+%function getOutputAddr_4_2_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+%<SLibCGIRAccessLocalVar(7, 0)> %% rtb_FromFile2
+
+%return "&rtb_FromFile2"
+%endfunction
+
+%function getOutput_4_2_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+%<SLibCGIRAccessLocalVar(7, 0)> %% rtb_FromFile2
+
+%return "rtb_FromFile2"
+%endfunction
+
+%function getDWorkAddr_4_2_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtDW.FromFile2_PWORK"
+%endfunction
+
+%function getDWork_4_2_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtDW.FromFile2_PWORK"
+%endfunction
+
+%function getOutputAddr_4_4_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&v_ref"
+%endfunction
+
+%function getOutput_4_4_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "v_ref"
+%endfunction
+
+%function getDWorkAddr_4_4_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtDW.FromFile3_PWORK"
+%endfunction
+
+%function getDWork_4_4_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtDW.FromFile3_PWORK"
+%endfunction
+
+%function getInputAddr_5_5_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "NULL"
+%endfunction
+
+%function getInput_5_5_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "(*NULL)"
+%endfunction
+
+%function getInputAddr_5_5_0_2_1_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtB.DataTypeConversion1"
+%endfunction
+
+%function getInput_5_5_0_2_1_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtB.DataTypeConversion1"
+%endfunction
+
+%function getInputAddr_5_5_0_2_2_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return ""
+%endfunction
+
+%function getInput_5_5_0_2_2_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return ""
+%endfunction
+
+%function getInputAddr_5_5_0_2_3_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return ""
+%endfunction
+
+%function getInput_5_5_0_2_3_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return ""
+%endfunction
+
+%function getInputAddr_5_5_0_2_4_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtB.DataTypeConversion"
+%endfunction
+
+%function getInput_5_5_0_2_4_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtB.DataTypeConversion"
+%endfunction
+
+%function getOutputAddr_5_5_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtB.pcx_CANTransmitMessage"
+%endfunction
+
+%function getOutput_5_5_0_2_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtB.pcx_CANTransmitMessage"
+%endfunction
+
+%function getOutputAddr_4_0_0_4_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+%<SLibCGIRAccessLocalVar(5, 0)> %% rtb_FromFile
+
+%return "&rtb_FromFile"
+%endfunction
+
+%function getOutput_4_0_0_4_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+%<SLibCGIRAccessLocalVar(5, 0)> %% rtb_FromFile
+
+%return "rtb_FromFile"
+%endfunction
+
+%function getDWorkAddr_4_0_0_4_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtDW.FromFile_PWORK"
+%endfunction
+
+%function getDWork_4_0_0_4_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtDW.FromFile_PWORK"
+%endfunction
+
+%function getOutputAddr_4_1_0_4_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+%<SLibCGIRAccessLocalVar(6, 0)> %% rtb_FromFile1
+
+%return "&rtb_FromFile1"
+%endfunction
+
+%function getOutput_4_1_0_4_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+%<SLibCGIRAccessLocalVar(6, 0)> %% rtb_FromFile1
+
+%return "rtb_FromFile1"
+%endfunction
+
+%function getDWorkAddr_4_1_0_4_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtDW.FromFile1_PWORK"
+%endfunction
+
+%function getDWork_4_1_0_4_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtDW.FromFile1_PWORK"
+%endfunction
+
+%function getOutputAddr_4_2_0_4_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+%<SLibCGIRAccessLocalVar(7, 0)> %% rtb_FromFile2
+
+%return "&rtb_FromFile2"
+%endfunction
+
+%function getOutput_4_2_0_4_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+%<SLibCGIRAccessLocalVar(7, 0)> %% rtb_FromFile2
+
+%return "rtb_FromFile2"
+%endfunction
+
+%function getDWorkAddr_4_2_0_4_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtDW.FromFile2_PWORK"
+%endfunction
+
+%function getDWork_4_2_0_4_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtDW.FromFile2_PWORK"
+%endfunction
+
+%function getOutputAddr_4_4_0_4_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&v_ref"
+%endfunction
+
+%function getOutput_4_4_0_4_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "v_ref"
+%endfunction
+
+%function getDWorkAddr_4_4_0_4_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "&mpc_v2_rtDW.FromFile3_PWORK"
+%endfunction
+
+%function getDWork_4_4_0_4_0_0(opaqueBlock, block, lcv, ucv, sigIdx, reim) void
+
+%return "mpc_v2_rtDW.FromFile3_PWORK"
+%endfunction
+

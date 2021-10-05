@@ -1,0 +1,7 @@
+Port Number: 85
+Document Root: C:\Users\mbatu.BATU\Desktop\Web Server
+
+
+Serving HTTP traffic from C:\Users\mbatu.BATU\Desktop\Web Server on Batu using port 85
+('17/Mar/2019 16:33:10', 'GET', '//index.html', ('127.0.0.1', 36174))
+('17/Mar/2019 16:33:25', 'GET', '//Subdirectory/index.html', ('127.0.0.1', 36189))

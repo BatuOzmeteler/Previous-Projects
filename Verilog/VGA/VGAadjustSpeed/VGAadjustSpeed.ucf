@@ -1,0 +1,10 @@
+
+NET "clk" LOC = B8;
+NET "hsync" LOC = J14;
+NET "vsync" LOC = K13;
+NET "rgb[0]" LOC = D13;
+NET "rgb[1]" LOC = G13;
+NET "rgb[2]" LOC = H13;
+NET "rst" LOC = P11;
+NET "push[1]" LOC = C11; //increase speed
+NET "push[0]" LOC = G12; //decrease speed

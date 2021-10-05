@@ -1,0 +1,9 @@
+iothubowner Connection String Primary Key:
+HostName=IoTHubBatu.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=gTxXRJK+hIVtkG6aW6I+tofWh22PUWgKP4RoYLXZIp0=
+
+myDeviceID96 Connection String Primary Key:
+HostName=IoTHubBatu.azure-devices.net;DeviceId=myDeviceID96;SharedAccessKey=3CphB25NU/PeBw2vGZHz6beFDU1uS1OfXBmVL2HW5bU=
+
+These links can be checked: 
+https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-arduino-huzzah-esp8266-get-started
+https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-live-data-visualization-in-power-bi

@@ -1,0 +1,2603 @@
+   1                 		.file	"GoodDisplay_functions.c"
+   2                 		.variant xap2+
+   3                 	
+   4                 		.small
+   5                 	
+   6                 		.section	.debug_abbrev,"",@progbits
+   7                 	.Ldebug_abbrev0:
+   8                 		.section	.debug_info,"",@progbits
+   9                 	.Ldebug_info0:
+  10                 		.section	.debug_line,"",@progbits
+  11                 	.Ldebug_line0:
+  12 0000 00 00 00 00 		.text
+  12      00 02 00 00 
+  12      00 00 01 01 
+  12      FB 0E 0D 00 
+  12      01 01 01 01 
+  13                 	.Ltext0:
+  14                 		.global	lut_vcomDC
+  15                 		.section	.data.lut_vcomDC,"aw",@progbits
+  16                 		.type	lut_vcomDC, @object
+  17                 		.size	lut_vcomDC, 70
+  18                 	lut_vcomDC:
+  19 0000 00 00       		.word	0x0000
+  20 0001 00 1A       		.word	0x001a
+  21 0002 00 1A       		.word	0x001a
+  22 0003 00 00       		.word	0x0000
+  23 0004 00 00       		.word	0x0000
+  24 0005 00 1A       		.word	0x001a
+  25 0006 00 1A       		.word	0x001a
+  26 0007 00 00       		.word	0x0000
+  27 0008 00 00       		.word	0x0000
+  28 0009 00 01       		.word	0x0001
+  29 000a 00 00       		.word	0x0000
+  30 000b 00 0A       		.word	0x000a
+  31 000c 00 0A       		.word	0x000a
+  32 000d 00 00       		.word	0x0000
+  33 000e 00 00       		.word	0x0000
+  34 000f 00 04       		.word	0x0004
+  35 0010 00 00       		.word	0x0000
+  36 0011 00 0E       		.word	0x000e
+  37 0012 00 01       		.word	0x0001
+  38 0013 00 0E       		.word	0x000e
+  39 0014 00 01       		.word	0x0001
+  40 0015 00 03       		.word	0x0003
+  41 0016 00 00       		.word	0x0000
+  42 0017 00 0A       		.word	0x000a
+  43 0018 00 0A       		.word	0x000a
+  44 0019 00 00       		.word	0x0000
+  45 001a 00 00       		.word	0x0000
+  46 001b 00 04       		.word	0x0004
+  47 001c 00 00       		.word	0x0000
+  48 001d 00 04       		.word	0x0004
+  49 001e 00 10       		.word	0x0010
+  50 001f 00 00       		.word	0x0000
+  51 0020 00 00       		.word	0x0000
+  52 0021 00 02       		.word	0x0002
+  53 0022 00 00       		.word	0x0000
+  54 0023 00 03       		.word	0x0003
+  55 0024 00 0E       		.word	0x000e
+  56 0025 00 00       		.word	0x0000
+  57 0026 00 00       		.word	0x0000
+  58 0027 00 03       		.word	0x0003
+  59 0028 00 00       		.word	0x0000
+  60 0029 00 10       		.word	0x0010
+  61 002a 00 00       		.word	0x0000
+  62 002b 00 00       		.word	0x0000
+  63 002c 00 00       		.word	0x0000
+  64 002d 00 01       		.word	0x0001
+  65 002e 00 90       		.word	0x0090
+  66 002f 00 1A       		.word	0x001a
+  67 0030 00 1A       		.word	0x001a
+  68 0031 00 00       		.word	0x0000
+  69 0032 00 00       		.word	0x0000
+  70 0033 00 01       		.word	0x0001
+  71 0034 00 40       		.word	0x0040
+  72 0035 00 0A       		.word	0x000a
+  73 0036 00 0A       		.word	0x000a
+  74 0037 00 00       		.word	0x0000
+  75 0038 00 00       		.word	0x0000
+  76 0039 00 04       		.word	0x0004
+  77 003a 00 40       		.word	0x0040
+  78 003b 00 0A       		.word	0x000a
+  79 003c 00 0A       		.word	0x000a
+  80 003d 00 00       		.word	0x0000
+  81 003e 00 00       		.word	0x0000
+  82 003f 00 04       		.word	0x0004
+  83 0040 00 84       		.word	0x0084
+  84 0041 00 0E       		.word	0x000e
+  85 0042 00 01       		.word	0x0001
+  86 0043 00 0E       		.word	0x000e
+  87 0044 00 01       		.word	0x0001
+  88 0045 00 03       		.word	0x0003
+  89                 		.global	lut_ww
+  90                 		.section	.data.lut_ww,"aw",@progbits
+  91                 		.type	lut_ww, @object
+  92                 		.size	lut_ww, 42
+  93                 	lut_ww:
+  94 0000 00 90       		.word	0x0090
+  95 0001 00 1A       		.word	0x001a
+  96 0002 00 1A       		.word	0x001a
+  97 0003 00 00       		.word	0x0000
+  98 0004 00 00       		.word	0x0000
+  99 0005 00 01       		.word	0x0001
+ 100 0006 00 40       		.word	0x0040
+ 101 0007 00 0A       		.word	0x000a
+ 102 0008 00 0A       		.word	0x000a
+ 103 0009 00 00       		.word	0x0000
+ 104 000a 00 00       		.word	0x0000
+ 105 000b 00 04       		.word	0x0004
+ 106 000c 00 84       		.word	0x0084
+ 107 000d 00 0E       		.word	0x000e
+ 108 000e 00 01       		.word	0x0001
+ 109 000f 00 0E       		.word	0x000e
+ 110 0010 00 01       		.word	0x0001
+ 111 0011 00 03       		.word	0x0003
+ 112 0012 00 80       		.word	0x0080
+ 113 0013 00 0A       		.word	0x000a
+ 114 0014 00 0A       		.word	0x000a
+ 115 0015 00 00       		.word	0x0000
+ 116 0016 00 00       		.word	0x0000
+ 117 0017 00 04       		.word	0x0004
+ 118 0018 00 00       		.word	0x0000
+ 119 0019 00 00       		.word	0x0000
+ 120 001a 00 00       		.word	0x0000
+ 121 001b 00 00       		.word	0x0000
+ 122 001c 00 00       		.word	0x0000
+ 123 001d 00 00       		.word	0x0000
+ 124 001e 00 00       		.word	0x0000
+ 125 001f 00 00       		.word	0x0000
+ 126 0020 00 00       		.word	0x0000
+ 127 0021 00 00       		.word	0x0000
+ 128 0022 00 00       		.word	0x0000
+ 129 0023 00 00       		.word	0x0000
+ 130 0024 00 00       		.word	0x0000
+ 131 0025 00 00       		.word	0x0000
+ 132 0026 00 00       		.word	0x0000
+ 133 0027 00 00       		.word	0x0000
+ 134 0028 00 00       		.word	0x0000
+ 135 0029 00 00       		.word	0x0000
+ 136                 		.global	lut_bw
+ 137                 		.section	.data.lut_bw,"aw",@progbits
+ 138                 		.type	lut_bw, @object
+ 139                 		.size	lut_bw, 42
+ 140                 	lut_bw:
+ 141 0000 00 A0       		.word	0x00a0
+ 142 0001 00 1A       		.word	0x001a
+ 143 0002 00 1A       		.word	0x001a
+ 144 0003 00 00       		.word	0x0000
+ 145 0004 00 00       		.word	0x0000
+ 146 0005 00 01       		.word	0x0001
+ 147 0006 00 00       		.word	0x0000
+ 148 0007 00 0A       		.word	0x000a
+ 149 0008 00 0A       		.word	0x000a
+ 150 0009 00 00       		.word	0x0000
+ 151 000a 00 00       		.word	0x0000
+ 152 000b 00 04       		.word	0x0004
+ 153 000c 00 84       		.word	0x0084
+ 154 000d 00 0E       		.word	0x000e
+ 155 000e 00 01       		.word	0x0001
+ 156 000f 00 0E       		.word	0x000e
+ 157 0010 00 01       		.word	0x0001
+ 158 0011 00 03       		.word	0x0003
+ 159 0012 00 90       		.word	0x0090
+ 160 0013 00 0A       		.word	0x000a
+ 161 0014 00 0A       		.word	0x000a
+ 162 0015 00 00       		.word	0x0000
+ 163 0016 00 00       		.word	0x0000
+ 164 0017 00 04       		.word	0x0004
+ 165 0018 00 B0       		.word	0x00b0
+ 166 0019 00 04       		.word	0x0004
+ 167 001a 00 10       		.word	0x0010
+ 168 001b 00 00       		.word	0x0000
+ 169 001c 00 00       		.word	0x0000
+ 170 001d 00 02       		.word	0x0002
+ 171 001e 00 B0       		.word	0x00b0
+ 172 001f 00 03       		.word	0x0003
+ 173 0020 00 0E       		.word	0x000e
+ 174 0021 00 00       		.word	0x0000
+ 175 0022 00 00       		.word	0x0000
+ 176 0023 00 03       		.word	0x0003
+ 177 0024 00 C0       		.word	0x00c0
+ 178 0025 00 10       		.word	0x0010
+ 179 0026 00 00       		.word	0x0000
+ 180 0027 00 00       		.word	0x0000
+ 181 0028 00 00       		.word	0x0000
+ 182 0029 00 01       		.word	0x0001
+ 183                 		.global	lut_bb
+ 184                 		.section	.data.lut_bb,"aw",@progbits
+ 185                 		.type	lut_bb, @object
+ 186                 		.size	lut_bb, 42
+ 187                 	lut_bb:
+ 188 0000 00 90       		.word	0x0090
+ 189 0001 00 1A       		.word	0x001a
+ 190 0002 00 1A       		.word	0x001a
+ 191 0003 00 00       		.word	0x0000
+ 192 0004 00 00       		.word	0x0000
+ 193 0005 00 01       		.word	0x0001
+ 194 0006 00 40       		.word	0x0040
+ 195 0007 00 0A       		.word	0x000a
+ 196 0008 00 0A       		.word	0x000a
+ 197 0009 00 00       		.word	0x0000
+ 198 000a 00 00       		.word	0x0000
+ 199 000b 00 04       		.word	0x0004
+ 200 000c 00 84       		.word	0x0084
+ 201 000d 00 0E       		.word	0x000e
+ 202 000e 00 01       		.word	0x0001
+ 203 000f 00 0E       		.word	0x000e
+ 204 0010 00 01       		.word	0x0001
+ 205 0011 00 03       		.word	0x0003
+ 206 0012 00 80       		.word	0x0080
+ 207 0013 00 0A       		.word	0x000a
+ 208 0014 00 0A       		.word	0x000a
+ 209 0015 00 00       		.word	0x0000
+ 210 0016 00 00       		.word	0x0000
+ 211 0017 00 04       		.word	0x0004
+ 212 0018 00 00       		.word	0x0000
+ 213 0019 00 00       		.word	0x0000
+ 214 001a 00 00       		.word	0x0000
+ 215 001b 00 00       		.word	0x0000
+ 216 001c 00 00       		.word	0x0000
+ 217 001d 00 00       		.word	0x0000
+ 218 001e 00 00       		.word	0x0000
+ 219 001f 00 00       		.word	0x0000
+ 220 0020 00 00       		.word	0x0000
+ 221 0021 00 00       		.word	0x0000
+ 222 0022 00 00       		.word	0x0000
+ 223 0023 00 00       		.word	0x0000
+ 224 0024 00 00       		.word	0x0000
+ 225 0025 00 00       		.word	0x0000
+ 226 0026 00 00       		.word	0x0000
+ 227 0027 00 00       		.word	0x0000
+ 228 0028 00 00       		.word	0x0000
+ 229 0029 00 00       		.word	0x0000
+ 230                 		.global	lut_wb
+ 231                 		.section	.data.lut_wb,"aw",@progbits
+ 232                 		.type	lut_wb, @object
+ 233                 		.size	lut_wb, 42
+ 234                 	lut_wb:
+ 235 0000 00 90       		.word	0x0090
+ 236 0001 00 1A       		.word	0x001a
+ 237 0002 00 1A       		.word	0x001a
+ 238 0003 00 00       		.word	0x0000
+ 239 0004 00 00       		.word	0x0000
+ 240 0005 00 01       		.word	0x0001
+ 241 0006 00 20       		.word	0x0020
+ 242 0007 00 0A       		.word	0x000a
+ 243 0008 00 0A       		.word	0x000a
+ 244 0009 00 00       		.word	0x0000
+ 245 000a 00 00       		.word	0x0000
+ 246 000b 00 04       		.word	0x0004
+ 247 000c 00 84       		.word	0x0084
+ 248 000d 00 0E       		.word	0x000e
+ 249 000e 00 01       		.word	0x0001
+ 250 000f 00 0E       		.word	0x000e
+ 251 0010 00 01       		.word	0x0001
+ 252 0011 00 03       		.word	0x0003
+ 253 0012 00 10       		.word	0x0010
+ 254 0013 00 0A       		.word	0x000a
+ 255 0014 00 0A       		.word	0x000a
+ 256 0015 00 00       		.word	0x0000
+ 257 0016 00 00       		.word	0x0000
+ 258 0017 00 04       		.word	0x0004
+ 259 0018 00 00       		.word	0x0000
+ 260 0019 00 00       		.word	0x0000
+ 261 001a 00 00       		.word	0x0000
+ 262 001b 00 00       		.word	0x0000
+ 263 001c 00 00       		.word	0x0000
+ 264 001d 00 00       		.word	0x0000
+ 265 001e 00 00       		.word	0x0000
+ 266 001f 00 00       		.word	0x0000
+ 267 0020 00 00       		.word	0x0000
+ 268 0021 00 00       		.word	0x0000
+ 269 0022 00 00       		.word	0x0000
+ 270 0023 00 00       		.word	0x0000
+ 271 0024 00 00       		.word	0x0000
+ 272 0025 00 00       		.word	0x0000
+ 273 0026 00 00       		.word	0x0000
+ 274 0027 00 00       		.word	0x0000
+ 275 0028 00 00       		.word	0x0000
+ 276 0029 00 00       		.word	0x0000
+ 277                 		.section	.text.delay_ms,"ax",@progbits
+ 278                 		.global	delay_ms
+ 279                 		.type	delay_ms, @function
+ 280                 	delay_ms:
+ 281                 	.LFB2:
+ 282                 		.file 1 "GoodDisplay_functions.c"
+   0:GoodDisplay_functions.c **** #include <types.h>          /* Commonly used type definitions */
+   1:GoodDisplay_functions.c **** #include "platform_config.h"
+   2:GoodDisplay_functions.c **** #include "gooddisplay_functions.h"
+   3:GoodDisplay_functions.c **** 
+   4:GoodDisplay_functions.c **** unsigned int tempcode;
+   5:GoodDisplay_functions.c **** unsigned char tempvalue;
+   6:GoodDisplay_functions.c **** unsigned char temp1,temp2;
+   7:GoodDisplay_functions.c **** 
+   8:GoodDisplay_functions.c **** 
+   9:GoodDisplay_functions.c **** void delay_ms(uint16 nTime) 
+  10:GoodDisplay_functions.c **** {
+ 283                 	1 11 0
+ 284 0000 10 0B       		enter	#0x0010
+ 285                 	.LCFI0:
+ 286 0001 06 27       		st	AL,@(0x0006,Y)
+  11:GoodDisplay_functions.c ****     
+  12:GoodDisplay_functions.c ****     uint32   _nTime = (uint32) nTime * 1000;
+ 287                 	c 1 13 0
+ 288 0002 06 13       		ld	AH,@(0x0006,Y)
+ 289 0003 F9 21       		st	AH,@0xfff9
+ 290 0004 00 14       		ld	AL,#0x0000
+ 291 0005 F8 25       		st	AL,@0xfff8
+ 292 0006 F8 15       		ld	AL,@0xfff8
+ 293 0007 04 00 E8 90 		smult	#0x03e8
+ 294 0009 00 00 00 19 		ld	X,@$XAP_AL
+ 295 000b F9 15       		ld	AL,@0xfff9
+ 296 000c 00 90       		smult	#0x0000
+ 297 000d 0C 27       		st	AL,@(0x000c,Y)
+ 298 000e 0C 3B       		add	X,@(0x000c,Y)
+ 299 000f F9 15       		ld	AL,@0xfff9
+ 300 0010 00 09 04 00 		umult	#0x03e8
+ 300      E8 90 
+ 301 0013 0E 27       		st	AL,@(0x000e,Y)
+ 302 0014 0D 23       		st	AH,@(0x000d,Y)
+ 303 0015 0D 13       		ld	AH,@(0x000d,Y)
+ 304 0016 00 00 00 39 		add	X,@$XAP_AH
+ 305 0018 0D 2B       		st	X,@(0x000d,Y)
+ 306 0019 0E 17       		ld	AL,@(0x000e,Y)
+ 307 001a 05 27       		st	AL,@(0x0005,Y)
+ 308 001b 0D 1B       		ld	X,@(0x000d,Y)
+ 309 001c 04 2B       		st	X,@(0x0004,Y)
+ 310 001d 0E 13       		ld	AH,@(0x000e,Y)
+ 311 001e 05 23       		st	AH,@(0x0005,Y)
+ 312 001f 0D 17       		ld	AL,@(0x000d,Y)
+ 313 0020 04 27       		st	AL,@(0x0004,Y)
+  13:GoodDisplay_functions.c **** 
+  14:GoodDisplay_functions.c ****     if ( _nTime > 65535 ){ // TimeDelayUSec uint16 aliyor
+ 314                 	Y)
+ 315 0021 04 9B       		bne	.L9
+ 316 0022 00 00 00 00 		.loc 1 24 0
+ 316      00 F0 
+  15:GoodDisplay_functions.c ****         
+  16:GoodDisplay_functions.c ****         uint32 timeCount = _nTime / 10000;
+  17:GoodDisplay_functions.c ****         
+  18:GoodDisplay_functions.c ****         while(timeCount--)
+  19:GoodDisplay_functions.c ****             TimeDelayUSec(10000);
+  20:GoodDisplay_functions.c ****         
+  21:GoodDisplay_functions.c ****     }else{
+  22:GoodDisplay_functions.c ****         
+  23:GoodDisplay_functions.c ****         TimeDelayUSec( (uint16) _nTime);
+ 317                 		AL,@(0x0005,Y)
+ 318 0025 05 17       		bsr	TimeDelayUSec
+ 319 0026 00 00 00 00 		bra	.L8
+ 319      00 9C 
+ 320 0029 00 00 00 00 	.L9:
+ 320      00 E0 
+ 321                 	.LBB2:
+ 322                 		.loc 1 17 0
+  17:GoodDisplay_functions.c ****         uint32 timeCount = _nTime / 10000;
+ 323                 	@(0x0005,Y)
+ 324 002c 05 1B       		st	X,@(0x0009,Y)
+ 325 002d 09 2B       		ld	AH,@(0x0004,Y)
+ 326 002e 04 13       		st	AH,@(0x0008,Y)
+ 327 002f 08 23       		ld	AL,#0x0000
+ 328 0030 00 14       		ld	AH,#0x2710
+ 329 0031 27 00 10 10 		st	AL,@(0,Y)
+ 330 0033 00 27       		st	AH,@(0x0001,Y)
+ 331 0034 01 23       		ld	X,@(0x0009,Y)
+ 332 0035 09 1B       		ld	AL,@$XAP_UXL
+ 333 0036 00 00 00 15 		ld	X,@(0x0008,Y)
+ 334 0038 08 1B       		ld	AH,@$XAP_UXL
+ 335 0039 00 00 00 11 		bsr	__udivhi3
+ 336 003b 00 00 00 00 		st	AL,@(0x000b,Y)
+ 336      00 9C 
+ 337 003e 0B 27       		st	AH,@(0x000a,Y)
+ 338 003f 0A 23       		ld	AH,@(0x000b,Y)
+ 339 0040 0B 13       		st	AH,@(0x0003,Y)
+ 340 0041 03 23       		ld	AL,@(0x000a,Y)
+ 341 0042 0A 17       		st	AL,@(0x0002,Y)
+ 342 0043 02 27       		bra	.L4
+ 343 0044 00 00 00 00 	.L6:
+ 343      00 E0 
+ 344                 		.loc 1 20 0
+  20:GoodDisplay_functions.c ****             TimeDelayUSec(10000);
+ 345                 	meDelayUSec
+ 346 0047 27 00 10 14 	.L4:
+ 347 0049 00 00 00 00 		.loc 1 19 0
+ 347      00 9C 
+ 348                 		ld	X,#0x0000
+  19:GoodDisplay_functions.c ****         while(timeCount--)
+ 349                 	X,@(0x0007,Y)
+ 350 004c 00 18       		ld	AL,@(0x0002,Y)
+ 351 004d 07 2B       		or	AL,@(0x0003,Y)
+ 352 004e 02 17       		tst	@$XAP_AL
+ 353 004f 03 B7       		beq	.L5
+ 354 0050 00 00 00 99 		ld	AH,#0x0001
+ 355 0052 00 00 00 00 		st	AH,@(0x0007,Y)
+ 355      00 F4 
+ 356 0055 01 10       	.L5:
+ 357 0056 07 23       		ld	AL,@(0x0003,Y)
+ 358                 		ld	AH,@(0x0002,Y)
+ 359 0057 03 17       		add	AL,#0xffff
+ 360 0058 02 13       		addc	AH,#0xffff
+ 361 0059 FF 34       		st	AL,@(0x0003,Y)
+ 362 005a FF 40       		st	AH,@(0x0002,Y)
+ 363 005b 03 27       		tst	@(0x0007,Y)
+ 364 005c 02 23       		bne	.L6
+ 365 005d 07 9B       	.L8:
+ 366 005e 00 00 00 00 	.LBE2:
+ 366      00 F0 
+ 367                 		.loc 1 28 0
+ 368                 		leave	#0x0010
+  24:GoodDisplay_functions.c ****         
+  25:GoodDisplay_functions.c ****     }
+  26:GoodDisplay_functions.c **** 
+  27:GoodDisplay_functions.c **** }
+ 369                 	ms, .-delay_ms
+ 370 0061 10 0F       		.global	__size_of_delay_ms
+ 371                 		.equ	__size_of_delay_ms,. - delay_ms
+ 372                 		.section	.text.PinModeDir,"ax",@progbits
+ 373                 		.global	PinModeDir
+ 374                 		.type	PinModeDir, @function
+ 375                 	PinModeDir:
+ 376                 	.LFB3:
+ 377                 		.loc 1 31 0
+ 378                 		enter	#0x0001
+ 379                 	.LCFI1:
+  28:GoodDisplay_functions.c **** 
+  29:GoodDisplay_functions.c **** void PinModeDir()
+  30:GoodDisplay_functions.c **** {
+ 380                 	0
+ 381 0000 01 0B       		ld	AL,#0x0005
+ 382                 		ld	AH,#0x0001
+  31:GoodDisplay_functions.c **** 
+  32:GoodDisplay_functions.c ****     //PioSetDir( VPP_PIN, OUTPUT);
+  33:GoodDisplay_functions.c ****     PioSetDir( SPI_MASTER_PIO_SCLK, OUTPUT);
+ 383                 	r	PioSetDir
+ 384 0001 05 14       		.loc 1 35 0
+ 385 0002 01 10       		ld	AL,#0x0007
+ 386 0003 00 00 00 00 		ld	AH,#0x0001
+ 386      00 9C 
+  34:GoodDisplay_functions.c ****     PioSetDir( SPI_MASTER_PIO_MOSI, OUTPUT );
+ 387                 		PioSetDir
+ 388 0006 07 14       		.loc 1 36 0
+ 389 0007 01 10       		ld	AL,#0x0006
+ 390 0008 00 00 00 00 		ld	AH,#0x0001
+ 390      00 9C 
+  35:GoodDisplay_functions.c ****     PioSetDir( CS_PIN, OUTPUT );
+ 391                 		PioSetDir
+ 392 000b 06 14       		.loc 1 37 0
+ 393 000c 01 10       		ld	AL,#0x0008
+ 394 000d 00 00 00 00 		ld	AH,#0x0001
+ 394      00 9C 
+  36:GoodDisplay_functions.c ****     PioSetDir( DC_PIN, OUTPUT );
+ 395                 		PioSetDir
+ 396 0010 08 14       		.loc 1 41 0
+ 397 0011 01 10       		ld	AL,#0x0009
+ 398 0012 00 00 00 00 		ld	AH,#0x0001
+ 398      00 9C 
+  37:GoodDisplay_functions.c ****     
+  38:GoodDisplay_functions.c ****     //PioSet( CS_PIN, HIGH );
+  39:GoodDisplay_functions.c ****     
+  40:GoodDisplay_functions.c ****     PioSetDir( RESET_PIN, OUTPUT );
+ 399                 		PioSetDir
+ 400 0015 09 14       		.loc 1 42 0
+ 401 0016 01 10       		ld	AL,#0x0003
+ 402 0017 00 00 00 00 		ld	AH,#0x0000
+ 402      00 9C 
+  41:GoodDisplay_functions.c ****     PioSetDir( BUSY_PIN, INPUT );
+ 403                 		PioSetDir
+ 404 001a 03 14       		.loc 1 44 0
+ 405 001b 00 10       		leave	#0x0001
+ 406 001c 00 00 00 00 	.LFE3:
+ 406      00 9C 
+  42:GoodDisplay_functions.c **** 
+  43:GoodDisplay_functions.c **** }
+ 407                 	ze	PinModeDir, .-PinModeDir
+ 408 001f 01 0F       		.global	__size_of_PinModeDir
+ 409                 		.equ	__size_of_PinModeDir,. - PinModeDir
+ 410                 		.section	.text.Reset,"ax",@progbits
+ 411                 		.global	Reset
+ 412                 		.type	Reset, @function
+ 413                 	Reset:
+ 414                 	.LFB4:
+ 415                 		.loc 1 47 0
+ 416                 		enter	#0x0001
+ 417                 	.LCFI2:
+  44:GoodDisplay_functions.c **** 
+  45:GoodDisplay_functions.c **** void Reset()
+  46:GoodDisplay_functions.c **** {
+ 418                 	0
+ 419 0000 01 0B       		ld	AL,#0x0009
+ 420                 		ld	AH,#0x0000
+  47:GoodDisplay_functions.c **** 
+  48:GoodDisplay_functions.c ****     PioSet( RESET_PIN, LOW );
+ 421                 	r	PioSet
+ 422 0001 09 14       		.loc 1 50 0
+ 423 0002 00 10       		ld	AL,#0x0001
+ 424 0003 00 00 00 00 		bsr	delay_ms
+ 424      00 9C 
+  49:GoodDisplay_functions.c ****     delay_ms(1);
+ 425                 	c 1 51 0
+ 426 0006 01 14       		ld	AL,#0x0009
+ 427 0007 00 00 00 00 		ld	AH,#0x0001
+ 427      00 9C 
+  50:GoodDisplay_functions.c ****     PioSet( RESET_PIN, HIGH );
+ 428                 	r	PioSet
+ 429 000a 09 14       		.loc 1 52 0
+ 430 000b 01 10       		ld	AL,#0x0001
+ 431 000c 00 00 00 00 		bsr	delay_ms
+ 431      00 9C 
+  51:GoodDisplay_functions.c ****     delay_ms(1);
+ 432                 	c 1 54 0
+ 433 000f 01 14       		leave	#0x0001
+ 434 0010 00 00 00 00 	.LFE4:
+ 434      00 9C 
+  52:GoodDisplay_functions.c **** 
+  53:GoodDisplay_functions.c **** }
+ 435                 	ize	Reset, .-Reset
+ 436 0013 01 0F       		.global	__size_of_Reset
+ 437                 		.equ	__size_of_Reset,. - Reset
+ 438                 		.section	.text.READBUSY,"ax",@progbits
+ 439                 		.global	READBUSY
+ 440                 		.type	READBUSY, @function
+ 441                 	READBUSY:
+ 442                 	.LFB5:
+ 443                 		.loc 1 57 0
+ 444                 		enter	#0x0001
+ 445                 	.LCFI3:
+  54:GoodDisplay_functions.c **** 
+  55:GoodDisplay_functions.c **** void READBUSY(void)
+  56:GoodDisplay_functions.c **** {
+ 446                 	 1 61 0
+ 447 0000 01 0B       		ld	AL,#0x0003
+ 448                 		bsr	PioGet
+ 449                 		tst	@$XAP_AL
+  57:GoodDisplay_functions.c ****     
+  58:GoodDisplay_functions.c ****     while(1)
+  59:GoodDisplay_functions.c ****     {    //=1 BUSY
+  60:GoodDisplay_functions.c ****         if(PioGet( BUSY_PIN ) == 0 ) break;
+ 450                 		.L17
+ 451 0001 03 14       		.loc 1 62 0
+ 452 0002 00 00 00 00 		ld	AL,#0x0002
+ 452      00 9C 
+ 453 0005 00 00 00 99 		bsr	delay_ms
+ 454 0007 00 00 00 00 		bra	.L16
+ 454      00 F4 
+  61:GoodDisplay_functions.c ****         delay_ms(2);
+ 455                 	
+ 456 000a 02 14       		.loc 1 65 0
+ 457 000b 00 00 00 00 		leave	#0x0001
+ 457      00 9C 
+ 458 000e 00 00 00 00 	.LFE5:
+ 458      00 E0 
+ 459                 		.size	READBUSY, .-READBUSY
+  62:GoodDisplay_functions.c ****     }
+  63:GoodDisplay_functions.c ****     //delay_ms(500);
+  64:GoodDisplay_functions.c **** }
+ 460                 	obal	__size_of_READBUSY
+ 461 0011 01 0F       		.equ	__size_of_READBUSY,. - READBUSY
+ 462                 		.section	.text.SPI4W_WRITECOM,"ax",@progbits
+ 463                 		.global	SPI4W_WRITECOM
+ 464                 		.type	SPI4W_WRITECOM, @function
+ 465                 	SPI4W_WRITECOM:
+ 466                 	.LFB6:
+ 467                 		.loc 1 68 0
+ 468                 		enter	#0x0004
+ 469                 	.LCFI4:
+ 470                 		st	AL,@(0x0002,Y)
+  65:GoodDisplay_functions.c **** 
+  66:GoodDisplay_functions.c **** void SPI4W_WRITECOM(char INIT_COM)
+  67:GoodDisplay_functions.c **** {
+ 471                 	0
+ 472 0000 04 0B       		ld	AL,@(0x0002,Y)
+ 473                 		st	AL,@(0x0001,Y)
+ 474 0001 02 27       		.loc 1 73 0
+  68:GoodDisplay_functions.c ****     unsigned char TEMPCOM;
+  69:GoodDisplay_functions.c ****     unsigned char scnt;
+  70:GoodDisplay_functions.c ****     TEMPCOM=INIT_COM;
+ 475                 	AL,#0x0006
+ 476 0002 02 17       		ld	AH,#0x0001
+ 477 0003 01 27       		bsr	PioSet
+  71:GoodDisplay_functions.c ****     
+  72:GoodDisplay_functions.c ****     PioSet( CS_PIN, HIGH );      //CS HIGH
+ 478                 	oc 1 74 0
+ 479 0004 06 14       		ld	AL,#0x0006
+ 480 0005 01 10       		ld	AH,#0x0000
+ 481 0006 00 00 00 00 		bsr	PioSet
+ 481      00 9C 
+  73:GoodDisplay_functions.c ****     PioSet( CS_PIN, LOW );      //CS Low
+ 482                 	c 1 75 0
+ 483 0009 06 14       		ld	AL,#0x0005
+ 484 000a 00 10       		ld	AH,#0x0000
+ 485 000b 00 00 00 00 		bsr	PioSet
+ 485      00 9C 
+  74:GoodDisplay_functions.c ****     PioSet( SPI_MASTER_PIO_SCLK, LOW );      //CS Low
+ 486                 	c 1 76 0
+ 487 000e 05 14       		ld	AL,#0x0008
+ 488 000f 00 10       		ld	AH,#0x0000
+ 489 0010 00 00 00 00 		bsr	PioSet
+ 489      00 9C 
+  75:GoodDisplay_functions.c ****     PioSet( DC_PIN, LOW );      //DC Low
+ 490                 	c 1 78 0
+ 491 0013 08 14       		ld	AL,#0x0000
+ 492 0014 00 10       		st	AL,@(0,Y)
+ 493 0015 00 00 00 00 		bra	.L19
+ 493      00 9C 
+  76:GoodDisplay_functions.c ****     
+  77:GoodDisplay_functions.c ****     for(scnt=0;scnt<8;scnt++)
+ 494                 	:
+ 495 0018 00 14       		.loc 1 80 0
+ 496 0019 00 27       		ld	AL,@(0x0001,Y)
+ 497 001a 00 00 00 00 		and	AL,#0x0080
+ 497      00 E0 
+ 498                 		tst	@$XAP_AL
+  78:GoodDisplay_functions.c ****     {
+  79:GoodDisplay_functions.c ****         if(TEMPCOM&0x80)
+ 499                 	.L20
+ 500 001d 01 17       		.loc 1 81 0
+ 501 001e 01 00 80 C4 		ld	AL,#0x0007
+ 502 0020 00 00 00 99 		ld	AH,#0x0001
+ 503 0022 00 00 00 00 		bsr	PioSet
+ 503      00 F4 
+  80:GoodDisplay_functions.c ****             PioSet( SPI_MASTER_PIO_MOSI, HIGH );      // SDA HIGH, 1 
+ 504                 	.L21
+ 505 0025 07 14       	.L20:
+ 506 0026 01 10       		.loc 1 83 0
+ 507 0027 00 00 00 00 		ld	AL,#0x0007
+ 507      00 9C 
+ 508 002a 00 00 00 00 		ld	AH,#0x0000
+ 508      00 E0 
+ 509                 		bsr	PioSet
+  81:GoodDisplay_functions.c ****         else
+  82:GoodDisplay_functions.c ****             PioSet( SPI_MASTER_PIO_MOSI, LOW );      // SDA LOW, 0
+ 510                 		.loc 1 85 0
+ 511 002d 07 14       		ld	AL,#0x0005
+ 512 002e 00 10       		ld	AH,#0x0001
+ 513 002f 00 00 00 00 		bsr	PioSet
+ 513      00 9C 
+ 514                 		.loc 1 86 0
+  83:GoodDisplay_functions.c **** 
+  84:GoodDisplay_functions.c ****         PioSet( SPI_MASTER_PIO_SCLK, HIGH );      // SCLK HIGH
+ 515                 	L,#0x0005
+ 516 0032 05 14       		ld	AH,#0x0000
+ 517 0033 01 10       		bsr	PioSet
+ 518 0034 00 00 00 00 		.loc 1 87 0
+ 518      00 9C 
+  85:GoodDisplay_functions.c ****         PioSet( SPI_MASTER_PIO_SCLK, LOW );      // SCLK LOW
+ 519                 	AL,@(0x0001,Y)
+ 520 0037 05 14       		add	AL,@$XAP_AL
+ 521 0038 00 10       		st	AL,@(0x0001,Y)
+ 522 0039 00 00 00 00 		.loc 1 78 0
+ 522      00 9C 
+  86:GoodDisplay_functions.c ****         TEMPCOM=TEMPCOM<<1;
+ 523                 	AL,@(0,Y)
+ 524 003c 01 17       		ld	X,@$XAP_AL
+ 525 003d 00 00 00 35 		add	X,#0x0001
+ 526 003f 01 27       		st	X,@(0,Y)
+  78:GoodDisplay_functions.c ****     for(scnt=0;scnt<8;scnt++)
+ 527                 	:
+ 528 0040 00 17       		ld	AL,@(0,Y)
+ 529 0041 00 00 00 19 		cmp	AL,#0x0007
+ 530 0043 01 38       		bcz	.L22
+ 531 0044 00 2B       		.loc 1 90 0
+ 532                 		ld	AL,#0x0001
+ 533 0045 00 17       		bsr	delay_ms
+ 534 0046 07 84       		.loc 1 91 0
+ 535 0047 00 00 00 00 		leave	#0x0004
+ 535      00 2C 
+  87:GoodDisplay_functions.c **** 
+  88:GoodDisplay_functions.c ****     }
+  89:GoodDisplay_functions.c ****     delay_ms(1);
+ 536                 	size	SPI4W_WRITECOM, .-SPI4W_WRITECOM
+ 537 004a 01 14       		.global	__size_of_SPI4W_WRITECOM
+ 538 004b 00 00 00 00 		.equ	__size_of_SPI4W_WRITECOM,. - SPI4W_WRITECOM
+ 538      00 9C 
+  90:GoodDisplay_functions.c **** }
+ 539                 	ection	.text.SPI4W_WRITEDATA,"ax",@progbits
+ 540 004e 04 0F       		.global	SPI4W_WRITEDATA
+ 541                 		.type	SPI4W_WRITEDATA, @function
+ 542                 	SPI4W_WRITEDATA:
+ 543                 	.LFB7:
+ 544                 		.loc 1 94 0
+ 545                 		enter	#0x0004
+ 546                 	.LCFI5:
+ 547                 		st	AL,@(0x0002,Y)
+ 548                 		.loc 1 97 0
+ 549                 		ld	AL,@(0x0002,Y)
+  91:GoodDisplay_functions.c **** 
+  92:GoodDisplay_functions.c **** void SPI4W_WRITEDATA(char INIT_DATA)
+  93:GoodDisplay_functions.c **** {
+ 550                 	0001,Y)
+ 551 0000 04 0B       		.loc 1 99 0
+ 552                 		ld	AL,#0x0005
+ 553 0001 02 27       		ld	AH,#0x0000
+  94:GoodDisplay_functions.c ****     unsigned char TEMPCOM;
+  95:GoodDisplay_functions.c ****     unsigned char scnt;
+  96:GoodDisplay_functions.c ****     TEMPCOM=INIT_DATA;
+ 554                 		PioSet
+ 555 0002 02 17       		.loc 1 100 0
+ 556 0003 01 27       		ld	AL,#0x0008
+  97:GoodDisplay_functions.c **** 
+  98:GoodDisplay_functions.c ****     PioSet( SPI_MASTER_PIO_SCLK, LOW );      //CS Low
+ 557                 		AH,#0x0001
+ 558 0004 05 14       		bsr	PioSet
+ 559 0005 00 10       		.loc 1 104 0
+ 560 0006 00 00 00 00 		ld	AL,#0x0000
+ 560      00 9C 
+  99:GoodDisplay_functions.c ****     PioSet( DC_PIN, HIGH );      //DC HIGH
+ 561                 	AL,@(0,Y)
+ 562 0009 08 14       		bra	.L25
+ 563 000a 01 10       	.L28:
+ 564 000b 00 00 00 00 		.loc 1 106 0
+ 564      00 9C 
+ 100:GoodDisplay_functions.c ****     
+ 101:GoodDisplay_functions.c ****     
+ 102:GoodDisplay_functions.c ****     
+ 103:GoodDisplay_functions.c ****     for(scnt=0;scnt<8;scnt++)
+ 565                 	AL,@(0x0001,Y)
+ 566 000e 00 14       		and	AL,#0x0080
+ 567 000f 00 27       		tst	@$XAP_AL
+ 568 0010 00 00 00 00 		beq	.L26
+ 568      00 E0 
+ 569                 		.loc 1 107 0
+ 104:GoodDisplay_functions.c ****     {
+ 105:GoodDisplay_functions.c ****         if(TEMPCOM&0x80)
+ 570                 	L,#0x0007
+ 571 0013 01 17       		ld	AH,#0x0001
+ 572 0014 01 00 80 C4 		bsr	PioSet
+ 573 0016 00 00 00 99 		bra	.L27
+ 574 0018 00 00 00 00 	.L26:
+ 574      00 F4 
+ 106:GoodDisplay_functions.c ****             PioSet( SPI_MASTER_PIO_MOSI, HIGH );      // SDA HIGH, 1
+ 575                 	 1 109 0
+ 576 001b 07 14       		ld	AL,#0x0007
+ 577 001c 01 10       		ld	AH,#0x0000
+ 578 001d 00 00 00 00 		bsr	PioSet
+ 578      00 9C 
+ 579 0020 00 00 00 00 	.L27:
+ 579      00 E0 
+ 580                 		.loc 1 111 0
+ 107:GoodDisplay_functions.c ****         else
+ 108:GoodDisplay_functions.c ****             PioSet( SPI_MASTER_PIO_MOSI, LOW );       // SDA LOW, 0
+ 581                 	,#0x0005
+ 582 0023 07 14       		ld	AH,#0x0001
+ 583 0024 00 10       		bsr	PioSet
+ 584 0025 00 00 00 00 		.loc 1 112 0
+ 584      00 9C 
+ 585                 		ld	AL,#0x0005
+ 109:GoodDisplay_functions.c **** 
+ 110:GoodDisplay_functions.c ****         PioSet( SPI_MASTER_PIO_SCLK, HIGH );      // SCLK HIGH
+ 586                 	H,#0x0000
+ 587 0028 05 14       		bsr	PioSet
+ 588 0029 01 10       		.loc 1 113 0
+ 589 002a 00 00 00 00 		ld	AL,@(0x0001,Y)
+ 589      00 9C 
+ 111:GoodDisplay_functions.c ****         PioSet( SPI_MASTER_PIO_SCLK, LOW );      // SCLK LOW
+ 590                 		AL,@$XAP_AL
+ 591 002d 05 14       		st	AL,@(0x0001,Y)
+ 592 002e 00 10       		.loc 1 104 0
+ 593 002f 00 00 00 00 		ld	AL,@(0,Y)
+ 593      00 9C 
+ 112:GoodDisplay_functions.c ****         TEMPCOM=TEMPCOM<<1;
+ 594                 	X,@$XAP_AL
+ 595 0032 01 17       		add	X,#0x0001
+ 596 0033 00 00 00 35 		st	X,@(0,Y)
+ 597 0035 01 27       	.L25:
+ 104:GoodDisplay_functions.c ****     for(scnt=0;scnt<8;scnt++)
+ 598                 	AL,@(0,Y)
+ 599 0036 00 17       		cmp	AL,#0x0007
+ 600 0037 00 00 00 19 		bcz	.L28
+ 601 0039 01 38       		.loc 1 116 0
+ 602 003a 00 2B       		ld	AL,#0x0006
+ 603                 		ld	AH,#0x0001
+ 604 003b 00 17       		bsr	PioSet
+ 605 003c 07 84       		.loc 1 117 0
+ 606 003d 00 00 00 00 		ld	AL,#0x0001
+ 606      00 2C 
+ 113:GoodDisplay_functions.c **** 
+ 114:GoodDisplay_functions.c ****     }
+ 115:GoodDisplay_functions.c ****     PioSet( CS_PIN, HIGH );      //CS HIGH
+ 607                 	y_ms
+ 608 0040 06 14       		.loc 1 118 0
+ 609 0041 01 10       		leave	#0x0004
+ 610 0042 00 00 00 00 	.LFE7:
+ 610      00 9C 
+ 116:GoodDisplay_functions.c ****     delay_ms(1);
+ 611                 	ze	SPI4W_WRITEDATA, .-SPI4W_WRITEDATA
+ 612 0045 01 14       		.global	__size_of_SPI4W_WRITEDATA
+ 613 0046 00 00 00 00 		.equ	__size_of_SPI4W_WRITEDATA,. - SPI4W_WRITEDATA
+ 613      00 9C 
+ 117:GoodDisplay_functions.c **** }
+ 614                 	ection	.text.SPI4W_READDATA,"ax",@progbits
+ 615 0049 04 0F       		.global	SPI4W_READDATA
+ 616                 		.type	SPI4W_READDATA, @function
+ 617                 	SPI4W_READDATA:
+ 618                 	.LFB8:
+ 619                 		.loc 1 121 0
+ 620                 		enter	#0x0003
+ 621                 	.LCFI6:
+ 622                 		.loc 1 122 0
+ 623                 		ld	AL,#0x0007
+ 624                 		ld	AH,#0x0000
+ 118:GoodDisplay_functions.c **** 
+ 119:GoodDisplay_functions.c **** unsigned char SPI4W_READDATA()
+ 120:GoodDisplay_functions.c **** {
+ 625                 	Dir
+ 626 0000 03 0B       		.loc 1 124 0
+ 627                 		ld	AL,#0x0000
+ 121:GoodDisplay_functions.c ****     PioSetDir( SPI_MASTER_PIO_MOSI, INPUT );
+ 628                 		AL,@(0,Y)
+ 629 0001 07 14       		.loc 1 125 0
+ 630 0002 00 10       		ld	AL,#0x0008
+ 631 0003 00 00 00 00 		ld	AH,#0x0001
+ 631      00 9C 
+ 122:GoodDisplay_functions.c ****     unsigned char scnt,temp;
+ 123:GoodDisplay_functions.c ****     temp=0; 
+ 632                 		PioSet
+ 633 0006 00 14       		.loc 1 127 0
+ 634 0007 00 27       		ld	AL,#0x0000
+ 124:GoodDisplay_functions.c ****     PioSet( DC_PIN, HIGH );      //DC HIGH
+ 635                 		AL,@(0x0001,Y)
+ 636 0008 08 14       		bra	.L31
+ 637 0009 01 10       	.L32:
+ 638 000a 00 00 00 00 		.loc 1 129 0
+ 638      00 9C 
+ 125:GoodDisplay_functions.c **** 
+ 126:GoodDisplay_functions.c ****     for(scnt=0;scnt<8;scnt++)
+ 639                 	AL,#0x0005
+ 640 000d 00 14       		ld	AH,#0x0000
+ 641 000e 01 27       		bsr	PioSet
+ 642 000f 00 00 00 00 		.loc 1 132 0
+ 642      00 E0 
+ 643                 		ld	AL,@(0,Y)
+ 127:GoodDisplay_functions.c ****     {
+ 128:GoodDisplay_functions.c ****         PioSet( SPI_MASTER_PIO_SCLK, LOW );      // SCLK LOW
+ 644                 	AL,@$XAP_AL
+ 645 0012 05 14       		ld	X,@$XAP_AL
+ 646 0013 00 10       		or	X,#0x0001
+ 647 0014 00 00 00 00 		st	X,@(0,Y)
+ 647      00 9C 
+ 129:GoodDisplay_functions.c **** 
+ 130:GoodDisplay_functions.c ****         if(SPI_MASTER_PIO_MOSI)
+ 131:GoodDisplay_functions.c ****             temp=(temp<<1)|0x01;
+ 648                 	c 1 136 0
+ 649 0017 00 17       		ld	AL,#0x0005
+ 650 0018 00 00 00 35 		ld	AH,#0x0001
+ 651 001a 00 00 00 19 		bsr	PioSet
+ 652 001c 01 B8       		.loc 1 137 0
+ 653 001d 00 2B       		ld	AL,#0x0005
+ 132:GoodDisplay_functions.c ****         else
+ 133:GoodDisplay_functions.c ****             temp=temp<<1;
+ 134:GoodDisplay_functions.c **** 
+ 135:GoodDisplay_functions.c ****         PioSet( SPI_MASTER_PIO_SCLK, HIGH );      // SCLK HIGH
+ 654                 	,#0x0000
+ 655 001e 05 14       		bsr	PioSet
+ 656 001f 01 10       		.loc 1 127 0
+ 657 0020 00 00 00 00 		ld	AL,@(0x0001,Y)
+ 657      00 9C 
+ 136:GoodDisplay_functions.c ****         PioSet( SPI_MASTER_PIO_SCLK, LOW );      // SCLK LOW 
+ 658                 	X,@$XAP_AL
+ 659 0023 05 14       		add	X,#0x0001
+ 660 0024 00 10       		st	X,@(0x0001,Y)
+ 661 0025 00 00 00 00 	.L31:
+ 661      00 9C 
+ 127:GoodDisplay_functions.c ****     for(scnt=0;scnt<8;scnt++)
+ 662                 	AL,@(0x0001,Y)
+ 663 0028 01 17       		cmp	AL,#0x0007
+ 664 0029 00 00 00 19 		bcz	.L32
+ 665 002b 01 38       		.loc 1 140 0
+ 666 002c 01 2B       		ld	AL,#0x0007
+ 667                 		ld	AH,#0x0001
+ 668 002d 01 17       		bsr	PioSetDir
+ 669 002e 07 84       		.loc 1 141 0
+ 670 002f 00 00 00 00 		ld	AL,@(0,Y)
+ 670      00 2C 
+ 137:GoodDisplay_functions.c ****     }
+ 138:GoodDisplay_functions.c **** 
+ 139:GoodDisplay_functions.c ****     PioSetDir( SPI_MASTER_PIO_MOSI, OUTPUT );
+ 671                 	empvalue
+ 672 0032 07 14       		.loc 1 142 0
+ 673 0033 01 10       		ld	AL,@(0,Y)
+ 674 0034 00 00 00 00 		.loc 1 143 0
+ 674      00 9C 
+ 140:GoodDisplay_functions.c ****     tempvalue = temp;
+ 675                 	ve	#0x0003
+ 676 0037 00 17       	.LFE8:
+ 677 0038 00 00 00 25 		.size	SPI4W_READDATA, .-SPI4W_READDATA
+ 141:GoodDisplay_functions.c ****     return temp;
+ 678                 	lobal	__size_of_SPI4W_READDATA
+ 679 003a 00 17       		.equ	__size_of_SPI4W_READDATA,. - SPI4W_READDATA
+ 142:GoodDisplay_functions.c **** }
+ 680                 	section	.text.EPD_W27_Init,"ax",@progbits
+ 681 003b 03 0F       		.global	EPD_W27_Init
+ 682                 		.type	EPD_W27_Init, @function
+ 683                 	EPD_W27_Init:
+ 684                 	.LFB9:
+ 685                 		.loc 1 148 0
+ 686                 		enter	#0x0001
+ 687                 	.LCFI7:
+ 688                 		.loc 1 150 0
+ 689                 		ld	AL,#0x0074
+ 690                 		bsr	SPI4W_WRITECOM
+ 143:GoodDisplay_functions.c **** 
+ 144:GoodDisplay_functions.c **** 
+ 145:GoodDisplay_functions.c **** 
+ 146:GoodDisplay_functions.c **** void EPD_W27_Init()
+ 147:GoodDisplay_functions.c **** {
+ 691                 	 0
+ 692 0000 01 0B       		ld	AL,#0x0054
+ 693                 		bsr	SPI4W_WRITEDATA
+ 148:GoodDisplay_functions.c **** 
+ 149:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x74); //Set Analog Block Control
+ 694                 	oc 1 153 0
+ 695 0001 74 14       		ld	AL,#0x007e
+ 696 0002 00 00 00 00 		bsr	SPI4W_WRITECOM
+ 696      00 9C 
+ 150:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x54);
+ 697                 	oc 1 154 0
+ 698 0005 54 14       		ld	AL,#0x003b
+ 699 0006 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 699      00 9C 
+ 151:GoodDisplay_functions.c ****     
+ 152:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x7E); // Set Digital Block Control
+ 700                 	oc 1 158 0
+ 701 0009 7E 14       		ld	AL,#0x002b
+ 702 000a 00 00 00 00 		bsr	SPI4W_WRITECOM
+ 702      00 9C 
+ 153:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x3B);
+ 703                 	oc 1 159 0
+ 704 000d 3B 14       		ld	AL,#0x0004
+ 705 000e 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 705      00 9C 
+ 154:GoodDisplay_functions.c **** 
+ 155:GoodDisplay_functions.c ****     
+ 156:GoodDisplay_functions.c ****     
+ 157:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x2B);  // Reduce glitch under ACVCOM    
+ 706                 	oc 1 160 0
+ 707 0011 2B 14       		ld	AL,#0x0063
+ 708 0012 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 708      00 9C 
+ 158:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x04);           
+ 709                 	oc 1 163 0
+ 710 0015 04 14       		ld	AL,#0x000c
+ 711 0016 00 00 00 00 		bsr	SPI4W_WRITECOM
+ 711      00 9C 
+ 159:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x63);
+ 712                 	oc 1 164 0
+ 713 0019 63 14       		ld	AL,#0x008b
+ 714 001a 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 714      00 9C 
+ 160:GoodDisplay_functions.c **** 
+ 161:GoodDisplay_functions.c ****     
+ 162:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x0C);  // Soft start setting
+ 715                 	oc 1 165 0
+ 716 001d 0C 14       		ld	AL,#0x009c
+ 717 001e 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 717      00 9C 
+ 163:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x8B);           
+ 718                 	oc 1 166 0
+ 719 0021 01 00 8B 14 		ld	AL,#0x0096
+ 720 0023 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 720      00 9C 
+ 164:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x9C);
+ 721                 	oc 1 167 0
+ 722 0026 01 00 9C 14 		ld	AL,#0x000f
+ 723 0028 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 723      00 9C 
+ 165:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x96);
+ 724                 	oc 1 170 0
+ 725 002b 01 00 96 14 		ld	AL,#0x0001
+ 726 002d 00 00 00 00 		bsr	SPI4W_WRITECOM
+ 726      00 9C 
+ 166:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x0F);
+ 727                 	oc 1 171 0
+ 728 0030 0F 14       		ld	AL,#0x0027
+ 729 0031 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 729      00 9C 
+ 167:GoodDisplay_functions.c **** 
+ 168:GoodDisplay_functions.c ****     // Driver Output control
+ 169:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x01);  // Set MUX as 296
+ 730                 	oc 1 172 0
+ 731 0034 01 14       		ld	AL,#0x0001
+ 732 0035 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 732      00 9C 
+ 170:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x27);           
+ 733                 	oc 1 173 0
+ 734 0038 27 14       		ld	AL,#0x0000
+ 735 0039 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 735      00 9C 
+ 171:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x01);
+ 736                 	oc 1 176 0
+ 737 003c 01 14       		ld	AL,#0x0011
+ 738 003d 00 00 00 00 		bsr	SPI4W_WRITECOM
+ 738      00 9C 
+ 172:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x00);
+ 739                 	oc 1 179 0
+ 740 0040 00 14       		ld	AL,#0x0001
+ 741 0041 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 741      00 9C 
+ 173:GoodDisplay_functions.c **** 
+ 174:GoodDisplay_functions.c **** 
+ 175:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x11);  // Data entry mode setting.
+ 742                 	oc 1 182 0
+ 743 0044 11 14       		ld	AL,#0x0044
+ 744 0045 00 00 00 00 		bsr	SPI4W_WRITECOM
+ 744      00 9C 
+ 176:GoodDisplay_functions.c ****     // A[2] = 0b The address counter is updated in the X direction,
+ 177:GoodDisplay_functions.c ****     // A[1:0] = 01b Y decrement, X increment
+ 178:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x01); 
+ 745                 	oc 1 183 0
+ 746 0048 01 14       		ld	AL,#0x0000
+ 747 0049 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 747      00 9C 
+ 179:GoodDisplay_functions.c ****     
+ 180:GoodDisplay_functions.c ****     // Set RAM X - address Start / End position
+ 181:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x44); 
+ 748                 	oc 1 184 0
+ 749 004c 44 14       		ld	AL,#0x000f
+ 750 004d 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 750      00 9C 
+ 182:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x00); // RAM x address start at 0
+ 751                 	oc 1 187 0
+ 752 0050 00 14       		ld	AL,#0x0045
+ 753 0051 00 00 00 00 		bsr	SPI4W_WRITECOM
+ 753      00 9C 
+ 183:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x0F); // RAM x address end at 0Fh(15+1)*8->128
+ 754                 	oc 1 188 0
+ 755 0054 0F 14       		ld	AL,#0x0027
+ 756 0055 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 756      00 9C 
+ 184:GoodDisplay_functions.c **** 
+ 185:GoodDisplay_functions.c ****     // Set Ram Y- address Start / End position
+ 186:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x45); 
+ 757                 	oc 1 189 0
+ 758 0058 45 14       		ld	AL,#0x0001
+ 759 0059 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 759      00 9C 
+ 187:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x27);   // RAM y address start at 127h     
+ 760                 	oc 1 190 0
+ 761 005c 27 14       		ld	AL,#0x0000
+ 762 005d 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 762      00 9C 
+ 188:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x01);  
+ 763                 	oc 1 191 0
+ 764 0060 01 14       		ld	AL,#0x0000
+ 765 0061 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 765      00 9C 
+ 189:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x00); // RAM y address end at 00h     
+ 766                 	oc 1 194 0
+ 767 0064 00 14       		ld	AL,#0x003c
+ 768 0065 00 00 00 00 		bsr	SPI4W_WRITECOM
+ 768      00 9C 
+ 190:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x00);
+ 769                 	oc 1 195 0
+ 770 0068 00 14       		ld	AL,#0x0001
+ 771 0069 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 771      00 9C 
+ 191:GoodDisplay_functions.c **** 
+ 192:GoodDisplay_functions.c ****     // Border Waveform Control
+ 193:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x3C); // board
+ 772                 	oc 1 198 0
+ 773 006c 3C 14       		ld	AL,#0x0018
+ 774 006d 00 00 00 00 		bsr	SPI4W_WRITECOM
+ 774      00 9C 
+ 194:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x01);      //LUT1 orj 01h
+ 775                 	oc 1 199 0
+ 776 0070 01 14       		ld	AL,#0x0080
+ 777 0071 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 777      00 9C 
+ 195:GoodDisplay_functions.c **** 
+ 196:GoodDisplay_functions.c ****     // Temperature sensor control
+ 197:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x18);
+ 778                 	oc 1 203 0
+ 779 0074 18 14       		ld	AL,#0x0022
+ 780 0075 00 00 00 00 		bsr	SPI4W_WRITECOM
+ 780      00 9C 
+ 198:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0X80);
+ 781                 	oc 1 204 0
+ 782 0078 01 00 80 14 		ld	AL,#0x00b1
+ 783 007a 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 783      00 9C 
+ 199:GoodDisplay_functions.c **** 
+ 200:GoodDisplay_functions.c **** 
+ 201:GoodDisplay_functions.c ****     // Display Update Control 2
+ 202:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x22);
+ 784                 	oc 1 207 0
+ 785 007d 22 14       		ld	AL,#0x0020
+ 786 007e 00 00 00 00 		bsr	SPI4W_WRITECOM
+ 786      00 9C 
+ 203:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0XB1);  //Load Temperature and waveform setting.
+ 787                 	oc 1 209 0
+ 788 0081 01 00 B1 14 		bsr	READBUSY
+ 789 0083 00 00 00 00 		.loc 1 218 0
+ 789      00 9C 
+ 204:GoodDisplay_functions.c **** 
+ 205:GoodDisplay_functions.c ****     // Master activation
+ 206:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x20);
+ 790                 		AL,#0x0014
+ 791 0086 20 14       		st	AL,@temp1
+ 792 0087 00 00 00 00 		.loc 1 222 0
+ 792      00 9C 
+ 207:GoodDisplay_functions.c ****     
+ 208:GoodDisplay_functions.c ****     READBUSY();
+ 793                 	ave	#0x0001
+ 794 008a 00 00 00 00 	.LFE9:
+ 794      00 9C 
+ 209:GoodDisplay_functions.c **** 
+ 210:GoodDisplay_functions.c ****     
+ 211:GoodDisplay_functions.c ****     /*
+ 212:GoodDisplay_functions.c ****     // Sýcaklýðý 10'dan büyük alýp burayý pas geçebiliriz.
+ 213:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x1B);
+ 214:GoodDisplay_functions.c ****     temp1=SPI4W_READDATA(); 
+ 215:GoodDisplay_functions.c ****     temp2=SPI4W_READDATA();
+ 216:GoodDisplay_functions.c ****     */
+ 217:GoodDisplay_functions.c ****     temp1=20;
+ 795                 	size	EPD_W27_Init, .-EPD_W27_Init
+ 796 008d 14 14       		.global	__size_of_EPD_W27_Init
+ 797 008e 00 00 00 25 		.equ	__size_of_EPD_W27_Init,. - EPD_W27_Init
+ 218:GoodDisplay_functions.c ****     
+ 219:GoodDisplay_functions.c ****     //PioSet( CS_PIN, HIGH );      //CS HIGH  
+ 220:GoodDisplay_functions.c **** 
+ 221:GoodDisplay_functions.c **** }    
+ 798                 	ection	.text.enterdeepsleep,"ax",@progbits
+ 799 0090 01 0F       		.global	enterdeepsleep
+ 800                 		.type	enterdeepsleep, @function
+ 801                 	enterdeepsleep:
+ 802                 	.LFB10:
+ 803                 		.loc 1 226 0
+ 804                 		enter	#0x0001
+ 805                 	.LCFI8:
+ 806                 		.loc 1 227 0
+ 807                 		ld	AL,@temp1
+ 808                 		cmp	AL,#0x000a
+ 222:GoodDisplay_functions.c **** 
+ 223:GoodDisplay_functions.c **** 
+ 224:GoodDisplay_functions.c **** void enterdeepsleep()
+ 225:GoodDisplay_functions.c **** {
+ 809                 	.loc 1 229 0
+ 810 0000 01 0B       		ld	AL,#0x0072
+ 811                 		bsr	SPI4W_WRITECOM
+ 226:GoodDisplay_functions.c ****     if ( temp1<10) // for less than 10 degC. new added in 07Sep2017
+ 812                 	oc 1 230 0
+ 813 0001 00 00 00 15 		ld	AL,#0x0080
+ 814 0003 0A 84       		bsr	SPI4W_WRITEDATA
+ 815 0004 00 00 00 00 		.loc 1 231 0
+ 815      00 F8 
+ 227:GoodDisplay_functions.c ****     {
+ 228:GoodDisplay_functions.c ****         SPI4W_WRITECOM(0x72);
+ 816                 	AL,#0x0006
+ 817 0007 72 14       		ld	AH,#0x0001
+ 818 0008 00 00 00 00 		bsr	PioSet
+ 818      00 9C 
+ 229:GoodDisplay_functions.c ****         SPI4W_WRITEDATA(0x80);
+ 819                 	7:
+ 820 000b 01 00 80 14 		.loc 1 234 0
+ 821 000d 00 00 00 00 		ld	AL,#0x0010
+ 821      00 9C 
+ 230:GoodDisplay_functions.c ****         PioSet( CS_PIN, HIGH );
+ 822                 	r	SPI4W_WRITECOM
+ 823 0010 06 14       		.loc 1 235 0
+ 824 0011 01 10       		ld	AL,#0x0001
+ 825 0012 00 00 00 00 		bsr	SPI4W_WRITEDATA
+ 825      00 9C 
+ 826                 		.loc 1 236 0
+ 231:GoodDisplay_functions.c ****     }
+ 232:GoodDisplay_functions.c **** 
+ 233:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x10);
+ 827                 	L,#0x0006
+ 828 0015 10 14       		ld	AH,#0x0001
+ 829 0016 00 00 00 00 		bsr	PioSet
+ 829      00 9C 
+ 234:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x01); //00h = Normal mode, 01h = Deep Sleep
+ 830                 	oc 1 237 0
+ 831 0019 01 14       		leave	#0x0001
+ 832 001a 00 00 00 00 	.LFE10:
+ 832      00 9C 
+ 235:GoodDisplay_functions.c ****     PioSet( CS_PIN, HIGH );
+ 833                 	ize	enterdeepsleep, .-enterdeepsleep
+ 834 001d 06 14       		.global	__size_of_enterdeepsleep
+ 835 001e 01 10       		.equ	__size_of_enterdeepsleep,. - enterdeepsleep
+ 836 001f 00 00 00 00 		.section	.text.Display,"ax",@progbits
+ 836      00 9C 
+ 236:GoodDisplay_functions.c **** }
+ 837                 	obal	Display
+ 838 0022 01 0F       		.type	Display, @function
+ 839                 	Display:
+ 840                 	.LFB11:
+ 841                 		.loc 1 239 0
+ 842                 		enter	#0x0005
+ 843                 	.LCFI9:
+ 844                 		.loc 1 241 0
+ 845                 		bsr	PinModeDir
+ 846                 		.loc 1 243 0
+ 847                 		bsr	Reset
+ 237:GoodDisplay_functions.c **** 
+ 238:GoodDisplay_functions.c **** void Display(){
+ 848                 	 0
+ 849 0000 05 0B       		bsr	READBUSY
+ 850                 		.loc 1 246 0
+ 239:GoodDisplay_functions.c ****     
+ 240:GoodDisplay_functions.c ****     PinModeDir();
+ 851                 		AL,#0x0012
+ 852 0001 00 00 00 00 		bsr	SPI4W_WRITECOM
+ 852      00 9C 
+ 241:GoodDisplay_functions.c **** 
+ 242:GoodDisplay_functions.c ****     Reset();
+ 853                 	loc 1 247 0
+ 854 0004 00 00 00 00 		bsr	READBUSY
+ 854      00 9C 
+ 243:GoodDisplay_functions.c ****     
+ 244:GoodDisplay_functions.c ****     READBUSY();
+ 855                 	loc 1 249 0
+ 856 0007 00 00 00 00 		bsr	EPD_W27_Init
+ 856      00 9C 
+ 245:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x12); // Software Reset
+ 857                 	loc 1 255 0
+ 858 000a 12 14       		ld	AL,#0x004e
+ 859 000b 00 00 00 00 		bsr	SPI4W_WRITECOM
+ 859      00 9C 
+ 246:GoodDisplay_functions.c ****     READBUSY();
+ 860                 	oc 1 256 0
+ 861 000e 00 00 00 00 		ld	AL,#0x0000
+ 861      00 9C 
+ 247:GoodDisplay_functions.c ****     
+ 248:GoodDisplay_functions.c ****     EPD_W27_Init(); 
+ 862                 	sr	SPI4W_WRITEDATA
+ 863 0011 00 00 00 00 		.loc 1 258 0
+ 863      00 9C 
+ 249:GoodDisplay_functions.c ****       
+ 250:GoodDisplay_functions.c **** 
+ 251:GoodDisplay_functions.c ****     unsigned int row, col;
+ 252:GoodDisplay_functions.c **** 	unsigned int pcnt;
+ 253:GoodDisplay_functions.c ****     // Draw BW part
+ 254:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x4E);       // set RAM x address count to 0;
+ 864                 	d	AL,#0x004f
+ 865 0014 4E 14       		bsr	SPI4W_WRITECOM
+ 866 0015 00 00 00 00 		.loc 1 259 0
+ 866      00 9C 
+ 255:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x00);
+ 867                 		AL,#0x0027
+ 868 0018 00 14       		bsr	SPI4W_WRITEDATA
+ 869 0019 00 00 00 00 		.loc 1 260 0
+ 869      00 9C 
+ 256:GoodDisplay_functions.c **** 
+ 257:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x4F);       // set RAM y address count to 296;
+ 870                 		AL,#0x0001
+ 871 001c 4F 14       		bsr	SPI4W_WRITEDATA
+ 872 001d 00 00 00 00 		.loc 1 262 0
+ 872      00 9C 
+ 258:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x27);
+ 873                 		AL,#0x0024
+ 874 0020 27 14       		bsr	SPI4W_WRITECOM
+ 875 0021 00 00 00 00 		.loc 1 264 0
+ 875      00 9C 
+ 259:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x01);
+ 876                 		AL,#0x0000
+ 877 0024 01 14       		st	AL,@(0,Y)
+ 878 0025 00 00 00 00 		.loc 1 266 0
+ 878      00 9C 
+ 260:GoodDisplay_functions.c **** 
+ 261:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x24);             //   Display BW
+ 879                 		AL,#0x0000
+ 880 0028 24 14       		st	AL,@(0,Y)
+ 881 0029 00 00 00 00 		bra	.L40
+ 881      00 9C 
+ 262:GoodDisplay_functions.c **** 
+ 263:GoodDisplay_functions.c ****     unsigned int i = 0;
+ 882                 	1:
+ 883 002c 00 14       		.loc 1 268 0
+ 884 002d 00 27       		ld	AL,@(0,Y)
+ 264:GoodDisplay_functions.c **** 							// ¸´Î»»ò±£´æÌáÊ¾×Ö½Ú?òºÅ
+ 265:GoodDisplay_functions.c **** 	for(i=0; i<8; i++)							
+ 885                 		X,@$XAP_AL
+ 886 002e 00 14       		add	X,#0x0001
+ 887 002f 00 27       		st	X,@(0,Y)
+ 888 0030 00 00 00 00 		.loc 1 266 0
+ 888      00 E0 
+ 889                 		ld	AL,@(0,Y)
+ 266:GoodDisplay_functions.c **** 	{
+ 267:GoodDisplay_functions.c ****          i++;
+ 890                 	,@$XAP_AL
+ 891 0033 00 17       		add	X,#0x0001
+ 892 0034 00 00 00 19 		st	X,@(0,Y)
+ 893 0036 01 38       	.L40:
+ 894 0037 00 2B       		ld	AL,@(0,Y)
+ 266:GoodDisplay_functions.c **** 	{
+ 895                 		cmp	AL,#0x0007
+ 896 0038 00 17       		bcz	.L41
+ 897 0039 00 00 00 19 		.loc 1 273 0
+ 898 003b 01 38       		ld	AL,#0x004e
+ 899 003c 00 2B       		bsr	SPI4W_WRITECOM
+ 900                 		.loc 1 274 0
+ 901 003d 00 17       		ld	AL,#0x0000
+ 902 003e 07 84       		bsr	SPI4W_WRITEDATA
+ 903 003f 00 00 00 00 		.loc 1 276 0
+ 903      00 2C 
+ 268:GoodDisplay_functions.c ****     }
+ 269:GoodDisplay_functions.c **** 
+ 270:GoodDisplay_functions.c ****     
+ 271:GoodDisplay_functions.c ****     // Draw RED part
+ 272:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x4E);       // set RAM x address count to 0;
+ 904                 	
+ 905 0042 4E 14       		bsr	SPI4W_WRITECOM
+ 906 0043 00 00 00 00 		.loc 1 277 0
+ 906      00 9C 
+ 273:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x00);
+ 907                 	d	AL,#0x0027
+ 908 0046 00 14       		bsr	SPI4W_WRITEDATA
+ 909 0047 00 00 00 00 		.loc 1 278 0
+ 909      00 9C 
+ 274:GoodDisplay_functions.c ****     
+ 275:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x4F);       // set RAM y address count to 296;
+ 910                 		AL,#0x0001
+ 911 004a 4F 14       		bsr	SPI4W_WRITEDATA
+ 912 004b 00 00 00 00 		.loc 1 280 0
+ 912      00 9C 
+ 276:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x27);
+ 913                 		AL,#0x0026
+ 914 004e 27 14       		bsr	SPI4W_WRITECOM
+ 915 004f 00 00 00 00 		.loc 1 281 0
+ 915      00 9C 
+ 277:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0x01);
+ 916                 		AL,#0x0000
+ 917 0052 01 14       		st	AL,@(0,Y)
+ 918 0053 00 00 00 00 		bra	.L42
+ 918      00 9C 
+ 278:GoodDisplay_functions.c **** 
+ 279:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x26);             //   Display RED
+ 919                 	3:
+ 920 0056 26 14       		.loc 1 283 0
+ 921 0057 00 00 00 00 		ld	AL,#0x00ff
+ 921      00 9C 
+ 280:GoodDisplay_functions.c **** 	for(i=0; i<8; i++)							
+ 922                 	r	SPI4W_WRITEDATA
+ 923 005a 00 14       		.loc 1 284 0
+ 924 005b 00 27       		ld	AL,#0x0001
+ 925 005c 00 00 00 00 		bsr	delay_ms
+ 925      00 E0 
+ 926                 		.loc 1 281 0
+ 281:GoodDisplay_functions.c **** 	{
+ 282:GoodDisplay_functions.c ****          SPI4W_WRITEDATA(0xff);
+ 927                 	L,@(0,Y)
+ 928 005f 01 00 FF 14 		ld	X,@$XAP_AL
+ 929 0061 00 00 00 00 		add	X,#0x0001
+ 929      00 9C 
+ 283:GoodDisplay_functions.c ****          delay_ms(1);
+ 930                 		X,@(0,Y)
+ 931 0064 01 14       	.L42:
+ 932 0065 00 00 00 00 		ld	AL,@(0,Y)
+ 932      00 9C 
+ 281:GoodDisplay_functions.c **** 	{
+ 933                 		cmp	AL,#0x0007
+ 934 0068 00 17       		bcz	.L43
+ 935 0069 00 00 00 19 		.loc 1 288 0
+ 936 006b 01 38       		ld	AL,#0x0022
+ 937 006c 00 2B       		bsr	SPI4W_WRITECOM
+ 938                 		.loc 1 289 0
+ 939 006d 00 17       		ld	AL,#0x00c7
+ 940 006e 07 84       		bsr	SPI4W_WRITEDATA
+ 941 006f 00 00 00 00 		.loc 1 290 0
+ 941      00 2C 
+ 284:GoodDisplay_functions.c ****     }
+ 285:GoodDisplay_functions.c **** 
+ 286:GoodDisplay_functions.c **** 
+ 287:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x22); //Reset Screen
+ 942                 	20
+ 943 0072 22 14       		bsr	SPI4W_WRITECOM
+ 944 0073 00 00 00 00 		.loc 1 291 0
+ 944      00 9C 
+ 288:GoodDisplay_functions.c ****     SPI4W_WRITEDATA(0xC7);      
+ 945                 		AL,#0x0001
+ 946 0076 01 00 C7 14 		bsr	delay_ms
+ 947 0078 00 00 00 00 		.loc 1 292 0
+ 947      00 9C 
+ 289:GoodDisplay_functions.c ****     SPI4W_WRITECOM(0x20); // ?
+ 948                 	r	READBUSY
+ 949 007b 20 14       		.loc 1 294 0
+ 950 007c 00 00 00 00 		bsr	enterdeepsleep
+ 950      00 9C 
+ 290:GoodDisplay_functions.c ****     delay_ms(1);
+ 951                 	oc 1 296 0
+ 952 007f 01 14       		ld	AL,#0x0007
+ 953 0080 00 00 00 00 		ld	AH,#0x0000
+ 953      00 9C 
+ 291:GoodDisplay_functions.c ****     READBUSY();
+ 954                 	r	PioSet
+ 955 0083 00 00 00 00 		.loc 1 297 0
+ 955      00 9C 
+ 292:GoodDisplay_functions.c **** 
+ 293:GoodDisplay_functions.c ****     enterdeepsleep();
+ 956                 	d	AL,#0x0005
+ 957 0086 00 00 00 00 		ld	AH,#0x0000
+ 957      00 9C 
+ 294:GoodDisplay_functions.c ****     
+ 295:GoodDisplay_functions.c ****     PioSet( SPI_MASTER_PIO_MOSI, LOW );
+ 958                 	sr	PioSet
+ 959 0089 07 14       		.loc 1 299 0
+ 960 008a 00 10       		ld	AL,#0x03e8
+ 961 008b 00 00 00 00 		bsr	delay_ms
+ 961      00 9C 
+ 296:GoodDisplay_functions.c ****     PioSet( SPI_MASTER_PIO_SCLK, LOW );
+ 962                 	c 1 300 0
+ 963 008e 05 14       		leave	#0x0005
+ 964 008f 00 10       	.LFE11:
+ 965 0090 00 00 00 00 		.size	Display, .-Display
+ 965      00 9C 
+ 297:GoodDisplay_functions.c ****     
+ 298:GoodDisplay_functions.c ****     delay_ms(1000); // 2sn bekleme.
+ 966                 	obal	__size_of_Display
+ 967 0093 04 00 E8 14 		.equ	__size_of_Display,. - Display
+ 968 0095 00 00 00 00 		.comm tempcode, 1, 1
+ 968      00 9C 
+ 299:GoodDisplay_functions.c **** }
+ 969                 	comm tempvalue, 1, 1
+ 970 0098 05 0F       	
+ 971                 		.comm temp1, 1, 1
+ 972                 	
+ 973                 		.comm temp2, 1, 1
+ 974                 	
+ 975                 		.section	.debug_frame,"",@progbits
+ 976                 	.Lframe0:
+ 977                 		.4byte	.LECIE0-.LSCIE0
+ 978                 	.LSCIE0:
+ 979                 		.4byte	0xffffffff
+ 980                 		.1byte	0x1
+ 981                 		.ascii "\000"
+ 982                 		.1byte	0x1
+ 983                 		.1byte	0x7f
+ 984                 		.1byte	0x3
+ 985 0000 00 00 00 00 		.1byte	0xc
+ 986                 		.1byte	0x5
+ 987 0002 FF FF FF FF 		.1byte	0x0
+ 988 0004 01          		.p2align	2
+ 989 0004 00          	.LECIE0:
+ 990 0005 01          	.LSFDE0:
+ 991 0005 7F          		.4byte	.LEFDE0-.LASFDE0
+ 992 0006 03          	.LASFDE0:
+ 993 0006 0C          		.4byte	.Lframe0
+ 994 0007 05          		.4byte	.LFB2
+ 995 0007 00          		.4byte	.LFE2-.LFB2
+ 996                 		.1byte	0x4
+ 997                 		.4byte	.LCFI0-.LFB2
+ 998                 		.1byte	0xe
+ 999 0008 00 00 00 00 		.1byte	0x10
+ 1000                 		.1byte	0x83
+ 1001 000a 00 00 00 00 		.1byte	0x1
+ 1002 000c 00 00 00 00 		.p2align	2
+ 1003 000e 00 00 00 00 	.LEFDE0:
+ 1004 0010 41          	.LSFDE2:
+ 1005                 		.4byte	.LEFDE2-.LASFDE2
+ 1006 0010 0E          	.LASFDE2:
+ 1007 0011 10          		.4byte	.Lframe0
+ 1008 0011 83          		.4byte	.LFB3
+ 1009 0012 01          		.4byte	.LFE3-.LFB3
+ 1010 0012 00 00 00    		.1byte	0x4
+ 1011                 		.4byte	.LCFI1-.LFB3
+ 1012                 		.1byte	0xe
+ 1013 0014 00 00 00 00 		.1byte	0x1
+ 1014                 		.1byte	0x83
+ 1015 0016 00 00 00 00 		.1byte	0x1
+ 1016 0018 00 00 00 00 		.p2align	2
+ 1017 001a 00 00 00 00 	.LEFDE2:
+ 1018 001c 41          	.LSFDE4:
+ 1019                 		.4byte	.LEFDE4-.LASFDE4
+ 1020 001c 0E          	.LASFDE4:
+ 1021 001d 01          		.4byte	.Lframe0
+ 1022 001d 83          		.4byte	.LFB4
+ 1023 001e 01          		.4byte	.LFE4-.LFB4
+ 1024 001e 00 00 00    		.1byte	0x4
+ 1025                 		.4byte	.LCFI2-.LFB4
+ 1026                 		.1byte	0xe
+ 1027 0020 00 00 00 00 		.1byte	0x1
+ 1028                 		.1byte	0x83
+ 1029 0022 00 00 00 00 		.1byte	0x1
+ 1030 0024 00 00 00 00 		.p2align	2
+ 1031 0026 00 00 00 00 	.LEFDE4:
+ 1032 0028 41          	.LSFDE6:
+ 1033                 		.4byte	.LEFDE6-.LASFDE6
+ 1034 0028 0E          	.LASFDE6:
+ 1035 0029 01          		.4byte	.Lframe0
+ 1036 0029 83          		.4byte	.LFB5
+ 1037 002a 01          		.4byte	.LFE5-.LFB5
+ 1038 002a 00 00 00    		.1byte	0x4
+ 1039                 		.4byte	.LCFI3-.LFB5
+ 1040                 		.1byte	0xe
+ 1041 002c 00 00 00 00 		.1byte	0x1
+ 1042                 		.1byte	0x83
+ 1043 002e 00 00 00 00 		.1byte	0x1
+ 1044 0030 00 00 00 00 		.p2align	2
+ 1045 0032 00 00 00 00 	.LEFDE6:
+ 1046 0034 41          	.LSFDE8:
+ 1047                 		.4byte	.LEFDE8-.LASFDE8
+ 1048 0034 0E          	.LASFDE8:
+ 1049 0035 01          		.4byte	.Lframe0
+ 1050 0035 83          		.4byte	.LFB6
+ 1051 0036 01          		.4byte	.LFE6-.LFB6
+ 1052 0036 00 00 00    		.1byte	0x4
+ 1053                 		.4byte	.LCFI4-.LFB6
+ 1054                 		.1byte	0xe
+ 1055 0038 00 00 00 00 		.1byte	0x4
+ 1056                 		.1byte	0x83
+ 1057 003a 00 00 00 00 		.1byte	0x1
+ 1058 003c 00 00 00 00 		.p2align	2
+ 1059 003e 00 00 00 00 	.LEFDE8:
+ 1060 0040 41          	.LSFDE10:
+ 1061                 		.4byte	.LEFDE10-.LASFDE10
+ 1062 0040 0E          	.LASFDE10:
+ 1063 0041 04          		.4byte	.Lframe0
+ 1064 0041 83          		.4byte	.LFB7
+ 1065 0042 01          		.4byte	.LFE7-.LFB7
+ 1066 0042 00 00 00    		.1byte	0x4
+ 1067                 		.4byte	.LCFI5-.LFB7
+ 1068                 		.1byte	0xe
+ 1069 0044 00 00 00 00 		.1byte	0x4
+ 1070                 		.1byte	0x83
+ 1071 0046 00 00 00 00 		.1byte	0x1
+ 1072 0048 00 00 00 00 		.p2align	2
+ 1073 004a 00 00 00 00 	.LEFDE10:
+ 1074 004c 41          	.LSFDE12:
+ 1075                 		.4byte	.LEFDE12-.LASFDE12
+ 1076 004c 0E          	.LASFDE12:
+ 1077 004d 04          		.4byte	.Lframe0
+ 1078 004d 83          		.4byte	.LFB8
+ 1079 004e 01          		.4byte	.LFE8-.LFB8
+ 1080 004e 00 00 00    		.1byte	0x4
+ 1081                 		.4byte	.LCFI6-.LFB8
+ 1082                 		.1byte	0xe
+ 1083 0050 00 00 00 00 		.1byte	0x3
+ 1084                 		.1byte	0x83
+ 1085 0052 00 00 00 00 		.1byte	0x1
+ 1086 0054 00 00 00 00 		.p2align	2
+ 1087 0056 00 00 00 00 	.LEFDE12:
+ 1088 0058 41          	.LSFDE14:
+ 1089                 		.4byte	.LEFDE14-.LASFDE14
+ 1090 0058 0E          	.LASFDE14:
+ 1091 0059 03          		.4byte	.Lframe0
+ 1092 0059 83          		.4byte	.LFB9
+ 1093 005a 01          		.4byte	.LFE9-.LFB9
+ 1094 005a 00 00 00    		.1byte	0x4
+ 1095                 		.4byte	.LCFI7-.LFB9
+ 1096                 		.1byte	0xe
+ 1097 005c 00 00 00 00 		.1byte	0x1
+ 1098                 		.1byte	0x83
+ 1099 005e 00 00 00 00 		.1byte	0x1
+ 1100 0060 00 00 00 00 		.p2align	2
+ 1101 0062 00 00 00 00 	.LEFDE14:
+ 1102 0064 41          	.LSFDE16:
+ 1103                 		.4byte	.LEFDE16-.LASFDE16
+ 1104 0064 0E          	.LASFDE16:
+ 1105 0065 01          		.4byte	.Lframe0
+ 1106 0065 83          		.4byte	.LFB10
+ 1107 0066 01          		.4byte	.LFE10-.LFB10
+ 1108 0066 00 00 00    		.1byte	0x4
+ 1109                 		.4byte	.LCFI8-.LFB10
+ 1110                 		.1byte	0xe
+ 1111 0068 00 00 00 00 		.1byte	0x1
+ 1112                 		.1byte	0x83
+ 1113 006a 00 00 00 00 		.1byte	0x1
+ 1114 006c 00 00 00 00 		.p2align	2
+ 1115 006e 00 00 00 00 	.LEFDE16:
+ 1116 0070 41          	.LSFDE18:
+ 1117                 		.4byte	.LEFDE18-.LASFDE18
+ 1118 0070 0E          	.LASFDE18:
+ 1119 0071 01          		.4byte	.Lframe0
+ 1120 0071 83          		.4byte	.LFB11
+ 1121 0072 01          		.4byte	.LFE11-.LFB11
+ 1122 0072 00 00 00    		.1byte	0x4
+ 1123                 		.4byte	.LCFI9-.LFB11
+ 1124                 		.1byte	0xe
+ 1125 0074 00 00 00 00 		.1byte	0x5
+ 1126                 		.1byte	0x83
+ 1127 0076 00 00 00 00 		.1byte	0x1
+ 1128 0078 00 00 00 00 		.p2align	2
+ 1129 007a 00 00 00 00 	.LEFDE18:
+ 1130 007c 41          		.text
+ 1131                 	.Letext0:
+ 1132 007c 0E          		.section	.debug_loc,"",@progbits
+ 1133 007d 05          	.Ldebug_loc0:
+ 1134 007d 83          	.LLST0:
+ 1135 007e 01          		.4byte	.LFB2
+ 1136 007e 00 00 00    		.4byte	.LCFI0
+ 1137                 		.2byte	0x1
+ 1138                 		.1byte	0x55
+ 1139                 		.4byte	.LCFI0
+ 1140                 		.4byte	.LFE2
+ 1141                 		.2byte	0x2
+ 1142                 		.1byte	0x75
+ 1143 0000 00 00 00 00 		.1byte	0x10
+ 1144 0002 00 00 00 00 		.4byte	0x0
+ 1145 0004 00 01       		.4byte	0x0
+ 1146 0005 55          	.LLST1:
+ 1147 0005 00 00 00 00 		.4byte	.LFB3
+ 1148 0007 00 00 00 00 		.4byte	.LCFI1
+ 1149 0009 00 02       		.2byte	0x1
+ 1150 000a 75          		.1byte	0x55
+ 1151 000b 10          		.4byte	.LCFI1
+ 1152 000b 00 00 00 00 		.4byte	.LFE3
+ 1153 000d 00 00 00 00 		.2byte	0x2
+ 1154                 		.1byte	0x75
+ 1155 000f 00 00 00 00 		.1byte	0x1
+ 1156 0011 00 00 00 00 		.4byte	0x0
+ 1157 0013 00 01       		.4byte	0x0
+ 1158 0014 55          	.LLST2:
+ 1159 0015 00 00 00 00 		.4byte	.LFB4
+ 1160 0017 00 00 00 00 		.4byte	.LCFI2
+ 1161 0019 00 02       		.2byte	0x1
+ 1162 001a 75          		.1byte	0x55
+ 1163 001a 01          		.4byte	.LCFI2
+ 1164 001b 00 00 00 00 		.4byte	.LFE4
+ 1165 001d 00 00 00 00 		.2byte	0x2
+ 1166                 		.1byte	0x75
+ 1167 001f 00 00 00 00 		.1byte	0x1
+ 1168 0021 00 00 00 00 		.4byte	0x0
+ 1169 0023 00 01       		.4byte	0x0
+ 1170 0024 55          	.LLST3:
+ 1171 0024 00 00 00 00 		.4byte	.LFB5
+ 1172 0026 00 00 00 00 		.4byte	.LCFI3
+ 1173 0028 00 02       		.2byte	0x1
+ 1174 0029 75          		.1byte	0x55
+ 1175 002a 01          		.4byte	.LCFI3
+ 1176 002a 00 00 00 00 		.4byte	.LFE5
+ 1177 002c 00 00 00 00 		.2byte	0x2
+ 1178                 		.1byte	0x75
+ 1179 002e 00 00 00 00 		.1byte	0x1
+ 1180 0030 00 00 00 00 		.4byte	0x0
+ 1181 0032 00 01       		.4byte	0x0
+ 1182 0033 55          	.LLST4:
+ 1183 0034 00 00 00 00 		.4byte	.LFB6
+ 1184 0036 00 00 00 00 		.4byte	.LCFI4
+ 1185 0038 00 02       		.2byte	0x1
+ 1186 0039 75          		.1byte	0x55
+ 1187 0039 01          		.4byte	.LCFI4
+ 1188 003a 00 00 00 00 		.4byte	.LFE6
+ 1189 003c 00 00 00 00 		.2byte	0x2
+ 1190                 		.1byte	0x75
+ 1191 003e 00 00 00 00 		.1byte	0x4
+ 1192 0040 00 00 00 00 		.4byte	0x0
+ 1193 0042 00 01       		.4byte	0x0
+ 1194 0043 55          	.LLST5:
+ 1195 0043 00 00 00 00 		.4byte	.LFB7
+ 1196 0045 00 00 00 00 		.4byte	.LCFI5
+ 1197 0047 00 02       		.2byte	0x1
+ 1198 0048 75          		.1byte	0x55
+ 1199 0049 04          		.4byte	.LCFI5
+ 1200 0049 00 00 00 00 		.4byte	.LFE7
+ 1201 004b 00 00 00 00 		.2byte	0x2
+ 1202                 		.1byte	0x75
+ 1203 004d 00 00 00 00 		.1byte	0x4
+ 1204 004f 00 00 00 00 		.4byte	0x0
+ 1205 0051 00 01       		.4byte	0x0
+ 1206 0052 55          	.LLST6:
+ 1207 0053 00 00 00 00 		.4byte	.LFB8
+ 1208 0055 00 00 00 00 		.4byte	.LCFI6
+ 1209 0057 00 02       		.2byte	0x1
+ 1210 0058 75          		.1byte	0x55
+ 1211 0058 04          		.4byte	.LCFI6
+ 1212 0059 00 00 00 00 		.4byte	.LFE8
+ 1213 005b 00 00 00 00 		.2byte	0x2
+ 1214                 		.1byte	0x75
+ 1215 005d 00 00 00 00 		.1byte	0x3
+ 1216 005f 00 00 00 00 		.4byte	0x0
+ 1217 0061 00 01       		.4byte	0x0
+ 1218 0062 55          	.LLST7:
+ 1219 0062 00 00 00 00 		.4byte	.LFB9
+ 1220 0064 00 00 00 00 		.4byte	.LCFI7
+ 1221 0066 00 02       		.2byte	0x1
+ 1222 0067 75          		.1byte	0x55
+ 1223 0068 03          		.4byte	.LCFI7
+ 1224 0068 00 00 00 00 		.4byte	.LFE9
+ 1225 006a 00 00 00 00 		.2byte	0x2
+ 1226                 		.1byte	0x75
+ 1227 006c 00 00 00 00 		.1byte	0x1
+ 1228 006e 00 00 00 00 		.4byte	0x0
+ 1229 0070 00 01       		.4byte	0x0
+ 1230 0071 55          	.LLST8:
+ 1231 0072 00 00 00 00 		.4byte	.LFB10
+ 1232 0074 00 00 00 00 		.4byte	.LCFI8
+ 1233 0076 00 02       		.2byte	0x1
+ 1234 0077 75          		.1byte	0x55
+ 1235 0077 01          		.4byte	.LCFI8
+ 1236 0078 00 00 00 00 		.4byte	.LFE10
+ 1237 007a 00 00 00 00 		.2byte	0x2
+ 1238                 		.1byte	0x75
+ 1239 007c 00 00 00 00 		.1byte	0x1
+ 1240 007e 00 00 00 00 		.4byte	0x0
+ 1241 0080 00 01       		.4byte	0x0
+ 1242 0081 55          	.LLST9:
+ 1243 0081 00 00 00 00 		.4byte	.LFB11
+ 1244 0083 00 00 00 00 		.4byte	.LCFI9
+ 1245 0085 00 02       		.2byte	0x1
+ 1246 0086 75          		.1byte	0x55
+ 1247 0087 01          		.4byte	.LCFI9
+ 1248 0087 00 00 00 00 		.4byte	.LFE11
+ 1249 0089 00 00 00 00 		.2byte	0x2
+ 1250                 		.1byte	0x75
+ 1251 008b 00 00 00 00 		.1byte	0x5
+ 1252 008d 00 00 00 00 		.4byte	0x0
+ 1253 008f 00 01       		.4byte	0x0
+ 1254 0090 55          		.file 2 "C:/CSR_uEnergy_SDK-2.3.0.31/tools/include/CSR101x_A05/types.h"
+ 1255 0091 00 00 00 00 		.file 3 "gooddisplay_functions.h"
+ 1256 0093 00 00 00 00 		.section	.debug_info
+ 1257 0095 00 02       		.4byte	0x303
+ 1258 0096 75          		.2byte	0x2
+ 1259 0096 05          		.4byte	.Ldebug_abbrev0
+ 1260 0097 00 00 00 00 		.1byte	0x4
+ 1261 0099 00 00 00 00 		.1byte	0x1
+ 1262                 		.4byte	.LASF37
+ 1263                 		.1byte	0x1
+ 1264                 		.4byte	.LASF38
+ 1265 0000 00 00 03 03 		.4byte	.LASF39
+ 1266 0002 00 02       		.4byte	0x0
+ 1267 0003 00 00 00 00 		.4byte	0x0
+ 1268 0005 04          		.4byte	.Ldebug_ranges0+0x0
+ 1269 0005 01          		.4byte	.Ldebug_line0
+ 1270 0006 00 00 00 00 		.1byte	0x2
+ 1271 0008 01          		.1byte	0x2
+ 1272 0008 00 00 00 00 		.1byte	0x8
+ 1273 000a 00 00 00 00 		.4byte	.LASF0
+ 1274 000c 00 00 00 00 		.1byte	0x3
+ 1275 000e 00 00 00 00 		.4byte	.LASF2
+ 1276 0010 00 00 00 00 		.1byte	0x2
+ 1277 0012 00 00 00 00 		.1byte	0x1f
+ 1278 0014 02          		.4byte	0x3b
+ 1279 0015 02          		.1byte	0x2
+ 1280 0015 08          		.1byte	0x2
+ 1281 0016 00 00 00 00 		.1byte	0x7
+ 1282 0018 03          		.4byte	.LASF1
+ 1283 0018 00 00 00 00 		.1byte	0x3
+ 1284 001a 02          		.4byte	.LASF3
+ 1285 001b 1F          		.1byte	0x2
+ 1286 001b 00 00 00 3B 		.1byte	0x20
+ 1287 001d 02          		.4byte	0x4d
+ 1288 001e 02          		.1byte	0x2
+ 1289 001e 07          		.1byte	0x4
+ 1290 001f 00 00 00 00 		.1byte	0x7
+ 1291 0021 03          		.4byte	.LASF4
+ 1292 0021 00 00 00 00 		.1byte	0x2
+ 1293 0023 02          		.1byte	0x2
+ 1294 0024 20          		.1byte	0x6
+ 1295 0024 00 00 00 4D 		.4byte	.LASF5
+ 1296 0026 02          		.1byte	0x2
+ 1297 0027 04          		.1byte	0x2
+ 1298 0027 07          		.1byte	0x5
+ 1299 0028 00 00 00 00 		.4byte	.LASF6
+ 1300 002a 02          		.1byte	0x2
+ 1301 002a 02          		.1byte	0x4
+ 1302 002b 06          		.1byte	0x5
+ 1303 002b 00 00 00 00 		.4byte	.LASF7
+ 1304 002d 02          		.1byte	0x2
+ 1305 002e 02          		.1byte	0x2
+ 1306 002e 05          		.1byte	0x7
+ 1307 002f 00 00 00 00 		.4byte	.LASF8
+ 1308 0031 02          		.1byte	0x4
+ 1309 0031 04          		.1byte	0x2
+ 1310 0032 05          		.1byte	0x7
+ 1311 0032 00 00 00 00 		.1byte	0x5
+ 1312 0034 02          		.1byte	0x1
+ 1313 0035 02          		.4byte	.LASF14
+ 1314 0035 07          		.1byte	0x1
+ 1315 0036 00 00 00 00 		.1byte	0xb
+ 1316 0038 04          		.1byte	0x1
+ 1317 0038 02          		.4byte	.LFB2
+ 1318 0039 07          		.4byte	.LFE2
+ 1319 0039 05          		.4byte	.LLST0
+ 1320 003a 01          		.4byte	0xc1
+ 1321 003a 00 00 00 00 		.1byte	0x6
+ 1322 003c 01          		.4byte	.LASF16
+ 1323 003d 0B          		.1byte	0x1
+ 1324 003d 01          		.1byte	0xa
+ 1325 003e 00 00 00 00 		.4byte	0x30
+ 1326 0040 00 00 00 00 		.1byte	0x2
+ 1327 0042 00 00 00 00 		.1byte	0x76
+ 1328 0044 00 00 00 C1 		.1byte	0x6
+ 1329 0046 06          		.1byte	0x7
+ 1330 0046 00 00 00 00 		.4byte	.LASF9
+ 1331 0048 01          		.1byte	0x1
+ 1332 0049 0A          		.1byte	0xd
+ 1333 0049 00 00 00 30 		.4byte	0x42
+ 1334 004b 02          		.1byte	0x2
+ 1335 004c 76          		.1byte	0x76
+ 1336 004c 06          		.1byte	0x4
+ 1337 004d 07          		.1byte	0x8
+ 1338 004d 00 00 00 00 		.4byte	.LBB2
+ 1339 004f 01          		.4byte	.LBE2
+ 1340 0050 0D          		.1byte	0x7
+ 1341 0050 00 00 00 42 		.4byte	.LASF10
+ 1342 0052 02          		.1byte	0x1
+ 1343 0053 76          		.1byte	0x11
+ 1344 0053 04          		.4byte	0x42
+ 1345 0054 08          		.1byte	0x2
+ 1346 0054 00 00 00 00 		.1byte	0x76
+ 1347 0056 00 00 00 00 		.1byte	0x2
+ 1348 0058 07          		.1byte	0x0
+ 1349 0059 00 00 00 00 		.1byte	0x0
+ 1350 005b 01          		.1byte	0x9
+ 1351 005b 11          		.1byte	0x1
+ 1352 005c 00 00 00 42 		.4byte	.LASF11
+ 1353 005e 02          		.1byte	0x1
+ 1354 005e 76          		.1byte	0x1f
+ 1355 005f 02          		.1byte	0x1
+ 1356 005f 00          		.4byte	.LFB3
+ 1357 0060 00          		.4byte	.LFE3
+ 1358 0060 09          		.4byte	.LLST1
+ 1359 0061 01          		.1byte	0x9
+ 1360 0061 00 00 00 00 		.1byte	0x1
+ 1361 0063 01          		.4byte	.LASF12
+ 1362 0064 1F          		.1byte	0x1
+ 1363 0064 01          		.1byte	0x2f
+ 1364 0065 00 00 00 00 		.1byte	0x1
+ 1365 0067 00 00 00 00 		.4byte	.LFB4
+ 1366 0069 00 00 00 00 		.4byte	.LFE4
+ 1367 006b 09          		.4byte	.LLST2
+ 1368 006b 01          		.1byte	0x9
+ 1369 006c 00 00 00 00 		.1byte	0x1
+ 1370 006e 01          		.4byte	.LASF13
+ 1371 006e 2F          		.1byte	0x1
+ 1372 006f 01          		.1byte	0x39
+ 1373 006f 00 00 00 00 		.1byte	0x1
+ 1374 0071 00 00 00 00 		.4byte	.LFB5
+ 1375 0073 00 00 00 00 		.4byte	.LFE5
+ 1376 0075 09          		.4byte	.LLST3
+ 1377 0076 01          		.1byte	0x5
+ 1378 0076 00 00 00 00 		.1byte	0x1
+ 1379 0078 01          		.4byte	.LASF15
+ 1380 0079 39          		.1byte	0x1
+ 1381 0079 01          		.1byte	0x44
+ 1382 007a 00 00 00 00 		.1byte	0x1
+ 1383 007c 00 00 00 00 		.4byte	.LFB6
+ 1384 007e 00 00 00 00 		.4byte	.LFE6
+ 1385 0080 05          		.4byte	.LLST4
+ 1386 0080 01          		.4byte	0x144
+ 1387 0081 00 00 00 00 		.1byte	0x6
+ 1388 0083 01          		.4byte	.LASF17
+ 1389 0083 44          		.1byte	0x1
+ 1390 0084 01          		.1byte	0x43
+ 1391 0084 00 00 00 00 		.4byte	0x144
+ 1392 0086 00 00 00 00 		.1byte	0x2
+ 1393 0088 00 00 00 00 		.1byte	0x76
+ 1394 008a 00 00 01 44 		.1byte	0x2
+ 1395 008c 06          		.1byte	0x7
+ 1396 008d 00 00 00 00 		.4byte	.LASF18
+ 1397 008f 01          		.1byte	0x1
+ 1398 008f 43          		.1byte	0x45
+ 1399 0090 00 00 01 44 		.4byte	0x29
+ 1400 0092 02          		.1byte	0x2
+ 1401 0092 76          		.1byte	0x76
+ 1402 0093 02          		.1byte	0x1
+ 1403 0093 07          		.1byte	0x7
+ 1404 0094 00 00 00 00 		.4byte	.LASF19
+ 1405 0096 01          		.1byte	0x1
+ 1406 0096 45          		.1byte	0x46
+ 1407 0097 00 00 00 29 		.4byte	0x29
+ 1408 0099 02          		.1byte	0x2
+ 1409 0099 76          		.1byte	0x76
+ 1410 009a 01          		.1byte	0x0
+ 1411 009a 07          		.1byte	0x0
+ 1412 009b 00 00 00 00 		.1byte	0x2
+ 1413 009d 01          		.1byte	0x2
+ 1414 009d 46          		.1byte	0x8
+ 1415 009e 00 00 00 29 		.4byte	.LASF20
+ 1416 00a0 02          		.1byte	0x5
+ 1417 00a0 76          		.1byte	0x1
+ 1418 00a1 00          		.4byte	.LASF21
+ 1419 00a1 00          		.1byte	0x1
+ 1420 00a2 02          		.1byte	0x5e
+ 1421 00a2 02          		.1byte	0x1
+ 1422 00a3 08          		.4byte	.LFB7
+ 1423 00a3 00 00 00 00 		.4byte	.LFE7
+ 1424 00a5 05          		.4byte	.LLST5
+ 1425 00a6 01          		.4byte	0x18f
+ 1426 00a6 00 00 00 00 		.1byte	0x6
+ 1427 00a8 01          		.4byte	.LASF22
+ 1428 00a9 5E          		.1byte	0x1
+ 1429 00a9 01          		.1byte	0x5d
+ 1430 00aa 00 00 00 00 		.4byte	0x144
+ 1431 00ac 00 00 00 00 		.1byte	0x2
+ 1432 00ae 00 00 00 00 		.1byte	0x76
+ 1433 00b0 00 00 01 8F 		.1byte	0x2
+ 1434 00b2 06          		.1byte	0x7
+ 1435 00b2 00 00 00 00 		.4byte	.LASF18
+ 1436 00b4 01          		.1byte	0x1
+ 1437 00b5 5D          		.1byte	0x5f
+ 1438 00b5 00 00 01 44 		.4byte	0x29
+ 1439 00b7 02          		.1byte	0x2
+ 1440 00b8 76          		.1byte	0x76
+ 1441 00b8 02          		.1byte	0x1
+ 1442 00b9 07          		.1byte	0x7
+ 1443 00b9 00 00 00 00 		.4byte	.LASF19
+ 1444 00bb 01          		.1byte	0x1
+ 1445 00bc 5F          		.1byte	0x60
+ 1446 00bc 00 00 00 29 		.4byte	0x29
+ 1447 00be 02          		.1byte	0x2
+ 1448 00bf 76          		.1byte	0x76
+ 1449 00bf 01          		.1byte	0x0
+ 1450 00c0 07          		.1byte	0x0
+ 1451 00c0 00 00 00 00 		.1byte	0xa
+ 1452 00c2 01          		.1byte	0x1
+ 1453 00c3 60          		.4byte	.LASF40
+ 1454 00c3 00 00 00 29 		.1byte	0x1
+ 1455 00c5 02          		.1byte	0x79
+ 1456 00c6 76          		.1byte	0x1
+ 1457 00c6 00          		.4byte	0x29
+ 1458 00c7 00          		.4byte	.LFB8
+ 1459 00c7 0A          		.4byte	.LFE8
+ 1460 00c8 01          		.4byte	.LLST6
+ 1461 00c8 00 00 00 00 		.4byte	0x1c9
+ 1462 00ca 01          		.1byte	0x7
+ 1463 00cb 79          		.4byte	.LASF19
+ 1464 00cb 01          		.1byte	0x1
+ 1465 00cc 00 00 00 29 		.1byte	0x7b
+ 1466 00ce 00 00 00 00 		.4byte	0x29
+ 1467 00d0 00 00 00 00 		.1byte	0x2
+ 1468 00d2 00 00 00 00 		.1byte	0x76
+ 1469 00d4 00 00 01 C9 		.1byte	0x1
+ 1470 00d6 07          		.1byte	0x7
+ 1471 00d6 00 00 00 00 		.4byte	.LASF23
+ 1472 00d8 01          		.1byte	0x1
+ 1473 00d9 7B          		.1byte	0x7b
+ 1474 00d9 00 00 00 29 		.4byte	0x29
+ 1475 00db 02          		.1byte	0x2
+ 1476 00dc 76          		.1byte	0x76
+ 1477 00dc 01          		.1byte	0x0
+ 1478 00dd 07          		.1byte	0x0
+ 1479 00dd 00 00 00 00 		.1byte	0x9
+ 1480 00df 01          		.1byte	0x1
+ 1481 00e0 7B          		.4byte	.LASF24
+ 1482 00e0 00 00 00 29 		.1byte	0x1
+ 1483 00e2 02          		.1byte	0x94
+ 1484 00e3 76          		.1byte	0x1
+ 1485 00e3 00          		.4byte	.LFB9
+ 1486 00e4 00          		.4byte	.LFE9
+ 1487 00e4 09          		.4byte	.LLST7
+ 1488 00e5 01          		.1byte	0x9
+ 1489 00e5 00 00 00 00 		.1byte	0x1
+ 1490 00e7 01          		.4byte	.LASF25
+ 1491 00e8 94          		.1byte	0x1
+ 1492 00e8 01          		.1byte	0xe2
+ 1493 00e9 00 00 00 00 		.1byte	0x1
+ 1494 00eb 00 00 00 00 		.4byte	.LFB10
+ 1495 00ed 00 00 00 00 		.4byte	.LFE10
+ 1496 00ef 09          		.4byte	.LLST8
+ 1497 00ef 01          		.1byte	0x5
+ 1498 00f0 00 00 00 00 		.1byte	0x1
+ 1499 00f2 01          		.4byte	.LASF26
+ 1500 00f2 E2          		.1byte	0x1
+ 1501 00f3 01          		.1byte	0xef
+ 1502 00f3 00 00 00 00 		.1byte	0x1
+ 1503 00f5 00 00 00 00 		.4byte	.LFB11
+ 1504 00f7 00 00 00 00 		.4byte	.LFE11
+ 1505 00f9 05          		.4byte	.LLST9
+ 1506 00fa 01          		.4byte	0x244
+ 1507 00fa 00 00 00 00 		.1byte	0xb
+ 1508 00fc 01          		.ascii "row\000"
+ 1509 00fd EF          		.1byte	0x1
+ 1510 00fd 01          		.1byte	0xfc
+ 1511 00fe 00 00 00 00 		.4byte	0x69
+ 1512 0100 00 00 00 00 		.1byte	0x2
+ 1513 0102 00 00 00 00 		.1byte	0x76
+ 1514 0104 00 00 02 44 		.1byte	0x3
+ 1515 0106 0B          		.1byte	0xb
+ 1516 0106 72 6F 77 00 		.ascii "col\000"
+ 1517 0108 01          		.1byte	0x1
+ 1518 0109 FC          		.1byte	0xfc
+ 1519 0109 00 00 00 69 		.4byte	0x69
+ 1520 010b 02          		.1byte	0x2
+ 1521 010c 76          		.1byte	0x76
+ 1522 010c 03          		.1byte	0x2
+ 1523 010d 0B          		.1byte	0x7
+ 1524 010d 63 6F 6C 00 		.4byte	.LASF27
+ 1525 010f 01          		.1byte	0x1
+ 1526 0110 FC          		.1byte	0xfd
+ 1527 0110 00 00 00 69 		.4byte	0x69
+ 1528 0112 02          		.1byte	0x2
+ 1529 0113 76          		.1byte	0x76
+ 1530 0113 02          		.1byte	0x1
+ 1531 0114 07          		.1byte	0xc
+ 1532 0114 00 00 00 00 		.ascii "i\000"
+ 1533 0116 01          		.1byte	0x1
+ 1534 0117 FD          		.2byte	0x108
+ 1535 0117 00 00 00 69 		.4byte	0x69
+ 1536 0119 02          		.1byte	0x2
+ 1537 011a 76          		.1byte	0x76
+ 1538 011a 01          		.1byte	0x0
+ 1539 011b 0C          		.1byte	0x0
+ 1540 011b 69 00       		.1byte	0xd
+ 1541 011c 01          		.4byte	0x144
+ 1542 011d 01 08       		.4byte	0x254
+ 1543 011e 00 00 00 69 		.1byte	0xe
+ 1544 0120 02          		.4byte	0x70
+ 1545 0120 76          		.1byte	0x45
+ 1546 0121 00          		.1byte	0x0
+ 1547 0121 00          		.1byte	0xf
+ 1548 0122 0D          		.4byte	.LASF28
+ 1549 0122 00 00 01 44 		.1byte	0x3
+ 1550 0124 00 00 02 54 		.1byte	0x19
+ 1551 0126 0E          		.4byte	0x244
+ 1552 0127 00 00 00 70 		.1byte	0x1
+ 1553 0129 45          		.1byte	0x5
+ 1554 0129 00          		.1byte	0x3
+ 1555 012a 0F          		.4byte	lut_vcomDC
+ 1556 012a 00 00 00 00 		.1byte	0xd
+ 1557 012c 03          		.4byte	0x144
+ 1558 012d 19          		.4byte	0x276
+ 1559 012d 00 00 02 44 		.1byte	0xe
+ 1560 012f 01          		.4byte	0x70
+ 1561 0130 05          		.1byte	0x29
+ 1562 0130 03          		.1byte	0x0
+ 1563 0131 00 00 00 00 		.1byte	0xf
+ 1564 0133 0D          		.4byte	.LASF29
+ 1565 0133 00 00 01 44 		.1byte	0x3
+ 1566 0135 00 00 02 76 		.1byte	0x2b
+ 1567 0137 0E          		.4byte	0x266
+ 1568 0138 00 00 00 70 		.1byte	0x1
+ 1569 013a 29          		.1byte	0x5
+ 1570 013a 00          		.1byte	0x3
+ 1571 013b 0F          		.4byte	lut_ww
+ 1572 013b 00 00 00 00 		.1byte	0xf
+ 1573 013d 03          		.4byte	.LASF30
+ 1574 013e 2B          		.1byte	0x3
+ 1575 013e 00 00 02 66 		.1byte	0x35
+ 1576 0140 01          		.4byte	0x266
+ 1577 0141 05          		.1byte	0x1
+ 1578 0141 03          		.1byte	0x5
+ 1579 0142 00 00 00 00 		.1byte	0x3
+ 1580 0144 0F          		.4byte	lut_bw
+ 1581 0144 00 00 00 00 		.1byte	0xf
+ 1582 0146 03          		.4byte	.LASF31
+ 1583 0147 35          		.1byte	0x3
+ 1584 0147 00 00 02 66 		.1byte	0x40
+ 1585 0149 01          		.4byte	0x266
+ 1586 014a 05          		.1byte	0x1
+ 1587 014a 03          		.1byte	0x5
+ 1588 014b 00 00 00 00 		.1byte	0x3
+ 1589 014d 0F          		.4byte	lut_bb
+ 1590 014d 00 00 00 00 		.1byte	0xf
+ 1591 014f 03          		.4byte	.LASF32
+ 1592 0150 40          		.1byte	0x3
+ 1593 0150 00 00 02 66 		.1byte	0x4b
+ 1594 0152 01          		.4byte	0x266
+ 1595 0153 05          		.1byte	0x1
+ 1596 0153 03          		.1byte	0x5
+ 1597 0154 00 00 00 00 		.1byte	0x3
+ 1598 0156 0F          		.4byte	lut_wb
+ 1599 0156 00 00 00 00 		.1byte	0xf
+ 1600 0158 03          		.4byte	.LASF33
+ 1601 0159 4B          		.1byte	0x1
+ 1602 0159 00 00 02 66 		.1byte	0x5
+ 1603 015b 01          		.4byte	0x69
+ 1604 015c 05          		.1byte	0x1
+ 1605 015c 03          		.1byte	0x5
+ 1606 015d 00 00 00 00 		.1byte	0x3
+ 1607 015f 0F          		.4byte	tempcode
+ 1608 015f 00 00 00 00 		.1byte	0xf
+ 1609 0161 01          		.4byte	.LASF34
+ 1610 0162 05          		.1byte	0x1
+ 1611 0162 00 00 00 69 		.1byte	0x6
+ 1612 0164 01          		.4byte	0x29
+ 1613 0165 05          		.1byte	0x1
+ 1614 0165 03          		.1byte	0x5
+ 1615 0166 00 00 00 00 		.1byte	0x3
+ 1616 0168 0F          		.4byte	tempvalue
+ 1617 0168 00 00 00 00 		.1byte	0xf
+ 1618 016a 01          		.4byte	.LASF35
+ 1619 016b 06          		.1byte	0x1
+ 1620 016b 00 00 00 29 		.1byte	0x7
+ 1621 016d 01          		.4byte	0x29
+ 1622 016e 05          		.1byte	0x1
+ 1623 016e 03          		.1byte	0x5
+ 1624 016f 00 00 00 00 		.1byte	0x3
+ 1625 0171 0F          		.4byte	temp1
+ 1626 0171 00 00 00 00 		.1byte	0xf
+ 1627 0173 01          		.4byte	.LASF36
+ 1628 0174 07          		.1byte	0x1
+ 1629 0174 00 00 00 29 		.1byte	0x7
+ 1630 0176 01          		.4byte	0x29
+ 1631 0177 05          		.1byte	0x1
+ 1632 0177 03          		.1byte	0x5
+ 1633 0178 00 00 00 00 		.1byte	0x3
+ 1634 017a 0F          		.4byte	temp2
+ 1635 017a 00 00 00 00 		.1byte	0x0
+ 1636 017c 01          		.section	.debug_abbrev
+ 1637 017d 07          		.1byte	0x1
+ 1638 017d 00 00 00 29 		.1byte	0x11
+ 1639 017f 01          		.1byte	0x1
+ 1640 0180 05          		.1byte	0x25
+ 1641 0180 03          		.1byte	0xe
+ 1642 0181 00 00 00 00 		.1byte	0x13
+ 1643 0183 00          		.1byte	0xb
+ 1644                 		.1byte	0x3
+ 1645 0000 01          		.1byte	0xe
+ 1646 0000 11          		.1byte	0x1b
+ 1647 0001 01          		.1byte	0xe
+ 1648 0001 25          		.1byte	0x11
+ 1649 0002 0E          		.1byte	0x1
+ 1650 0002 13          		.1byte	0x52
+ 1651 0003 0B          		.1byte	0x1
+ 1652 0003 03          		.1byte	0x55
+ 1653 0004 0E          		.1byte	0x6
+ 1654 0004 1B          		.1byte	0x10
+ 1655 0005 0E          		.1byte	0x6
+ 1656 0005 11          		.1byte	0x0
+ 1657 0006 01          		.1byte	0x0
+ 1658 0006 52          		.1byte	0x2
+ 1659 0007 01          		.1byte	0x24
+ 1660 0007 55          		.1byte	0x0
+ 1661 0008 06          		.1byte	0xb
+ 1662 0008 10          		.1byte	0xb
+ 1663 0009 06          		.1byte	0x3e
+ 1664 0009 00          		.1byte	0xb
+ 1665 000a 00          		.1byte	0x3
+ 1666 000a 02          		.1byte	0xe
+ 1667 000b 24          		.1byte	0x0
+ 1668 000b 00          		.1byte	0x0
+ 1669 000c 0B          		.1byte	0x3
+ 1670 000c 0B          		.1byte	0x16
+ 1671 000d 3E          		.1byte	0x0
+ 1672 000d 0B          		.1byte	0x3
+ 1673 000e 03          		.1byte	0xe
+ 1674 000e 0E          		.1byte	0x3a
+ 1675 000f 00          		.1byte	0xb
+ 1676 000f 00          		.1byte	0x3b
+ 1677 0010 03          		.1byte	0xb
+ 1678 0010 16          		.1byte	0x49
+ 1679 0011 00          		.1byte	0x13
+ 1680 0011 03          		.1byte	0x0
+ 1681 0012 0E          		.1byte	0x0
+ 1682 0012 3A          		.1byte	0x4
+ 1683 0013 0B          		.1byte	0x24
+ 1684 0013 3B          		.1byte	0x0
+ 1685 0014 0B          		.1byte	0xb
+ 1686 0014 49          		.1byte	0xb
+ 1687 0015 13          		.1byte	0x3e
+ 1688 0015 00          		.1byte	0xb
+ 1689 0016 00          		.1byte	0x0
+ 1690 0016 04          		.1byte	0x0
+ 1691 0017 24          		.1byte	0x5
+ 1692 0017 00          		.1byte	0x2e
+ 1693 0018 0B          		.1byte	0x1
+ 1694 0018 0B          		.1byte	0x3f
+ 1695 0019 3E          		.1byte	0xc
+ 1696 0019 0B          		.1byte	0x3
+ 1697 001a 00          		.1byte	0xe
+ 1698 001a 00          		.1byte	0x3a
+ 1699 001b 05          		.1byte	0xb
+ 1700 001b 2E          		.1byte	0x3b
+ 1701 001c 01          		.1byte	0xb
+ 1702 001c 3F          		.1byte	0x27
+ 1703 001d 0C          		.1byte	0xc
+ 1704 001d 03          		.1byte	0x11
+ 1705 001e 0E          		.1byte	0x1
+ 1706 001e 3A          		.1byte	0x12
+ 1707 001f 0B          		.1byte	0x1
+ 1708 001f 3B          		.1byte	0x40
+ 1709 0020 0B          		.1byte	0x6
+ 1710 0020 27          		.1byte	0x1
+ 1711 0021 0C          		.1byte	0x13
+ 1712 0021 11          		.1byte	0x0
+ 1713 0022 01          		.1byte	0x0
+ 1714 0022 12          		.1byte	0x6
+ 1715 0023 01          		.1byte	0x5
+ 1716 0023 40          		.1byte	0x0
+ 1717 0024 06          		.1byte	0x3
+ 1718 0024 01          		.1byte	0xe
+ 1719 0025 13          		.1byte	0x3a
+ 1720 0025 00          		.1byte	0xb
+ 1721 0026 00          		.1byte	0x3b
+ 1722 0026 06          		.1byte	0xb
+ 1723 0027 05          		.1byte	0x49
+ 1724 0027 00          		.1byte	0x13
+ 1725 0028 03          		.1byte	0x2
+ 1726 0028 0E          		.1byte	0xa
+ 1727 0029 3A          		.1byte	0x0
+ 1728 0029 0B          		.1byte	0x0
+ 1729 002a 3B          		.1byte	0x7
+ 1730 002a 0B          		.1byte	0x34
+ 1731 002b 49          		.1byte	0x0
+ 1732 002b 13          		.1byte	0x3
+ 1733 002c 02          		.1byte	0xe
+ 1734 002c 0A          		.1byte	0x3a
+ 1735 002d 00          		.1byte	0xb
+ 1736 002d 00          		.1byte	0x3b
+ 1737 002e 07          		.1byte	0xb
+ 1738 002e 34          		.1byte	0x49
+ 1739 002f 00          		.1byte	0x13
+ 1740 002f 03          		.1byte	0x2
+ 1741 0030 0E          		.1byte	0xa
+ 1742 0030 3A          		.1byte	0x0
+ 1743 0031 0B          		.1byte	0x0
+ 1744 0031 3B          		.1byte	0x8
+ 1745 0032 0B          		.1byte	0xb
+ 1746 0032 49          		.1byte	0x1
+ 1747 0033 13          		.1byte	0x11
+ 1748 0033 02          		.1byte	0x1
+ 1749 0034 0A          		.1byte	0x12
+ 1750 0034 00          		.1byte	0x1
+ 1751 0035 00          		.1byte	0x0
+ 1752 0035 08          		.1byte	0x0
+ 1753 0036 0B          		.1byte	0x9
+ 1754 0036 01          		.1byte	0x2e
+ 1755 0037 11          		.1byte	0x0
+ 1756 0037 01          		.1byte	0x3f
+ 1757 0038 12          		.1byte	0xc
+ 1758 0038 01          		.1byte	0x3
+ 1759 0039 00          		.1byte	0xe
+ 1760 0039 00          		.1byte	0x3a
+ 1761 003a 09          		.1byte	0xb
+ 1762 003a 2E          		.1byte	0x3b
+ 1763 003b 00          		.1byte	0xb
+ 1764 003b 3F          		.1byte	0x27
+ 1765 003c 0C          		.1byte	0xc
+ 1766 003c 03          		.1byte	0x11
+ 1767 003d 0E          		.1byte	0x1
+ 1768 003d 3A          		.1byte	0x12
+ 1769 003e 0B          		.1byte	0x1
+ 1770 003e 3B          		.1byte	0x40
+ 1771 003f 0B          		.1byte	0x6
+ 1772 003f 27          		.1byte	0x0
+ 1773 0040 0C          		.1byte	0x0
+ 1774 0040 11          		.1byte	0xa
+ 1775 0041 01          		.1byte	0x2e
+ 1776 0041 12          		.1byte	0x1
+ 1777 0042 01          		.1byte	0x3f
+ 1778 0042 40          		.1byte	0xc
+ 1779 0043 06          		.1byte	0x3
+ 1780 0043 00          		.1byte	0xe
+ 1781 0044 00          		.1byte	0x3a
+ 1782 0044 0A          		.1byte	0xb
+ 1783 0045 2E          		.1byte	0x3b
+ 1784 0045 01          		.1byte	0xb
+ 1785 0046 3F          		.1byte	0x27
+ 1786 0046 0C          		.1byte	0xc
+ 1787 0047 03          		.1byte	0x49
+ 1788 0047 0E          		.1byte	0x13
+ 1789 0048 3A          		.1byte	0x11
+ 1790 0048 0B          		.1byte	0x1
+ 1791 0049 3B          		.1byte	0x12
+ 1792 0049 0B          		.1byte	0x1
+ 1793 004a 27          		.1byte	0x40
+ 1794 004a 0C          		.1byte	0x6
+ 1795 004b 49          		.1byte	0x1
+ 1796 004b 13          		.1byte	0x13
+ 1797 004c 11          		.1byte	0x0
+ 1798 004c 01          		.1byte	0x0
+ 1799 004d 12          		.1byte	0xb
+ 1800 004d 01          		.1byte	0x34
+ 1801 004e 40          		.1byte	0x0
+ 1802 004e 06          		.1byte	0x3
+ 1803 004f 01          		.1byte	0x8
+ 1804 004f 13          		.1byte	0x3a
+ 1805 0050 00          		.1byte	0xb
+ 1806 0050 00          		.1byte	0x3b
+ 1807 0051 0B          		.1byte	0xb
+ 1808 0051 34          		.1byte	0x49
+ 1809 0052 00          		.1byte	0x13
+ 1810 0052 03          		.1byte	0x2
+ 1811 0053 08          		.1byte	0xa
+ 1812 0053 3A          		.1byte	0x0
+ 1813 0054 0B          		.1byte	0x0
+ 1814 0054 3B          		.1byte	0xc
+ 1815 0055 0B          		.1byte	0x34
+ 1816 0055 49          		.1byte	0x0
+ 1817 0056 13          		.1byte	0x3
+ 1818 0056 02          		.1byte	0x8
+ 1819 0057 0A          		.1byte	0x3a
+ 1820 0057 00          		.1byte	0xb
+ 1821 0058 00          		.1byte	0x3b
+ 1822 0058 0C          		.1byte	0x5
+ 1823 0059 34          		.1byte	0x49
+ 1824 0059 00          		.1byte	0x13
+ 1825 005a 03          		.1byte	0x2
+ 1826 005a 08          		.1byte	0xa
+ 1827 005b 3A          		.1byte	0x0
+ 1828 005b 0B          		.1byte	0x0
+ 1829 005c 3B          		.1byte	0xd
+ 1830 005c 05          		.1byte	0x1
+ 1831 005d 49          		.1byte	0x1
+ 1832 005d 13          		.1byte	0x49
+ 1833 005e 02          		.1byte	0x13
+ 1834 005e 0A          		.1byte	0x1
+ 1835 005f 00          		.1byte	0x13
+ 1836 005f 00          		.1byte	0x0
+ 1837 0060 0D          		.1byte	0x0
+ 1838 0060 01          		.1byte	0xe
+ 1839 0061 01          		.1byte	0x21
+ 1840 0061 49          		.1byte	0x0
+ 1841 0062 13          		.1byte	0x49
+ 1842 0062 01          		.1byte	0x13
+ 1843 0063 13          		.1byte	0x2f
+ 1844 0063 00          		.1byte	0xb
+ 1845 0064 00          		.1byte	0x0
+ 1846 0064 0E          		.1byte	0x0
+ 1847 0065 21          		.1byte	0xf
+ 1848 0065 00          		.1byte	0x34
+ 1849 0066 49          		.1byte	0x0
+ 1850 0066 13          		.1byte	0x3
+ 1851 0067 2F          		.1byte	0xe
+ 1852 0067 0B          		.1byte	0x3a
+ 1853 0068 00          		.1byte	0xb
+ 1854 0068 00          		.1byte	0x3b
+ 1855 0069 0F          		.1byte	0xb
+ 1856 0069 34          		.1byte	0x49
+ 1857 006a 00          		.1byte	0x13
+ 1858 006a 03          		.1byte	0x3f
+ 1859 006b 0E          		.1byte	0xc
+ 1860 006b 3A          		.1byte	0x2
+ 1861 006c 0B          		.1byte	0xa
+ 1862 006c 3B          		.1byte	0x0
+ 1863 006d 0B          		.1byte	0x0
+ 1864 006d 49          		.1byte	0x0
+ 1865 006e 13          		.section	.debug_pubnames,"",@progbits
+ 1866 006e 3F          		.4byte	0x115
+ 1867 006f 0C          		.2byte	0x2
+ 1868 006f 02          		.4byte	.Ldebug_info0
+ 1869 0070 0A          		.4byte	0x307
+ 1870 0070 00          		.4byte	0x73
+ 1871 0071 00          		.ascii "delay_ms\000"
+ 1872 0071 00          		.4byte	0xc1
+ 1873                 		.ascii "PinModeDir\000"
+ 1874 0000 00 00 01 15 		.4byte	0xd6
+ 1875 0002 00 02       		.ascii "Reset\000"
+ 1876 0003 00 00 00 00 		.4byte	0xeb
+ 1877 0005 00 00 03 07 		.ascii "READBUSY\000"
+ 1878 0007 00 00 00 73 		.4byte	0x100
+ 1879 0009 64 65 6C 61 		.ascii "SPI4W_WRITECOM\000"
+ 1879      79 5F 6D 73 
+ 1879      00 
+ 1880 000d 00 00 00 C1 		.4byte	0x14b
+ 1881 000f 50 69 6E 4D 		.ascii "SPI4W_WRITEDATA\000"
+ 1881      6F 64 65 44 
+ 1881      69 72 00 
+ 1882 0015 00 00 00 D6 		.4byte	0x18f
+ 1883 0017 52 65 73 65 		.ascii "SPI4W_READDATA\000"
+ 1883      74 00 
+ 1884 001a 00 00 00 EB 		.4byte	0x1c9
+ 1885 001c 52 45 41 44 		.ascii "EPD_W27_Init\000"
+ 1885      42 55 53 59 
+ 1885      00 
+ 1886 0020 00 00 01 00 		.4byte	0x1de
+ 1887 0022 53 50 49 34 		.ascii "enterdeepsleep\000"
+ 1887      57 5F 57 52 
+ 1887      49 54 45 43 
+ 1887      4F 4D 00 
+ 1888 002a 00 00 01 4B 		.4byte	0x1f3
+ 1889 002c 53 50 49 34 		.ascii "Display\000"
+ 1889      57 5F 57 52 
+ 1889      49 54 45 44 
+ 1889      41 54 41 00 
+ 1890 0034 00 00 01 8F 		.4byte	0x254
+ 1891 0036 53 50 49 34 		.ascii "lut_vcomDC\000"
+ 1891      57 5F 52 45 
+ 1891      41 44 44 41 
+ 1891      54 41 00 
+ 1892 003d 00 00 01 C9 		.4byte	0x276
+ 1893 003f 45 50 44 5F 		.ascii "lut_ww\000"
+ 1893      57 32 37 5F 
+ 1893      49 6E 69 74 
+ 1893      00 
+ 1894 0046 00 00 01 DE 		.4byte	0x288
+ 1895 0048 65 6E 74 65 		.ascii "lut_bw\000"
+ 1895      72 64 65 65 
+ 1895      70 73 6C 65 
+ 1895      65 70 00 
+ 1896 004f 00 00 01 F3 		.4byte	0x29a
+ 1897 0051 44 69 73 70 		.ascii "lut_bb\000"
+ 1897      6C 61 79 00 
+ 1898 0055 00 00 02 54 		.4byte	0x2ac
+ 1899 0057 6C 75 74 5F 		.ascii "lut_wb\000"
+ 1899      76 63 6F 6D 
+ 1899      44 43 00 
+ 1900 005d 00 00 02 76 		.4byte	0x2be
+ 1901 005f 6C 75 74 5F 		.ascii "tempcode\000"
+ 1901      77 77 00 
+ 1902 0062 00 00 02 88 		.4byte	0x2d0
+ 1903 0064 6C 75 74 5F 		.ascii "tempvalue\000"
+ 1903      62 77 00 
+ 1904 0068 00 00 02 9A 		.4byte	0x2e2
+ 1905 006a 6C 75 74 5F 		.ascii "temp1\000"
+ 1905      62 62 00 
+ 1906 006d 00 00 02 AC 		.4byte	0x2f4
+ 1907 006f 6C 75 74 5F 		.ascii "temp2\000"
+ 1907      77 62 00 
+ 1908 0073 00 00 02 BE 		.4byte	0x0
+ 1909 0075 74 65 6D 70 		.section	.debug_aranges,"",@progbits
+ 1909      63 6F 64 65 
+ 1909      00 
+ 1910 0079 00 00 02 D0 		.4byte	0x64
+ 1911 007b 74 65 6D 70 		.2byte	0x2
+ 1911      76 61 6C 75 
+ 1911      65 00 
+ 1912 0080 00 00 02 E2 		.4byte	.Ldebug_info0
+ 1913 0082 74 65 6D 70 		.1byte	0x4
+ 1913      31 00 
+ 1914 0085 00 00 02 F4 		.1byte	0x0
+ 1915 0087 74 65 6D 70 		.2byte	0x0
+ 1915      32 00 
+ 1916 008a 00 00 00 00 		.2byte	0x0
+ 1917                 		.4byte	.LFB2
+ 1918 0000 00 00 00 64 		.4byte	.LFE2-.LFB2
+ 1919 0002 00 02       		.4byte	.LFB3
+ 1920 0003 00 00 00 00 		.4byte	.LFE3-.LFB3
+ 1921 0005 04          		.4byte	.LFB4
+ 1922 0005 00          		.4byte	.LFE4-.LFB4
+ 1923 0006 00 00       		.4byte	.LFB5
+ 1924 0007 00 00       		.4byte	.LFE5-.LFB5
+ 1925 0008 00 00 00 00 		.4byte	.LFB6
+ 1926 000a 00 00 00 00 		.4byte	.LFE6-.LFB6
+ 1927 000c 00 00 00 00 		.4byte	.LFB7
+ 1928 000e 00 00 00 00 		.4byte	.LFE7-.LFB7
+ 1929 0010 00 00 00 00 		.4byte	.LFB8
+ 1930 0012 00 00 00 00 		.4byte	.LFE8-.LFB8
+ 1931 0014 00 00 00 00 		.4byte	.LFB9
+ 1932 0016 00 00 00 00 		.4byte	.LFE9-.LFB9
+ 1933 0018 00 00 00 00 		.4byte	.LFB10
+ 1934 001a 00 00 00 00 		.4byte	.LFE10-.LFB10
+ 1935 001c 00 00 00 00 		.4byte	.LFB11
+ 1936 001e 00 00 00 00 		.4byte	.LFE11-.LFB11
+ 1937 0020 00 00 00 00 		.4byte	0x0
+ 1938 0022 00 00 00 00 		.4byte	0x0
+ 1939 0024 00 00 00 00 		.section	.debug_ranges,"",@progbits
+ 1940 0026 00 00 00 00 	.Ldebug_ranges0:
+ 1941 0028 00 00 00 00 		.4byte	.Ltext0
+ 1942 002a 00 00 00 00 		.4byte	.Letext0
+ 1943 002c 00 00 00 00 		.4byte	.LFB2
+ 1944 002e 00 00 00 00 		.4byte	.LFE2
+ 1945 0030 00 00 00 00 		.4byte	.LFB3
+ 1946 0032 00 00 00 00 		.4byte	.LFE3
+ 1947                 		.4byte	.LFB4
+ 1948                 		.4byte	.LFE4
+ 1949 0000 00 00 00 00 		.4byte	.LFB5
+ 1950 0002 00 00 00 00 		.4byte	.LFE5
+ 1951 0004 00 00 00 00 		.4byte	.LFB6
+ 1952 0006 00 00 00 00 		.4byte	.LFE6
+ 1953 0008 00 00 00 00 		.4byte	.LFB7
+ 1954 000a 00 00 00 00 		.4byte	.LFE7
+ 1955 000c 00 00 00 00 		.4byte	.LFB8
+ 1956 000e 00 00 00 00 		.4byte	.LFE8
+ 1957 0010 00 00 00 00 		.4byte	.LFB9
+ 1958 0012 00 00 00 00 		.4byte	.LFE9
+ 1959 0014 00 00 00 00 		.4byte	.LFB10
+ 1960 0016 00 00 00 00 		.4byte	.LFE10
+ 1961 0018 00 00 00 00 		.4byte	.LFB11
+ 1962 001a 00 00 00 00 		.4byte	.LFE11
+ 1963 001c 00 00 00 00 		.4byte	0x0
+ 1964 001e 00 00 00 00 		.4byte	0x0
+ 1965 0020 00 00 00 00 		.section	.debug_str,"MS",@progbits,1
+ 1966 0022 00 00 00 00 	.LASF19:
+ 1967 0024 00 00 00 00 		.ascii "scnt\000"
+ 1968 0026 00 00 00 00 	.LASF24:
+ 1969 0028 00 00 00 00 		.ascii "EPD_W27_Init\000"
+ 1970 002a 00 00 00 00 	.LASF29:
+ 1971 002c 00 00 00 00 		.ascii "lut_ww\000"
+ 1972 002e 00 00 00 00 	.LASF21:
+ 1973                 		.ascii "SPI4W_WRITEDATA\000"
+ 1974                 	.LASF37:
+ 1975 0000 73 63 6E 74 		.ascii "GNU C 4.3.4 CSR version 22 for xap [1468380]\000"
+ 1975      00 
+ 1976                 	.LASF15:
+ 1977 0002 45 50 44 5F 		.ascii "SPI4W_WRITECOM\000"
+ 1977      57 32 37 5F 
+ 1977      49 6E 69 74 
+ 1977      00 
+ 1978                 	.LASF40:
+ 1979 0009 6C 75 74 5F 		.ascii "SPI4W_READDATA\000"
+ 1979      77 77 00 
+ 1980                 	.LASF32:
+ 1981 000c 53 50 49 34 		.ascii "lut_wb\000"
+ 1981      57 5F 57 52 
+ 1981      49 54 45 44 
+ 1981      41 54 41 00 
+ 1982                 	.LASF39:
+ 1983 0014 47 4E 55 20 		.ascii "C:\\Users\\antiban\\Desktop\\Etiket\\BLE_Client_apex\000"
+ 1983      43 20 34 2E 
+ 1983      33 2E 34 20 
+ 1983      43 53 52 20 
+ 1983      76 65 72 73 
+ 1984                 	.LASF16:
+ 1985 002b 53 50 49 34 		.ascii "nTime\000"
+ 1985      57 5F 57 52 
+ 1985      49 54 45 43 
+ 1985      4F 4D 00 
+ 1986                 	.LASF25:
+ 1987 0032 53 50 49 34 		.ascii "enterdeepsleep\000"
+ 1987      57 5F 52 45 
+ 1987      41 44 44 41 
+ 1987      54 41 00 
+ 1988                 	.LASF13:
+ 1989 003a 6C 75 74 5F 		.ascii "READBUSY\000"
+ 1989      77 62 00 
+ 1990                 	.LASF0:
+ 1991 003d 43 3A 5C 55 		.ascii "unsigned char\000"
+ 1991      73 65 72 73 
+ 1991      5C 61 6E 74 
+ 1991      69 62 61 6E 
+ 1991      5C 44 65 73 
+ 1992                 	.LASF33:
+ 1993 0055 6E 54 69 6D 		.ascii "tempcode\000"
+ 1993      65 00 
+ 1994                 	.LASF22:
+ 1995 0058 65 6E 74 65 		.ascii "INIT_DATA\000"
+ 1995      72 64 65 65 
+ 1995      70 73 6C 65 
+ 1995      65 70 00 
+ 1996                 	.LASF4:
+ 1997 0060 52 45 41 44 		.ascii "long unsigned int\000"
+ 1997      42 55 53 59 
+ 1997      00 
+ 1998                 	.LASF23:
+ 1999 0064 75 6E 73 69 		.ascii "temp\000"
+ 1999      67 6E 65 64 
+ 1999      20 63 68 61 
+ 1999      72 00 
+ 2000                 	.LASF1:
+ 2001 006b 74 65 6D 70 		.ascii "short unsigned int\000"
+ 2001      63 6F 64 65 
+ 2001      00 
+ 2002                 	.LASF28:
+ 2003 0070 49 4E 49 54 		.ascii "lut_vcomDC\000"
+ 2003      5F 44 41 54 
+ 2003      41 00 
+ 2004                 	.LASF12:
+ 2005 0075 6C 6F 6E 67 		.ascii "Reset\000"
+ 2005      20 75 6E 73 
+ 2005      69 67 6E 65 
+ 2005      64 20 69 6E 
+ 2005      74 00 
+ 2006                 	.LASF27:
+ 2007 007e 74 65 6D 70 		.ascii "pcnt\000"
+ 2007      00 
+ 2008                 	.LASF14:
+ 2009 0080 73 68 6F 72 		.ascii "delay_ms\000"
+ 2009      74 20 75 6E 
+ 2009      73 69 67 6E 
+ 2009      65 64 20 69 
+ 2009      6E 74 00 
+ 2010                 	.LASF38:
+ 2011 008a 6C 75 74 5F 		.ascii "GoodDisplay_functions.c\000"
+ 2011      76 63 6F 6D 
+ 2011      44 43 00 
+ 2012                 	.LASF11:
+ 2013 008f 52 65 73 65 		.ascii "PinModeDir\000"
+ 2013      74 00 
+ 2014                 	.LASF9:
+ 2015 0092 70 63 6E 74 		.ascii "_nTime\000"
+ 2015      00 
+ 2016                 	.LASF2:
+ 2017 0095 64 65 6C 61 		.ascii "uint16\000"
+ 2017      79 5F 6D 73 
+ 2017      00 
+ 2018                 	.LASF3:
+ 2019 0099 47 6F 6F 64 		.ascii "uint32\000"
+ 2019      44 69 73 70 
+ 2019      6C 61 79 5F 
+ 2019      66 75 6E 63 
+ 2019      74 69 6F 6E 
+ 2020                 	.LASF8:
+ 2021 00a5 50 69 6E 4D 		.ascii "unsigned int\000"
+ 2021      6F 64 65 44 
+ 2021      69 72 00 
+ 2022                 	.LASF20:
+ 2023 00ab 5F 6E 54 69 		.ascii "char\000"
+ 2023      6D 65 00 
+ 2024                 	.LASF18:
+ 2025 00ae 75 69 6E 74 		.ascii "TEMPCOM\000"
+ 2025      31 36 00 
+ 2026                 	.LASF35:
+ 2027 00b2 75 69 6E 74 		.ascii "temp1\000"
+ 2027      33 32 00 
+ 2028                 	.LASF36:
+ 2029 00b5 75 6E 73 69 		.ascii "temp2\000"
+ 2029      67 6E 65 64 
+ 2029      20 69 6E 74 
+ 2029      00 
+ 2030                 	.LASF6:
+ 2031 00bc 63 68 61 72 		.ascii "short int\000"
+ 2031      00 
+ 2032                 	.LASF31:
+ 2033 00be 54 45 4D 50 		.ascii "lut_bb\000"
+ 2033      43 4F 4D 00 
+ 2034                 	.LASF26:
+ 2035 00c2 74 65 6D 70 		.ascii "Display\000"
+ 2035      31 00 
+ 2036                 	.LASF10:
+ 2037 00c5 74 65 6D 70 		.ascii "timeCount\000"
+ 2037      32 00 
+ 2038                 	.LASF34:
+ 2039 00c8 73 68 6F 72 		.ascii "tempvalue\000"
+ 2039      74 20 69 6E 
+ 2039      74 00 
+ 2040                 	.LASF7:
+ 2041 00cd 6C 75 74 5F 		.ascii "long int\000"
+ 2041      62 62 00 
+ 2042                 	.LASF17:
+ 2043 00d1 44 69 73 70 		.ascii "INIT_COM\000"
+ 2043      6C 61 79 00 
+ 2044                 	.LASF5:
+ 2045 00d5 74 69 6D 65 		.ascii "signed char\000"
+ 2045      43 6F 75 6E 
+ 2045      74 00 
+ 2046                 	.LASF30:
+ 2047 00da 74 65 6D 70 		.ascii "lut_bw\000"
+ 2047      76 61 6C 75 
+ 2047      65 00 
+ 2048                 		.ident	"GCC: (GNU) 4.3.4 CSR version 22 for xap [1468380]"
+ 2049 00df 6C 6F 6E 67 	...
+ 2049      20 69 6E 74 
+ 2049      00 

@@ -1,0 +1,100 @@
+<snoop_workspace version="9.2.3.0" variant="PiSnoop Professional (Permanent licence)">
+  <properties on_open_offer_load="true" clip_values_to_file_limits="false" ignore_file_decimal_places="false" add_units_row_to_logfiles="false" on_open_display_message="false" template_open_display_message="false">
+    <template_open_message>
+    </template_open_message>
+    <on_open_message>
+    </on_open_message>
+    <custom_properties>
+      <property name="Author" value="$Author$" />
+      <property name="Revision" value="$Revision$" />
+      <property name="Date" value="$Date$" />
+      <property name="URL" value="$HeadURL$" />
+    </custom_properties>
+    <nudge_settings>
+    </nudge_settings>
+  </properties>
+  <snoop_main_window>
+    <window_attributes window_state="maximized">
+      <rectangle top="150" left="150" width="899" height="589" />
+    </window_attributes>
+    <ordered_windows>
+      <window type="NS_Snoop.FrmWatch" title="Watch1" />
+      <window type="NS_Snoop.FrmEcuConfig" title="ECU1" />
+      <window type="NS_Snoop.FrmHardwareInterface" title="CAN1" />
+    </ordered_windows>
+  </snoop_main_window>
+  <snoop_hardware_channel name="CAN1">
+    <plugin_properties>
+      <description>Kvaser CAN Interface</description>
+      <settings channel_index="0" kbaud="1000" sample_point_percent="80" tx_queue_size="8" exclusive_mode="true" use_virtual="false" />
+    </plugin_properties>
+    <window_attributes window_state="normal">
+      <rectangle top="0" left="580" width="420" height="286" />
+    </window_attributes>
+  </snoop_hardware_channel>
+  <snoop_dbc_config />
+  <snoop_ecu name="ECU1">
+    <protocol>
+      <plugin_properties settings_name="settings">
+        <description>CAN Calibration Protocol (CCP) v2.1</description>
+        <settings dto_id="1784" cro_id="1785" station_address="0" msb_first_addresses="true" try_session_status="true" try_short_up="true" try_dnload6="true" try_checksum_acceleration="true" use_program_flush="true" general_timeout_ms="50" program_timeout_ms="800" erase_timeout_ms="8000" small_upload_timeout_ms="10" checksum_timeout_ms="200" max_checksum_size="10240" try_daq="true" daq_event_period_ms="5" daq_event_channel="0" daq_use_period_ec0="true" gain_daq_security_on_connect="true">
+          <security purpose="ccp" />
+        </settings>
+      </plugin_properties>
+    </protocol>
+    <settings auto_start_comms="true" />
+    <hardware_channel>CAN1</hardware_channel>
+    <calibration_area include_gaps="true">
+      <upload_region start_address="Calibration" byte_length="" errors="" address_numeric="262144" length_numeric="97984" />
+    </calibration_area>
+    <file path="E:\BATU OZMETELER\Senior Project\MPC\v2\mpc_v2_tool_vision.a2l" relative="mpc_v2_tool_vision.a2l" symbols="true" prompt_before_overwrite="true" enabled="true" load="false" download="false" flash="false" upload="false" save="false" percent_complete="0" operation_in_progress="false">
+      <properties load_memory_type="file_data" disk_properties_error="" exists_on_disk="true" time_disk_modified="2020-05-31T18:35:07.7269055+03:00" size_bytes_on_disk="77449" time_operation_started="2020-05-31T19:23:55.2015918+03:00" last_time_loaded="2020-05-31T19:23:55.2015918+03:00">
+        <upload_area type="manually_defined" manual_regions_contiguous="true" const_regions_contiguous="false">
+          <upload_region start_address="Calibration" byte_length="" />
+        </upload_area>
+        <upload_by_parameters c_template_path="" c_template_relative="">
+        </upload_by_parameters>
+      </properties>
+    </file>
+    <file path="E:\BATU OZMETELER\Senior Project\MPC\v2\mpc_v2_image_small.hex" relative="mpc_v2_image_small.hex" load="true" flash="true" upload="false" download="false" save="false" prompt_before_overwrite="true" enabled="true" symbols="false" percent_complete="0" operation_in_progress="false">
+      <properties load_memory_type="file_data" disk_properties_error="" exists_on_disk="true" time_disk_modified="2020-05-31T18:35:30.7402217+03:00" size_bytes_on_disk="833164" time_operation_started="2020-05-31T19:23:58.1117765+03:00" last_time_loaded="2020-05-31T19:23:55.9090302+03:00" last_time_flashed="2020-05-31T19:23:58.1117765+03:00">
+        <upload_area type="existing_file_areas" manual_regions_contiguous="false" const_regions_contiguous="false">
+          <upload_region start_address="Calibration" byte_length="" />
+        </upload_area>
+        <upload_by_parameters c_template_path="" c_template_relative="" parameter_choice="all_in_region">
+        </upload_by_parameters>
+      </properties>
+    </file>
+    <window_attributes window_state="normal" details_shown="true">
+      <rectangle top="28" left="37" width="534" height="533" />
+    </window_attributes>
+  </snoop_ecu>
+  <snoop_asap3_config />
+  <snoop_watch name="Watch1">
+    <window_attributes window_state="normal">
+      <rectangle top="294" left="585" width="733" height="341" />
+    </window_attributes>
+    <display scope_showing="true" scope_horizontal="false" autohide_buttons="true" scope_split_vertical="0.468531468531469" scope_split_horizontal="0.5" enums="decimal_and_label" pointers="label_or_hex" scope_timebase_sec="0.1" scope_acq_period_ms="10" scope_exclude_cals_from_daq="true" scope_exclude_unselected_signals_from_daq="true" scope_black_background="true" scope_show_points="false" scope_use_steps="false" scope_autoscale_mode="stacked_separated" />
+    <can_signals dbc_to_timeout_mult="10" no_dbc_period_timeout_ms="3000" />
+    <logging target_period_ms="1" filename_style="date_time_sortable" format="sparse" can_format="with_variables" enums="decimal" pointers="label_or_hex" logfile_absolute="E:\BATU OZMETELER\Senior Project\MPC\v2\2020_05_31_184754_mpc_design_2_Watch1.csv" logfile_relative="2020_05_31_184754_mpc_design_2_Watch1.csv" paused_loaded_from_file="false" />
+    <columns>
+      <column name="ColAddress" index="0" visible="false" visible_scope_on="false" width="30" width_scope_on="30" font_name="Courier New" font_size="8.25" />
+      <column name="ColHex" index="1" visible="false" visible_scope_on="false" width="32" width_scope_on="32" font_name="Verdana" font_size="8.25" />
+      <column name="ColValue" index="2" visible="true" visible_scope_on="true" width="117" width_scope_on="65" font_name="Verdana" font_size="8.25" />
+      <column name="ColName" index="3" visible="true" visible_scope_on="true" width="389" width_scope_on="220" font_name="Verdana" font_size="8.25" />
+      <column name="ColType" index="4" visible="true" visible_scope_on="false" width="117" width_scope_on="53" font_name="Arial Narrow" font_size="8.25" />
+      <column name="ColUnits" index="5" visible="true" visible_scope_on="false" width="58" width_scope_on="30" font_name="Arial Narrow" font_size="8.25" />
+      <column name="ColDescription" index="6" visible="true" visible_scope_on="false" width="156" width_scope_on="87" font_name="Arial Narrow" font_size="8.25" />
+      <column name="ColScope" index="7" visible="false" visible_scope_on="true" width="78" width_scope_on="47" font_name="Arial" font_size="8.25" />
+    </columns>
+    <rows>
+      <row displayed_name="v_ref" nesting_depth="0" ecu="ECU1" scope_on="false" scope_colour_set="true" scope_colour_user="false" scope_colour="-32944" />
+      <row displayed_name="Grade" nesting_depth="0" ecu="ECU1" scope_on="false" />
+      <row displayed_name="trq_out" nesting_depth="0" ecu="ECU1" scope_on="false" />
+      <row displayed_name="trq_req" nesting_depth="0" ecu="ECU1" scope_on="false" />
+      <row displayed_name="v_current" nesting_depth="0" ecu="ECU1" scope_on="false" scope_colour_set="true" scope_colour_user="false" scope_colour="-10496" />
+      <row displayed_name="time_tick_ecu" nesting_depth="0" ecu="ECU1" scope_on="false" scope_colour_set="true" scope_colour_user="false" scope_colour="-65536" />
+      <row displayed_name="v_raw" nesting_depth="0" ecu="ECU1" scope_on="false" scope_colour_set="true" scope_colour_user="false" scope_colour="-16711936" />
+    </rows>
+  </snoop_watch>
+</snoop_workspace>

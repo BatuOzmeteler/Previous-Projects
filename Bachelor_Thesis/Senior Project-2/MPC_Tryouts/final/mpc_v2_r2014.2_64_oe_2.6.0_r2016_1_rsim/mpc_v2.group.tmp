@@ -1,0 +1,19 @@
+/ByDataDictionaryPrefix/trq:trq_out
+/ByDataDictionaryPrefix/trq:trq_req
+/ByModelHeirarchy/mpc_v2/Speed Regulation:v_current
+/ByModelHeirarchy/mpc_v2/Torque Regulation:trq_req
+/ByModelHeirarchy/mpc_v2/data_out/MATLAB Function:Grade
+/ByModelHeirarchy/mpc_v2:Grade
+/ByModelHeirarchy/mpc_v2:time_tick_ecu
+/ByModelHeirarchy/mpc_v2:trq_out
+/ByModelHeirarchy/mpc_v2:trq_req
+/ByModelHeirarchy/mpc_v2:v_current
+/ByModelHeirarchy/mpc_v2:v_raw
+/ByModelHeirarchy/mpc_v2:v_ref
+/ByType/Signals:Grade
+/ByType/Signals:time_tick_ecu
+/ByType/Signals:trq_out
+/ByType/Signals:trq_req
+/ByType/Signals:v_current
+/ByType/Signals:v_raw
+/ByType/Signals:v_ref

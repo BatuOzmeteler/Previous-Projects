@@ -1,0 +1,203 @@
+%implements s5_b0_bgc3h_Outputs "C"
+
+%function Outputs(block, system) Output
+%<SLibCGIRAccessLocalVar(5, 0)> %% rtb_FromFile
+%<SLibCGIRAccessLocalVar(6, 0)> %% rtb_FromFile1
+%<SLibCGIRAccessLocalVar(7, 0)> %% rtb_FromFile2
+%assign cfgTxt = ""
+%openfile cfgTxt
+%assign localVarDecl = ""
+%openfile localVarDecl
+real_T y_innov;
+real_T rseq[50];
+real_T zopt[4];
+real_T f[4];
+static const real_T b_Ku1[4] = { 36.331176427700711, 35.252032578117976, 34.173735115495504, 33.097130427181511 };
+static const real_T b_Hinv[16] = { 599.038631339311, -972.06058894717955, 148.45877167973663, 224.51592618334777, -972.06058894717955, 2099.03625352622, -1257.5662714441969, 129.82167926787582, 148.45877167973663, -1257.5662714441969, 2110.2348605886637, -1002.3995608056503, 224.51592618334777, 129.82167926787582, -1002.3995608056503, 650.27662157246061 };
+static const real_T b_Kx[8] = { 986.70834950945789, 274.08565595885312, 948.01390443065566, 263.33719889398441, 910.09334825342933, 252.80371096851962, 872.94668097777924, 242.48519218253611 };
+static const real_T b_Kr[200] = { -0.21496914319078766, -0.42993828630429315, -0.64490742934051648, -0.85987657229945758, -1.0748457151811166, -1.2898148579854936, -1.5047840007125883, -1.7197531433624009, -1.9347222859349311, -2.1496914284301796, -2.3646605708481454, -2.5796297131888291, -2.794598855452231, -3.0095679976383503, -3.2245371397471874, -3.4395062817787423, -3.6544754237330159, -3.8694445656100065, -4.0844137074097153, -4.299382849132142, -4.5143519907772856, -4.7293211323451478, -4.9442902738357279, -5.159259415249025, -5.3742285565850407, -5.5891976978437743, -5.8041668390252266, -6.0191359801293949, -6.2341051211562819, -6.4490742621058876, -6.66404340297821, -6.8790125437732508, -7.0939816844910082, -7.3089508251314843, -7.5239199656946782, -7.73888910618059, -7.9538582465892205, -8.1688273869205688, -8.3837965271746331, -8.5987656673514152, -8.813734807450917, -9.0287039474731365, -9.2436730874180721, -9.4586422272857273, -9.6736113670761, -9.88858050678919, -10.103549646424998, -10.318518785983523, -10.533487925464767, -10.748457064868729, -0.0, -0.21496914319078766, -0.42993828630429315, -0.64490742934051648, -0.85987657229945758, -1.0748457151811166, -1.2898148579854936, -1.5047840007125883, -1.7197531433624009, -1.9347222859349311, -2.1496914284301796, -2.3646605708481454, -2.5796297131888291, -2.794598855452231, -3.0095679976383503, -3.2245371397471874, -3.4395062817787423, -3.6544754237330159, -3.8694445656100065, -4.0844137074097153, -4.299382849132142, -4.5143519907772856, -4.7293211323451478, -4.9442902738357279, -5.159259415249025, -5.3742285565850407, -5.5891976978437743, -5.8041668390252266, -6.0191359801293949, -6.2341051211562819, -6.4490742621058876, -6.66404340297821, -6.8790125437732508, -7.0939816844910082, -7.3089508251314843, -7.5239199656946782, -7.73888910618059, -7.9538582465892205, -8.1688273869205688, -8.3837965271746331, -8.5987656673514152, -8.813734807450917, -9.0287039474731365, -9.2436730874180721, -9.4586422272857273, -9.6736113670761, -9.88858050678919, -10.103549646424998, -10.318518785983523, -10.533487925464767, -0.0, -0.0, -0.21496914319078766, -0.42993828630429315, -0.64490742934051648, -0.85987657229945758, -1.0748457151811166, -1.2898148579854936, -1.5047840007125883, -1.7197531433624009, -1.9347222859349311, -2.1496914284301796, -2.3646605708481454, -2.5796297131888291, -2.794598855452231, -3.0095679976383503, -3.2245371397471874, -3.4395062817787423, -3.6544754237330159, -3.8694445656100065, -4.0844137074097153, -4.299382849132142, -4.5143519907772856, -4.7293211323451478, -4.9442902738357279, -5.159259415249025, -5.3742285565850407, -5.5891976978437743, -5.8041668390252266, -6.0191359801293949, -6.2341051211562819, -6.4490742621058876, -6.66404340297821, -6.8790125437732508, -7.0939816844910082, -7.3089508251314843, -7.5239199656946782, -7.73888910618059, -7.9538582465892205, -8.1688273869205688, -8.3837965271746331, -8.5987656673514152, -8.813734807450917, -9.0287039474731365, -9.2436730874180721, -9.4586422272857273, -9.6736113670761, -9.88858050678919, -10.103549646424998, -10.318518785983523, -0.0, -0.0, -0.0, -0.21496914319078766, -0.42993828630429315, -0.64490742934051648, -0.85987657229945758, -1.0748457151811166, -1.2898148579854936, -1.5047840007125883, -1.7197531433624009, -1.9347222859349311, -2.1496914284301796, -2.3646605708481454, -2.5796297131888291, -2.794598855452231, -3.0095679976383503, -3.2245371397471874, -3.4395062817787423, -3.6544754237330159, -3.8694445656100065, -4.0844137074097153, -4.299382849132142, -4.5143519907772856, -4.7293211323451478, -4.9442902738357279, -5.159259415249025, -5.3742285565850407, -5.5891976978437743, -5.8041668390252266, -6.0191359801293949, -6.2341051211562819, -6.4490742621058876, -6.66404340297821, -6.8790125437732508, -7.0939816844910082, -7.3089508251314843, -7.5239199656946782, -7.73888910618059, -7.9538582465892205, -8.1688273869205688, -8.3837965271746331, -8.5987656673514152, -8.813734807450917, -9.0287039474731365, -9.2436730874180721, -9.4586422272857273, -9.6736113670761, -9.88858050678919, -10.103549646424998 };
+real_T rtb_DataTypeConversion2;
+int32_T rtb_PulseGenerator;
+ZCEventType zcEvent;
+real_T tmp;
+int32_T i;
+real_T rtb_xest_idx_1;
+%closefile localVarDecl
+%assign tlcOutputsFcnOfS5B0 = OpaqueTLCBlockFcn("Outputs", 5, 0, 0, 2)
+%assign tlcOutputsFcnOfS4B0 = OpaqueTLCBlockFcn("Outputs", 4, 0, 0, 2)
+%assign tlcOutputsFcnOfS4B1 = OpaqueTLCBlockFcn("Outputs", 4, 1, 0, 2)
+%assign tlcOutputsFcnOfS4B2 = OpaqueTLCBlockFcn("Outputs", 4, 2, 0, 2)
+%assign tlcOutputsFcnOfS4B4 = OpaqueTLCBlockFcn("Outputs", 4, 4, 0, 2)
+%assign tlcOutputsFcnOfS5B5 = OpaqueTLCBlockFcn("Outputs", 5, 5, 0, 2)
+if (%<(SLibCGIRIsSampleHit(0, 5))>) {
+%<tlcOutputsFcnOfS5B0>\
+}
+/* RateTransition: '<Root>/Rate Transition' */
+if (%<(SLibCG_SE(SLibCGIRIsSampleHit(0, 5)))> && %<(SLibCG_SE(LibIsSpecialSampleHit(1, 0)))>) {
+    mpc_v2_rtB.RateTransition = v_raw;
+}
+/* End of RateTransition: '<Root>/Rate Transition' */
+if (%<(SLibCGIRIsSampleHit(1, 5))>) {
+    /* DataTypeConversion: '<Root>/Data Type Conversion2' */
+    rtb_DataTypeConversion2 = mpc_v2_rtB.RateTransition;
+    /* MATLAB Function: '<Root>/Torque Regulation' incorporates:
+ *  DataTypeConversion: '<Root>/Data Type Conversion2'
+ */
+    /* MATLAB Function 'Torque Regulation': '<S4>:1' */
+    if ((mpc_v2_rtB.RateTransition < 51.0F) && (mpc_v2_rtB.RateTransition >= 1.0F)) {
+        /* '<S4>:1:3' */
+        if (mpc_v2_rtDW.UnitDelay_DSTATE > 290.0) {
+            /* '<S4>:1:4' */
+            /* '<S4>:1:5' */
+            trq_req = 290.0;
+        } else if (mpc_v2_rtDW.UnitDelay_DSTATE < -290.0) {
+            /* '<S4>:1:6' */
+            /* '<S4>:1:7' */
+            trq_req = -290.0;
+        } else {
+            /* '<S4>:1:9' */
+            trq_req = mpc_v2_rtDW.UnitDelay_DSTATE;
+        }
+    } else {
+        /* '<S4>:1:12' */
+        trq_req = 60.0;
+    }
+    /* End of MATLAB Function: '<Root>/Torque Regulation' */
+
+    /* DataTypeConversion: '<Root>/Data Type Conversion1' */
+    mpc_v2_rtB.DataTypeConversion1 = (real32_T)trq_req;
+    /* DiscretePulseGenerator: '<Root>/Pulse Generator' */
+    rtb_PulseGenerator = (mpc_v2_rtDW.clockTickCounter < 1) && (mpc_v2_rtDW.clockTickCounter >= 0) ? 1 : 0;
+    if (mpc_v2_rtDW.clockTickCounter >= 9) {
+        mpc_v2_rtDW.clockTickCounter = 0;
+    } else {
+        mpc_v2_rtDW.clockTickCounter++;
+    }
+    /* End of DiscretePulseGenerator: '<Root>/Pulse Generator' */
+
+    /* Outputs for Triggered SubSystem: '<Root>/data_out' incorporates:
+ *  TriggerPort: '<S5>/Trigger'
+ */
+    zcEvent = %<(SLibCG_SE(SLibCGIRZCFcn("RISING_ZERO_CROSSING", "mpc_v2_rtPrevZCX.data_out_Trig_ZCE", "(real_T)rtb_PulseGenerator", 0)))>;
+    if (zcEvent != NO_ZCEVENT) {
+%<tlcOutputsFcnOfS4B0>\
+%<tlcOutputsFcnOfS4B1>\
+%<tlcOutputsFcnOfS4B2>\
+        /* MATLAB Function: '<S5>/MATLAB Function' */
+        /* MATLAB Function 'data_out/MATLAB Function': '<S23>:1' */
+        /* '<S23>:1:3' */
+        /* '<S23>:1:4' */
+        /* '<S23>:1:5' */
+        /* '<S23>:1:6' */
+        /* '<S23>:1:7' */
+        /* '<S23>:1:8' */
+        Grade = acos(sqrt(rtb_FromFile * rtb_FromFile + rtb_FromFile1 * rtb_FromFile1) / sqrt((rtb_FromFile * rtb_FromFile + rtb_FromFile1 * rtb_FromFile1) + rtb_FromFile2 * rtb_FromFile2)) * 100.0;
+%<tlcOutputsFcnOfS4B4>\
+    }
+    /* End of Outputs for SubSystem: '<Root>/data_out' */
+
+    /* DataTypeConversion: '<Root>/Data Type Conversion' */
+    mpc_v2_rtB.DataTypeConversion = (real32_T)Grade;
+%<tlcOutputsFcnOfS5B5>\
+    /* MATLAB Function: '<Root>/Speed Regulation' incorporates:
+ *  Constant: '<Root>/Constant'
+ */
+    /* MATLAB Function 'Speed Regulation': '<S3>:1' */
+    if ((rtb_DataTypeConversion2 < 51.0) && (rtb_DataTypeConversion2 >= 1.0)) {
+        /* '<S3>:1:3' */
+        /* '<S3>:1:4' */
+        v_current = rtb_DataTypeConversion2;
+    } else {
+        /* '<S3>:1:6' */
+        v_current = 0.0;
+    }
+    /* End of MATLAB Function: '<Root>/Speed Regulation' */
+
+    /* MATLAB Function: '<S7>/optimizer' incorporates:
+ *  Memory: '<S7>/Memory'
+ *  Memory: '<S7>/last_x'
+ *  UnitDelay: '<S7>/last_mv'
+ */
+    /* MATLAB Function 'MPC Controller/MPC/optimizer': '<S22>:1' */
+    /*  Parameters */
+    /*  Pre-allocate all the MEX block outputs for the simulation mode */
+    /*  Get reference and MD signals -- accounting for previewing */
+    /*  When doing code generation, use M code directly */
+    for (rtb_PulseGenerator = 0; rtb_PulseGenerator < 50; rtb_PulseGenerator++) {
+        rseq[rtb_PulseGenerator] = v_ref;
+    }
+    /*  External MV override.   */
+    /*  NOTE: old_u and ext_mv input signals are dimensionless but include offset */
+    /* '<S22>:1:56' */
+    /*  Obtain x[k|k] */
+    /* '<S22>:1:66' */
+    /*  Remove offset */
+    /*  Default state estimation.     */
+    /*  Scale measured output and remove offset. */
+    /* '<S22>:1:73' */
+    /*  Correct x(k|k-1) for possible external mv override. */
+    /*  NOTE:  Offset was removed from x[k|k-1] at k=0. */
+    /* '<S22>:1:76' */
+    /*  Measurement upate to x(k|k) */
+    /* '<S22>:1:78' */
+    /* '<S22>:1:79' */
+    y_innov = v_current - (3.5999999999999992 * mpc_v2_rtDW.last_x_PreviousInput[0] + mpc_v2_rtDW.last_x_PreviousInput[1]);
+    /* '<S22>:1:80' */
+    rtb_DataTypeConversion2 = 1.8194639567207035E-5 * y_innov + mpc_v2_rtDW.last_x_PreviousInput[0];
+    rtb_xest_idx_1 = 0.15273295943023871 * y_innov + mpc_v2_rtDW.last_x_PreviousInput[1];
+    /*  Real-time MV target override */
+    /*  Note: utargetValue is a vector length p*nu.   */
+    /*  no external utarget */
+    /*  When doing code generation, use M code directly */
+    for (rtb_PulseGenerator = 0; rtb_PulseGenerator < 4; rtb_PulseGenerator++) {
+        tmp = 0.0;
+        for (i = 0; i < 50; i++) {
+            tmp += b_Kr[50 * rtb_PulseGenerator + i] * rseq[i];
+        }
+        f[rtb_PulseGenerator] = ((b_Kx[(rtb_PulseGenerator << 1) + 1] * rtb_xest_idx_1 + b_Kx[rtb_PulseGenerator << 1] * rtb_DataTypeConversion2) + tmp) + b_Ku1[rtb_PulseGenerator] * mpc_v2_rtDW.last_mv_DSTATE;
+    }
+    zopt[0] = 0.0;
+    zopt[1] = 0.0;
+    zopt[2] = 0.0;
+    zopt[3] = 0.0;
+    for (rtb_PulseGenerator = 0; rtb_PulseGenerator < 4; rtb_PulseGenerator++) {
+        rtb_DataTypeConversion2 = (((zopt[rtb_PulseGenerator] - b_Hinv[rtb_PulseGenerator] * f[0]) - b_Hinv[rtb_PulseGenerator + 4] * f[1]) - b_Hinv[rtb_PulseGenerator + 8] * f[2]) - b_Hinv[rtb_PulseGenerator + 12] * f[3];
+        zopt[rtb_PulseGenerator] = rtb_DataTypeConversion2;
+    }
+    trq_out = mpc_v2_rtDW.last_mv_DSTATE + zopt[0];
+    /* '<S22>:1:122' */
+    for (rtb_PulseGenerator = 0; rtb_PulseGenerator < 5; rtb_PulseGenerator++) {
+        mpc_v2_rtB.iAout[rtb_PulseGenerator] = mpc_v2_rtDW.Memory_PreviousInput_k[rtb_PulseGenerator];
+    }
+    /*  update x[k+1|k], assuming that above u and v will be applied. */
+    /* '<S22>:1:138' */
+    /* '<S22>:1:140' */
+    /*  Updated state must include offset */
+    /* '<S22>:1:146' */
+    mpc_v2_rtB.xk1[0] = ((0.99999999964049646 * mpc_v2_rtDW.last_x_PreviousInput[0] + 0.0 * mpc_v2_rtDW.last_x_PreviousInput[1]) + 0.0010936806704141835 * trq_out) + 1.8194639560666E-5 * y_innov;
+    mpc_v2_rtB.xk1[1] = ((0.0 * mpc_v2_rtDW.last_x_PreviousInput[0] + mpc_v2_rtDW.last_x_PreviousInput[1]) + 0.0 * trq_out) + 0.15273295943023871 * y_innov;
+    /* End of MATLAB Function: '<S7>/optimizer' */
+}
+if (%<(SLibCGIRIsSampleHit(0, 5))>) {
+    /* RelationalOperator: '<S1>/Compare' incorporates:
+ *  Constant: '<S1>/Constant'
+ *  Memory: '<Root>/Memory'
+ *  RelationalOperator: '<Root>/Relational Operator1'
+ */
+    time_tick_ecu = !(trq_out == mpc_v2_rtDW.Memory_PreviousInput);
+}
+%<SLibInsertSolverResetCode()>\
+%closefile cfgTxt
+%<cfgTxt>
+%assign fcnProtoType = ""
+%openfile fcnProtoType
+static void Outputs(\
+%assign comma = ""
+%if SLibCG_ArgAccessed(0, 2, 0)
+%<comma>int32_T tid\
+%assign comma = ", "
+%endif
+%closefile fcnProtoType
+%<SLibCG_SetFcnProtoType(0, 2, fcnProtoType)>
+%<LibSetSystemField(system, "CachedOutputLocalVars", localVarDecl)>
+%endfunction

@@ -1,0 +1,98 @@
+<project buildenvironment="{067c869e-5bd9-4595-9f4c-60348133ad8e}" buildenvironmentname="uEnergy" executionenvironmentoption="XAP2+ P0 ELF DWARF BINUTILS UENERGYSDK" buildenvironmentoption="UENERGYSDK" executionenvironmentname="uEnergy" name="uEnergy" executionenvironment="{39e65239-59f4-4d78-b84a-26eaebfaa4de}" >
+ <folder name="Header Files" >
+  <extension name="h" />
+  <file path="spi_master.h" />
+  <file path="dev_info_service_data.h" />
+  <file path="dev_info_uuids.h" />
+  <file path="gap_conn_params.h" />
+  <file path="nvm_access.h" />
+  <file path="user_config.h" >
+   <properties>
+    <configuration name="Debug" />
+   </properties>
+  </file>
+  <file path="debug_interface.h" />
+  <file path="gap_access.h" />
+  <file path="gatt_access.h" />
+  <file path="gatt_client.h" />
+  <file path="new_service_data.h" />
+  <file path="new_uuids.h" />
+  <file path="octet_queue.h" />
+  <file path="platform_config.h" />
+  <file path="spi_cfg.h" />
+  <file path="barcode_generator.h" />
+  <file path="gooddisplay_functions.h" />
+ </folder>
+ <folder name="C Files" >
+  <extension name="c" />
+  <file path="gatt_client.c" >
+   <properties>
+    <configuration name="Debug" />
+   </properties>
+  </file>
+  <file path="new_service_data.c" >
+   <properties>
+    <configuration name="Debug" />
+   </properties>
+  </file>
+  <file path="gap_access.c" />
+  <file path="nvm_access.c" />
+  <file path="dev_info_service_data.c" />
+  <file path="debug_interface.c" />
+  <file path="gatt_access.c" />
+  <file path="octet_queue.c" />
+  <file path="spi_master.c" />
+  <file path="barcode.c" />
+  <file path="battery_level_bitmap.c" >
+   <properties>
+    <configuration name="Debug" />
+   </properties>
+  </file>
+  <file path="GoodDisplay_functions.c" >
+   <properties>
+    <configuration name="Debug" />
+   </properties>
+  </file>
+  <file path="barcode_generator.c" />
+ </folder>
+ <folder name="Assembler Files" >
+  <extension name="asm" />
+  <file path="pio_ctrlr_spi_master_0.asm" />
+ </folder>
+ <folder name="GATT db files" >
+  <extension name="db" />
+ </folder>
+ <file path="gatt_client_csr101x_A05.keyr" />
+ <properties currentconfiguration="Release" >
+  <configuration name="Debug" >
+   <property key="csr100x_keyr" >gatt_client_csr100x.keyr</property>
+   <property key="csr101x_a05_keyr" >gatt_client_csr101x_A05.keyr</property>
+   <property key="debugtransport" >[SPITRANS=USB SPIPORT=0]</property>
+   <property key="defines" ></property>
+   <property key="erase_nvm" >1</property>
+   <property key="hw_version" >1</property>
+   <property key="incpaths" ></property>
+   <property key="libpaths" ></property>
+   <property key="libs" ></property>
+   <property key="master_db" >app_gatt_db.db</property>
+   <property key="otau_bootloader" >0</property>
+   <property key="otau_keyr" ></property>
+   <property key="otau_name" ></property>
+   <property key="otau_secret" ></property>
+   <property key="otau_slot_1" ></property>
+   <property key="otau_slot_end" ></property>
+   <property key="output" ></property>
+  </configuration>
+  <configuration name="Release" >
+   <property key="csr100x_keyr" >gatt_client_csr100x.keyr</property>
+   <property key="csr101x_a05_keyr" >gatt_client_csr101x_A05.keyr</property>
+   <property key="debugtransport" >[SPITRANS=USB SPIPORT=0]</property>
+   <property key="defines" ></property>
+   <property key="erase_nvm" >1</property>
+   <property key="hw_version" >1</property>
+   <property key="libs" ></property>
+   <property key="master_db" >app_gatt_db.db</property>
+   <property key="output" >UcBirim_Siyah</property>
+  </configuration>
+ </properties>
+</project>

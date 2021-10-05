@@ -1,0 +1,28 @@
+
+[LOG][2020/06/12 21:01:03]:[Def,INFO]Read Line middle nBytes:33
+
+[LOG][2020/06/12 21:01:30]:[Def,INFO]leave Read Line:Accept-Language: en-US,en;q=0.9
+
+
+
+
+
+[LOG][2020/06/12 21:01:30]:[Def,INFO]EwsParseLine error.
+
+
+[LOG][2020/06/12 21:01:30]:[Def,INFO]EwsParseLine leave.
+
+
+[LOG][2020/06/12 21:01:30]:[Def,INFO]leave Ews ParseHttpHeader.
+
+[LOG][2020/06/12 21:01:30]:[Def,INFO]enter Ews ParseHttpHeader.
+
+
+[LOG][2020/06/12 21:01:30]:[Def,INFO]Read Line NULL nBytes:68
+
+
+[LOG][2020/06/12 21:01:30]:[Def,INFO]leave Read Line:Cookie: _sid=245c755b:7bdd608f:3806ca8e:7b2cea26:a6ecdf16:7a561def
+
+
+
+[LOG][2020/06/12 21:01:30]:[Def,INFO]EwsfailLine enter.

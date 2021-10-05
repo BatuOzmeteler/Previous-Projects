@@ -1,0 +1,41 @@
+%implements s5_b0_bgc3h_Update "C"
+
+%function Update(block, system) Output
+%assign cfgTxt = ""
+%openfile cfgTxt
+%assign localVarDecl = ""
+%openfile localVarDecl
+int32_T i;
+%closefile localVarDecl
+if (%<(SLibCGIRIsSampleHit(1, 5))>) {
+    /* Update for UnitDelay: '<Root>/Unit Delay' */
+    mpc_v2_rtDW.UnitDelay_DSTATE = trq_out;
+    /* Update for Memory: '<S7>/last_x' */
+    mpc_v2_rtDW.last_x_PreviousInput[0] = mpc_v2_rtB.xk1[0];
+    mpc_v2_rtDW.last_x_PreviousInput[1] = mpc_v2_rtB.xk1[1];
+    /* Update for UnitDelay: '<S7>/last_mv' */
+    mpc_v2_rtDW.last_mv_DSTATE = trq_out;
+    /* Update for Memory: '<S7>/Memory' */
+    for (i = 0; i < 5; i++) {
+        mpc_v2_rtDW.Memory_PreviousInput_k[i] = mpc_v2_rtB.iAout[i];
+    }
+    /* End of Update for Memory: '<S7>/Memory' */
+}
+if (%<(SLibCGIRIsSampleHit(0, 5))>) {
+    /* Update for Memory: '<Root>/Memory' */
+    mpc_v2_rtDW.Memory_PreviousInput = trq_out;
+}
+%closefile cfgTxt
+%<cfgTxt>
+%assign fcnProtoType = ""
+%openfile fcnProtoType
+static void Update(\
+%assign comma = ""
+%if SLibCG_ArgAccessed(0, 3, 0)
+%<comma>int32_T tid\
+%assign comma = ", "
+%endif
+%closefile fcnProtoType
+%<SLibCG_SetFcnProtoType(0, 3, fcnProtoType)>
+%<LibSetSystemField(system, "CachedUpdateLocalVars", localVarDecl)>
+%endfunction

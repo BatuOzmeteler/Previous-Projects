@@ -1,0 +1,4208 @@
+   1                 		.file	"spi_master.c"
+   2                 		.variant xap2+
+   3                 	
+   4                 		.small
+   5                 	
+   6                 		.section	.debug_abbrev,"",@progbits
+   7                 	.Ldebug_abbrev0:
+   8                 		.section	.debug_info,"",@progbits
+   9                 	.Ldebug_info0:
+  10                 		.section	.debug_line,"",@progbits
+  11                 	.Ldebug_line0:
+  12 0000 00 00 00 00 		.text
+  12      00 02 00 00 
+  12      00 00 01 01 
+  12      FB 0E 0D 00 
+  12      01 01 01 01 
+  13                 	.Ltext0:
+  14                 		.section	.text.setupSharedRAM,"ax",@progbits
+  15                 		.type	setupSharedRAM, @function
+  16                 	setupSharedRAM:
+  17                 	.LFB2:
+  18                 		.file 1 "spi_master.c"
+   0:spi_master.c  **** /******************************************************************************
+   1:spi_master.c  ****  *  Copyright Cambridge Silicon Radio Limited 2013-2015
+   2:spi_master.c  ****  *  Part of CSR uEnergy SDK 2.4.4
+   3:spi_master.c  ****  *  Application version 2.4.4.0
+   4:spi_master.c  ****  *
+   5:spi_master.c  ****  *  FILE
+   6:spi_master.c  ****  *      spi_master.c
+   7:spi_master.c  ****  *
+   8:spi_master.c  ****  *  DESCRIPTION
+   9:spi_master.c  ****  *      Library providing buffered asynchronous access to a SPI bus in the
+  10:spi_master.c  ****  *      Master role. This library uses the PIO controller as a SPI driver.
+  11:spi_master.c  ****  *
+  12:spi_master.c  ****  ******************************************************************************/
+  13:spi_master.c  **** 
+  14:spi_master.c  **** /*============================================================================*
+  15:spi_master.c  ****  *  SDK Header Files
+  16:spi_master.c  ****  *============================================================================*/
+  17:spi_master.c  **** 
+  18:spi_master.c  **** #include <types.h>          /* Commonly used typedefs */
+  19:spi_master.c  **** #include <pio_ctrlr.h>      /* Access to the PIO controller */
+  20:spi_master.c  **** #include <pio.h>            /* PIO configuration and control functions */
+  21:spi_master.c  **** #include <mem.h>            /* Memory management routines */
+  22:spi_master.c  **** 
+  23:spi_master.c  **** /*============================================================================*
+  24:spi_master.c  ****  *  Local Header Files
+  25:spi_master.c  ****  *============================================================================*/
+  26:spi_master.c  **** 
+  27:spi_master.c  **** #include "spi_master.h"     /* Public interface to this file */
+  28:spi_master.c  **** 
+  29:spi_master.c  **** /*============================================================================*
+  30:spi_master.c  ****  *  Private Definitions
+  31:spi_master.c  ****  *============================================================================*/
+  32:spi_master.c  **** 
+  33:spi_master.c  **** /* PIO direction configured as output */
+  34:spi_master.c  **** #define PIO_DIR_OUTPUT                      ( TRUE )
+  35:spi_master.c  **** /* PIO direction configured as input */
+  36:spi_master.c  **** #define PIO_DIR_INPUT                       ( FALSE )
+  37:spi_master.c  **** /* The registers seen by PIO controller at addresses 0x41H and 0x40H */
+  38:spi_master.c  **** #define PIO_CONTROLLER_REG_40H              ( PIO_CONTROLLER_RAM_START + 0x0020)
+  39:spi_master.c  **** /* The registers seen by PIO controller at addresses 0x43H and 0x42H */
+  40:spi_master.c  **** #define PIO_CONTROLLER_REG_42H              ( PIO_CONTROLLER_REG_40H + 1 )
+  41:spi_master.c  **** /* The registers seen by PIO controller at addresses 0x45H and 0x44H */
+  42:spi_master.c  **** #define PIO_CONTROLLER_REG_44H              ( PIO_CONTROLLER_REG_40H + 2 )
+  43:spi_master.c  **** /* The registers seen by PIO controller at addresses 0x47H and 0x46H */
+  44:spi_master.c  **** #define PIO_CONTROLLER_REG_46H              ( PIO_CONTROLLER_REG_40H + 3 )
+  45:spi_master.c  **** /* The register where the PIO controller publishes the size of the data
+  46:spi_master.c  ****  * it has transferred (in and out) prior to the SSEL de-assertion. */
+  47:spi_master.c  **** #define PIO_CONTROLLER_REG_48H              ( PIO_CONTROLLER_REG_40H + 4 )
+  48:spi_master.c  **** 
+  49:spi_master.c  **** /* Offset (in words) from the start of the shared RAM, after which rest of
+  50:spi_master.c  ****  * the area is used for SPI data exchange between XAP and PIO controller */
+  51:spi_master.c  **** #define PIO_CONTROLLER_SPI_RAM_XAP_OFFSET   ( 0x0008 )
+  52:spi_master.c  **** /* Address to the shared RAM used for exchanging SPI data between
+  53:spi_master.c  ****  * PIO Controller and XAP */
+  54:spi_master.c  **** #define PIO_CONTROLLER_SPI_RAM_XAP          ( PIO_CONTROLLER_REG_40H + \
+  55:spi_master.c  ****                                              PIO_CONTROLLER_SPI_RAM_XAP_OFFSET )
+  56:spi_master.c  **** /* Address to the shared RAM used for exchanging SPI data between
+  57:spi_master.c  ****  * PIO Controller and XAP, as seen by PIO Controller */
+  58:spi_master.c  **** #define PIO_CONTROLLER_SPI_RAM_PIO          \
+  59:spi_master.c  ****                         ( 0x40 + ( PIO_CONTROLLER_SPI_RAM_XAP_OFFSET * 2U ) )
+  60:spi_master.c  **** /* Size (in octets) of the shared RAM used for exchanging SPI data between
+  61:spi_master.c  ****  * PIO Controller and XAP */
+  62:spi_master.c  **** #define PIO_CONTROLLER_SPI_RAM_SIZE_OCTETS  \
+  63:spi_master.c  ****                                     ( 0x80 - PIO_CONTROLLER_SPI_RAM_PIO )
+  64:spi_master.c  **** /* Size (in words) of the shared RAM used for exchanging SPI data between
+  65:spi_master.c  ****  * PIO Controller and XAP */
+  66:spi_master.c  **** #define PIO_CONTROLLER_SPI_RAM_SIZE_WORDS   \
+  67:spi_master.c  ****                                     ( PIO_CONTROLLER_SPI_RAM_SIZE_OCTETS / 2U )
+  68:spi_master.c  **** /* HALF Size (in octets) of the total shared RAM used for exchanging SPI data
+  69:spi_master.c  ****  * between PIO Controller and XAP */
+  70:spi_master.c  **** #define PIO_CONTROLLER_SPI_RAM_HALF_OCTETS  PIO_CONTROLLER_SPI_RAM_SIZE_WORDS
+  71:spi_master.c  **** 
+  72:spi_master.c  **** /* Address to the section of shared RAM used to buffer incoming SPI data
+  73:spi_master.c  ****  *  from SPI Master */
+  74:spi_master.c  **** #define PIO_CONTROLLER_SPI_RAM_XAP_RX       PIO_CONTROLLER_SPI_RAM_XAP
+  75:spi_master.c  **** /* Size (in octets) of the SPI RAM data area use for buffering incoming SPI
+  76:spi_master.c  ****  * data from SPI Master */
+  77:spi_master.c  **** #define PIO_CONTROLLER_SPI_RAM_RX_SIZE      PIO_CONTROLLER_SPI_RAM_HALF_OCTETS
+  78:spi_master.c  **** 
+  79:spi_master.c  **** /* Address to the section of shared RAM used to buffer SPI data for
+  80:spi_master.c  ****  * onward transmission to SPI Master */
+  81:spi_master.c  **** #define PIO_CONTROLLER_SPI_RAM_XAP_TX       \
+  82:spi_master.c  ****     ( PIO_CONTROLLER_SPI_RAM_XAP_RX + ( PIO_CONTROLLER_SPI_RAM_RX_SIZE /2U ) )
+  83:spi_master.c  **** /* Size (in octets) of the SPI RAM data area use to buffer SPI data for
+  84:spi_master.c  ****  * onward transmission to SPI Master */
+  85:spi_master.c  **** #define PIO_CONTROLLER_SPI_RAM_TX_SIZE      PIO_CONTROLLER_SPI_RAM_HALF_OCTETS
+  86:spi_master.c  **** 
+  87:spi_master.c  **** /* Convert a pio number to bit mask
+  88:spi_master.c  ****  * @param[in] pio PIO number
+  89:spi_master.c  ****  */
+  90:spi_master.c  **** #define PIO_BIT_MASK(pio)                   (((uint32)1) << (pio))
+  91:spi_master.c  **** 
+  92:spi_master.c  **** /* Write to LSB Octet in shared RAM */
+  93:spi_master.c  **** #define WRITE_OCTET_TO_LSB(X)               ( (X) & 0xFF )
+  94:spi_master.c  **** 
+  95:spi_master.c  **** /* Read from LSB Octet in shared RAM */
+  96:spi_master.c  **** #define READ_OCTET_FROM_LSB(X)              ( (X) & 0xFF )
+  97:spi_master.c  **** 
+  98:spi_master.c  **** /* Set number of octets of RX data to be received by PIO Controller prior to
+  99:spi_master.c  ****  * issuing an interrupt, to XAP */
+ 100:spi_master.c  **** #define SET_SPI_TRANSFER_SIZE_REG(X)        \
+ 101:spi_master.c  ****         (*((volatile uint16 *)PIO_CONTROLLER_REG_40H) = WRITE_OCTET_TO_LSB(X))
+ 102:spi_master.c  **** 
+ 103:spi_master.c  **** /* Get the current threshold for PIO controller RX data before issuing an
+ 104:spi_master.c  ****  * interrupt to XAP */
+ 105:spi_master.c  **** #define GET_SPI_TRANSFER_SIZE_REG           \
+ 106:spi_master.c  ****        (READ_OCTET_FROM_LSB(*((const volatile uint16 *)PIO_CONTROLLER_REG_40H)))
+ 107:spi_master.c  **** 
+ 108:spi_master.c  **** /* The XAP interrupt is level triggered so several interrupts may be generated
+ 109:spi_master.c  ****  * before the PIO Controller is able to clear the WAKE_XAP signal. To avoid
+ 110:spi_master.c  ****  * duplicate interrupts, a flag (INT_ACK) is set by the PIO Controller and
+ 111:spi_master.c  ****  * cleared by the XAP application to handshake the interrupt. */
+ 112:spi_master.c  **** 
+ 113:spi_master.c  **** /* Read the PIO controller interrupt acknowledgement flag */
+ 114:spi_master.c  **** #define GET_SPI_INT_ACK                     \
+ 115:spi_master.c  ****        (READ_OCTET_FROM_LSB(*((const volatile uint16 *)PIO_CONTROLLER_REG_46H)))
+ 116:spi_master.c  **** 
+ 117:spi_master.c  **** /* Write to the PIO Controller interrupt acknowledgement flag */
+ 118:spi_master.c  **** #define SET_SPI_INT_ACK(X)                  \
+ 119:spi_master.c  ****         (*((volatile uint16 *)PIO_CONTROLLER_REG_46H) = WRITE_OCTET_TO_LSB(X))
+ 120:spi_master.c  **** 
+ 121:spi_master.c  **** /* Read the inter-octet delay currently set */
+ 122:spi_master.c  **** #define GET_INTER_OCTET_DELAY               \
+ 123:spi_master.c  ****        (READ_OCTET_FROM_LSB(*((const volatile uint16 *)PIO_CONTROLLER_REG_48H)))
+ 124:spi_master.c  **** 
+ 125:spi_master.c  **** /* Set the inter-octet delay for the PIO controller. Setting this to 1 would
+ 126:spi_master.c  ****  * introduce no additional delay. Setting it to 0 would introduce maximum
+ 127:spi_master.c  ****  * delay (510 cycles).
+ 128:spi_master.c  ****  */
+ 129:spi_master.c  **** #define SET_INTER_BYTE_DELAY(X)             \
+ 130:spi_master.c  ****         (*((volatile uint16 *)PIO_CONTROLLER_REG_48H) = WRITE_OCTET_TO_LSB(X))
+ 131:spi_master.c  **** 
+ 132:spi_master.c  **** /*============================================================================*
+ 133:spi_master.c  ****  *  Private Data Types
+ 134:spi_master.c  ****  *============================================================================*/
+ 135:spi_master.c  **** 
+ 136:spi_master.c  **** /*
+ 137:spi_master.c  ****  * Type defining various states of the SPI master
+ 138:spi_master.c  ****  */
+ 139:spi_master.c  **** typedef enum
+ 140:spi_master.c  **** {
+ 141:spi_master.c  ****     /* SPI master has been initialised, but not ready yet */
+ 142:spi_master.c  ****     TransactionState_Initialised,
+ 143:spi_master.c  ****     /* SPI master is currently idle and SSEL is currently de-asserted */
+ 144:spi_master.c  ****     TransactionState_PIOControllerReady,
+ 145:spi_master.c  ****     /* SPI master has asserted the SSEL and a transaction is in progress */
+ 146:spi_master.c  ****     TransactionState_TransactionStarted,
+ 147:spi_master.c  ****     /* SPI master is processing the PIO controller interrupt and hence
+ 148:spi_master.c  ****      * PIO controller is currently paused */
+ 149:spi_master.c  ****     TransactionState_PioControllerOnHold,
+ 150:spi_master.c  ****     /* SPI master is waiting for PIO Controller interrupt */
+ 151:spi_master.c  ****     TransactionState_WaitingForPioController,
+ 152:spi_master.c  ****     /* SPI master is waiting for PIO Controller interrupt, from which it
+ 153:spi_master.c  ****      * intends to end the transaction by de-asserting the slave select */
+ 154:spi_master.c  ****     TransactionState_WaitingForPioControllerToDeassert,
+ 155:spi_master.c  **** 
+ 156:spi_master.c  ****     /* Invalid state */
+ 157:spi_master.c  ****     TransactionState_Invalid
+ 158:spi_master.c  **** } TransactionState;
+ 159:spi_master.c  **** 
+ 160:spi_master.c  **** /*
+ 161:spi_master.c  ****  * Type defining various events posted to the SPI master state machine
+ 162:spi_master.c  ****  */
+ 163:spi_master.c  **** typedef enum
+ 164:spi_master.c  **** {
+ 165:spi_master.c  ****     /* Event posted to indicate that SPI master is ready and PIO controller
+ 166:spi_master.c  ****      * is running */
+ 167:spi_master.c  ****     TransactionEvent_PIOControllerStart,
+ 168:spi_master.c  ****     /* Event posted to start a transaction by asserting the slave select */
+ 169:spi_master.c  ****     TransactionEvent_AssertSSEL,
+ 170:spi_master.c  ****     /* Event posted to stop a transaction by de-asserting the slave select */
+ 171:spi_master.c  ****     TransactionEvent_DeassertSSEL,
+ 172:spi_master.c  ****     /* Event posted to notify that data has been transferred over to PIO
+ 173:spi_master.c  ****      * controller shared RAM and PIO controller has been resumed */
+ 174:spi_master.c  ****     TransactionEvent_PIOControllerUnblockedWithDataToSend,
+ 175:spi_master.c  ****     /* Event posted to notify that PIO controller has been resumed but no
+ 176:spi_master.c  ****      * data has been transferred over to PIO controller shared RAM */
+ 177:spi_master.c  ****     TransactionEvent_PIOControllerUnblockedButNoData,
+ 178:spi_master.c  ****     /* Event posted to signal that PIO controller has finished a transfer */
+ 179:spi_master.c  ****     TransactionEvent_PIOControllerEvent,
+ 180:spi_master.c  ****     /* Event posted to reset the SPI Master */
+ 181:spi_master.c  ****     TransactionEvent_Reset
+ 182:spi_master.c  **** } TransactionEvent;
+ 183:spi_master.c  **** 
+ 184:spi_master.c  **** /*
+ 185:spi_master.c  ****  * Type defining the SPI Master's state
+ 186:spi_master.c  ****  */
+ 187:spi_master.c  **** typedef struct _SPI_MASTER_STATE_T
+ 188:spi_master.c  **** {
+ 189:spi_master.c  ****     /* Current transaction state of SPIMaster */
+ 190:spi_master.c  ****     TransactionState state;
+ 191:spi_master.c  ****     /* Handle to tx buffer with data to be sent */
+ 192:spi_master.c  ****     OQ_HANDLE p_tx_data;
+ 193:spi_master.c  ****     /* Handle to rx buffer with recieved data */
+ 194:spi_master.c  ****     OQ_HANDLE p_rx_data;
+ 195:spi_master.c  ****     /* Rx data pointer to the data area shared with PIO Controller */
+ 196:spi_master.c  ****     OQ_HANDLE_T pio_rx_data;
+ 197:spi_master.c  ****     /* Tx data pointer to the data area shared with PIO Controller */
+ 198:spi_master.c  ****     OQ_HANDLE_T pio_tx_data;
+ 199:spi_master.c  ****     /* Data transfer callback */
+ 200:spi_master.c  ****     SpiMasterTransactionCallbackType p_data_cb_func;
+ 201:spi_master.c  **** } SPI_MASTER_STATE_T;
+ 202:spi_master.c  **** 
+ 203:spi_master.c  **** /*============================================================================*
+ 204:spi_master.c  ****  *  Private Data
+ 205:spi_master.c  ****  *============================================================================*/
+ 206:spi_master.c  **** 
+ 207:spi_master.c  **** /* SPI Master's state variable */
+ 208:spi_master.c  **** static SPI_MASTER_STATE_T state;
+ 209:spi_master.c  **** 
+ 210:spi_master.c  **** /*============================================================================*
+ 211:spi_master.c  ****  *  Private Function Prototypes
+ 212:spi_master.c  ****  *============================================================================*/
+ 213:spi_master.c  **** 
+ 214:spi_master.c  **** /* Setup the PIO Controller shared RAM */
+ 215:spi_master.c  **** static bool setupSharedRAM(uint8 tx_buffer_fill);
+ 216:spi_master.c  **** 
+ 217:spi_master.c  **** /* Set SSEL line */
+ 218:spi_master.c  **** static void setSSEL(bool assert);
+ 219:spi_master.c  **** 
+ 220:spi_master.c  **** /* Given an event check and validate whether the event can be processed in the
+ 221:spi_master.c  ****  * the current state */
+ 222:spi_master.c  **** static TransactionState processEvent(TransactionEvent event);
+ 223:spi_master.c  **** 
+ 224:spi_master.c  **** /*============================================================================*
+ 225:spi_master.c  ****  *  Private Function Implementations
+ 226:spi_master.c  ****  *============================================================================*/
+ 227:spi_master.c  **** 
+ 228:spi_master.c  **** /*----------------------------------------------------------------------------*
+ 229:spi_master.c  ****  *  NAME
+ 230:spi_master.c  ****  *      setupSharedRAM
+ 231:spi_master.c  ****  *
+ 232:spi_master.c  ****  *  DESCRIPTION
+ 233:spi_master.c  ****  *      Setup the PIO Controller shared RAM. Should only be called when PIO
+ 234:spi_master.c  ****  *      controller is not started
+ 235:spi_master.c  ****  *
+ 236:spi_master.c  ****  *  PARAMETERS
+ 237:spi_master.c  ****  *      tx_buffer_fill [in]     Fill character to be used to fill the Tx and Rx
+ 238:spi_master.c  ****  *                              data areas of the application shared memory
+ 239:spi_master.c  ****  *
+ 240:spi_master.c  ****  *  RETURNS
+ 241:spi_master.c  ****  *      TRUE if success, FALSE if failed.
+ 242:spi_master.c  ****  *----------------------------------------------------------------------------*/
+ 243:spi_master.c  **** static bool setupSharedRAM(uint8 tx_buffer_fill)
+ 244:spi_master.c  **** {
+  19                 	er	#0x0005
+  20 0000 05 0B       	.LCFI0:
+  21                 		st	AL,@(0x0003,Y)
+  22 0001 03 27       		.loc 1 246 0
+ 245:spi_master.c  ****     bool ret_val = FALSE;
+  23                 	AL,#0x0000
+  24 0002 00 14       		st	AL,@(0x0002,Y)
+  25 0003 02 27       		.loc 1 249 0
+ 246:spi_master.c  ****     
+ 247:spi_master.c  ****     /* Set the fill octet for the PIO controller tx buffer in the shared RAM */
+ 248:spi_master.c  ****     OQSetFill(&(state.pio_tx_data), TRUE, tx_buffer_fill);
+  26                 		AL,@(0x0003,Y)
+  27 0004 03 17       		st	AL,@(0,Y)
+  28 0005 00 27       		ld	AL,#state+9
+  29 0006 00 00 00 14 		ld	AH,#0x0001
+  30 0008 01 10       		bsr	OQSetFill
+  31 0009 00 00 00 00 		.loc 1 252 0
+  31      00 9C 
+ 249:spi_master.c  ****     if (
+ 250:spi_master.c  ****             
+ 251:spi_master.c  ****             OQCreate(PIO_CONTROLLER_SPI_RAM_XAP_TX,  (PIO_CONTROLLER_SPI_RAM_TX_SIZE / 2U), OQDataM
+  32                 	,#0x0001
+  33 000c 01 14       		st	AL,@(0,Y)
+  34 000d 00 27       		ld	AL,#state+9
+  35 000e 00 00 00 14 		st	AL,@(0x0001,Y)
+  36 0010 01 27       		ld	AL,#0xe834
+  37 0011 E8 00 34 14 		ld	AH,#0x000c
+  38 0013 0C 10       		bsr	OQCreate
+  39 0014 00 00 00 00 		.loc 1 250 0
+  39      00 9C 
+ 250:spi_master.c  ****     if (
+  40                 	AP_AL
+  41 0017 00 00 00 99 		beq	.L2
+  42 0019 00 00 00 00 		.loc 1 260 0
+  42      00 F4 
+ 252:spi_master.c  ****             
+ 253:spi_master.c  ****             
+ 254:spi_master.c  ****             )
+ 255:spi_master.c  ****     /* If queue has been setup for the shared tx data area successfully */
+ 256:spi_master.c  ****     {
+ 257:spi_master.c  ****         /* Set the fill octet for the PIO controller rx buffer in the shared
+ 258:spi_master.c  ****          * RAM, just so we clear any existing data */
+ 259:spi_master.c  ****         OQSetFill(&(state.pio_rx_data), TRUE, tx_buffer_fill);
+  43                 		AL,@(0x0003,Y)
+  44 001c 03 17       		st	AL,@(0,Y)
+  45 001d 00 27       		ld	AL,#state+3
+  46 001e 00 00 00 14 		ld	AH,#0x0001
+  47 0020 01 10       		bsr	OQSetFill
+  48 0021 00 00 00 00 		.loc 1 261 0
+  48      00 9C 
+ 260:spi_master.c  ****         if (OQCreate(PIO_CONTROLLER_SPI_RAM_XAP_RX,
+  49                 	,#0x0001
+  50 0024 01 14       		st	AL,@(0,Y)
+  51 0025 00 27       		ld	AL,#state+3
+  52 0026 00 00 00 14 		st	AL,@(0x0001,Y)
+  53 0028 01 27       		ld	AL,#0xe828
+  54 0029 E8 00 28 14 		ld	AH,#0x000c
+  55 002b 0C 10       		bsr	OQCreate
+  56 002c 00 00 00 00 		tst	@$XAP_AL
+  56      00 9C 
+  57 002f 00 00 00 99 		beq	.L3
+  58 0031 00 00 00 00 		.loc 1 267 0
+  58      00 F4 
+ 261:spi_master.c  ****                 (PIO_CONTROLLER_SPI_RAM_RX_SIZE / 2U), OQDataMode_packed,
+ 262:spi_master.c  ****                 &(state.pio_rx_data)))
+ 263:spi_master.c  ****         /* If queue has been setup for the shared rx data area successfully */
+ 264:spi_master.c  ****         {
+ 265:spi_master.c  ****             /* Fill the header area of the shared RAM */
+ 266:spi_master.c  ****             MemSet( PIO_CONTROLLER_REG_40H, 0U,
+  59                 	0008
+  60 0034 08 14       		st	AL,@(0,Y)
+  61 0035 00 27       		ld	AL,#0xe820
+  62 0036 E8 00 20 14 		ld	AH,#0x0000
+  63 0038 00 10       		bsr	memset
+  64 0039 00 00 00 00 		.loc 1 270 0
+  64      00 9C 
+ 267:spi_master.c  ****                                     PIO_CONTROLLER_SPI_RAM_XAP_OFFSET
+ 268:spi_master.c  ****                                         * sizeof(uint16) / sizeof(uint8));
+ 269:spi_master.c  ****             ret_val = TRUE;
+  65                 	,#0x0001
+  66 003c 01 14       		st	AL,@(0x0002,Y)
+  67 003d 02 27       	.L3:
+  68                 		.loc 1 274 0
+ 270:spi_master.c  ****         }
+ 271:spi_master.c  ****         /* No need to have the empty areas of the rx buffer in shared
+ 272:spi_master.c  ****          * RAM filled anymore */
+ 273:spi_master.c  ****         OQSetFill(&(state.pio_rx_data), FALSE, 0U);
+  69                 	AL,#0x0000
+  70 003e 00 14       		st	AL,@(0,Y)
+  71 003f 00 27       		ld	AL,#state+3
+  72 0040 00 00 00 14 		ld	AH,#0x0000
+  73 0042 00 10       		bsr	OQSetFill
+  74 0043 00 00 00 00 	.L2:
+  74      00 9C 
+  75                 		.loc 1 277 0
+ 274:spi_master.c  ****     }
+ 275:spi_master.c  **** 
+ 276:spi_master.c  ****     if (!ret_val)
+  76                 	0x0002,Y)
+  77 0046 02 9B       		bne	.L4
+  78 0047 00 00 00 00 		.loc 1 279 0
+  78      00 F0 
+ 277:spi_master.c  ****     {
+ 278:spi_master.c  ****         OQDestroy(&(state.pio_tx_data));
+  79                 		AL,#state+9
+  80 004a 00 00 00 14 		bsr	OQDestroy
+  81 004c 00 00 00 00 		.loc 1 280 0
+  81      00 9C 
+ 279:spi_master.c  ****         OQDestroy(&(state.pio_rx_data));
+  82                 		AL,#state+3
+  83 004f 00 00 00 14 		bsr	OQDestroy
+  84 0051 00 00 00 00 	.L4:
+  84      00 9C 
+  85                 		.loc 1 283 0
+ 280:spi_master.c  ****     }
+ 281:spi_master.c  **** 
+ 282:spi_master.c  ****     return ret_val;
+  86                 	AL,@(0x0002,Y)
+  87 0054 02 17       		.loc 1 284 0
+ 283:spi_master.c  **** } /* setupSharedRAM */
+  88                 	eave	#0x0005
+  89 0055 05 0F       	.LFE2:
+  90                 		.size	setupSharedRAM, .-setupSharedRAM
+  91                 		.equ	__size_of_setupSharedRAM,. - setupSharedRAM
+  92                 		.section	.text.setSSEL,"ax",@progbits
+  93                 		.type	setSSEL, @function
+  94                 	setSSEL:
+  95                 	.LFB3:
+  96                 		.loc 1 300 0
+ 284:spi_master.c  **** 
+ 285:spi_master.c  **** /*----------------------------------------------------------------------------*
+ 286:spi_master.c  ****  *  NAME
+ 287:spi_master.c  ****  *      setSSEL
+ 288:spi_master.c  ****  *
+ 289:spi_master.c  ****  *  DESCRIPTION
+ 290:spi_master.c  ****  *      Set SSEL line
+ 291:spi_master.c  ****  *
+ 292:spi_master.c  ****  *  PARAMETERS
+ 293:spi_master.c  ****  *      assert [in]             Assert SSEL if TRUE, de-assert otherwise
+ 294:spi_master.c  ****  *
+ 295:spi_master.c  ****  *  RETURNS
+ 296:spi_master.c  ****  *      Nothing
+ 297:spi_master.c  ****  *----------------------------------------------------------------------------*/
+ 298:spi_master.c  **** static void setSSEL(bool assert)
+ 299:spi_master.c  **** {
+  97                 	x0003
+  98 0000 03 0B       	.LCFI1:
+  99                 		st	AL,@(0,Y)
+ 100 0001 00 27       		.loc 1 309 0
+ 300:spi_master.c  ****     /*
+ 301:spi_master.c  ****      *   ACTIVE_LOW      ASSERT     PIO_STATE
+ 302:spi_master.c  ****      *   ====================================
+ 303:spi_master.c  ****      *      TRUE          TRUE        LOW   (FALSE)
+ 304:spi_master.c  ****      *      TRUE          FALSE       HIGH  (TRUE)
+ 305:spi_master.c  ****      *      FALSE         TRUE        HIGH  (TRUE)
+ 306:spi_master.c  ****      *      FALSE         FALSE       LOW   (FALSE)
+ 307:spi_master.c  ****      */
+ 308:spi_master.c  ****     PioSet(SPI_MASTER_PIO_SSEL, (SPI_MASTER_SSEL_ACTIVE_LOW != assert));
+ 101                 	AL,#0x0000
+ 102 0002 00 14       		st	AL,@(0x0001,Y)
+ 103 0003 01 27       		ld	AL,@(0,Y)
+ 104 0004 00 17       		cmp	AL,#0x0001
+ 105 0005 01 84       		beq	.L7
+ 106 0006 00 00 00 00 		ld	AL,#0x0001
+ 106      00 F4 
+ 107 0009 01 14       		st	AL,@(0x0001,Y)
+ 108 000a 01 27       	.L7:
+ 109                 		ld	AL,#0x0006
+ 110 000b 06 14       		ld	AH,@(0x0001,Y)
+ 111 000c 01 13       		bsr	PioSet
+ 112 000d 00 00 00 00 		.loc 1 310 0
+ 112      00 9C 
+ 309:spi_master.c  **** } /* setSSEL */
+ 113                 	03
+ 114 0010 03 0F       	.LFE3:
+ 115                 		.size	setSSEL, .-setSSEL
+ 116                 		.equ	__size_of_setSSEL,. - setSSEL
+ 117                 		.section	.text.processEvent,"ax",@progbits
+ 118                 		.type	processEvent, @function
+ 119                 	processEvent:
+ 120                 	.LFB4:
+ 121                 		.loc 1 374 0
+ 310:spi_master.c  **** 
+ 311:spi_master.c  **** /** @page SPI_MASTER_STATE_TMachine SPI Master Statemachine
+ 312:spi_master.c  ****  *
+ 313:spi_master.c  ****  * SPI Master State machine implementation
+ 314:spi_master.c  ****  *
+ 315:spi_master.c  ****  * @dot
+ 316:spi_master.c  ****  * digraph finite_state_machine {
+ 317:spi_master.c  ****  *      rankdir=TD;
+ 318:spi_master.c  ****  *      node [shape = point ]; Invalid;
+ 319:spi_master.c  ****  *      node [shape = ellipse];
+ 320:spi_master.c  ****  *
+ 321:spi_master.c  ****  *      Invalid                 ->              Initialised;
+ 322:spi_master.c  ****  *      Initialised             ->              PIOControllerReady
+ 323:spi_master.c  ****  *              [label = "PIOControllerStart"];
+ 324:spi_master.c  ****  *      PIOControllerReady      ->              TransactionStarted
+ 325:spi_master.c  ****  *              [label = "AssertSSEL"];
+ 326:spi_master.c  ****  *      PIOControllerReady      ->              Initialised
+ 327:spi_master.c  ****  *              [label = "Reset"];
+ 328:spi_master.c  ****  *      TransactionStarted      ->              PIOControllerReady
+ 329:spi_master.c  ****  *              [label = "DeassertSSEL"];
+ 330:spi_master.c  ****  *      TransactionStarted      ->              WaitingForPioController
+ 331:spi_master.c  ****  *              [label = "PIOControllerUnblockedWithDataToSend"];
+ 332:spi_master.c  ****  *      TransactionStarted      ->              Initialised
+ 333:spi_master.c  ****  *              [label = "Reset"];
+ 334:spi_master.c  ****  *      WaitingForPioController ->              WaitingForPioControllerToDeassert
+ 335:spi_master.c  ****  *              [label = "DeassertSSEL"];
+ 336:spi_master.c  ****  *      WaitingForPioController ->              PioControllerOnHold
+ 337:spi_master.c  ****  *              [label = "PIOControllerEvent"];
+ 338:spi_master.c  ****  *      WaitingForPioController ->              Initialised
+ 339:spi_master.c  ****  *              [label = "Reset"];
+ 340:spi_master.c  ****  *      PioControllerOnHold     ->              PIOControllerReady
+ 341:spi_master.c  ****  *              [label = "DeassertSSEL"];
+ 342:spi_master.c  ****  *      PioControllerOnHold     ->              WaitingForPioController
+ 343:spi_master.c  ****  *              [label = "PIOControllerUnblockedWithDataToSend"];
+ 344:spi_master.c  ****  *      PioControllerOnHold     ->              TransactionStarted
+ 345:spi_master.c  ****  *              [label = "PIOControllerUnblockedButNoData"];
+ 346:spi_master.c  ****  *      PioControllerOnHold     ->              Initialised
+ 347:spi_master.c  ****  *              [label = "Reset"];
+ 348:spi_master.c  ****  *      WaitingForPioControllerToDeassert
+ 349:spi_master.c  ****  *                              ->              PIOControllerReady
+ 350:spi_master.c  ****  *              [label = "PIOControllerEvent"];
+ 351:spi_master.c  ****  *      WaitingForPioControllerToDeassert
+ 352:spi_master.c  ****  *                              ->              Initialised
+ 353:spi_master.c  ****  *              [label = "Reset"];
+ 354:spi_master.c  ****  *      }
+ 355:spi_master.c  ****  * @enddot
+ 356:spi_master.c  ****  */
+ 357:spi_master.c  **** 
+ 358:spi_master.c  **** /*----------------------------------------------------------------------------*
+ 359:spi_master.c  ****  *  NAME
+ 360:spi_master.c  ****  *      processEvent
+ 361:spi_master.c  ****  *
+ 362:spi_master.c  ****  *  DESCRIPTION
+ 363:spi_master.c  ****  *      Process a transaction event according to the current state
+ 364:spi_master.c  ****  *
+ 365:spi_master.c  ****  *  PARAMETERS
+ 366:spi_master.c  ****  *      event [in]              Transaction event to process
+ 367:spi_master.c  ****  *
+ 368:spi_master.c  ****  *  RETURNS
+ 369:spi_master.c  ****  *      Invalid state if event cannot be processed in the current state,
+ 370:spi_master.c  ****  *      a valid state if the event is allowed
+ 371:spi_master.c  ****  *----------------------------------------------------------------------------*/
+ 372:spi_master.c  **** static TransactionState processEvent(TransactionEvent event)
+ 373:spi_master.c  **** {
+ 122                 	x0004
+ 123 0000 04 0B       	.LCFI2:
+ 124                 		st	AL,@(0x0001,Y)
+ 125 0001 01 27       		.loc 1 376 0
+ 374:spi_master.c  ****     /* Post-processing state */
+ 375:spi_master.c  ****     TransactionState ret_val = TransactionState_Invalid;
+ 126                 	AL,#0x0006
+ 127 0002 06 14       		st	AL,@(0,Y)
+ 128 0003 00 27       		.loc 1 378 0
+ 376:spi_master.c  **** 
+ 377:spi_master.c  ****     switch (state.state)
+ 129                 		AL,@state
+ 130 0004 00 00 00 15 		st	AL,@(0x0002,Y)
+ 131 0006 02 27       		ld	AL,@(0x0002,Y)
+ 132 0007 02 17       		cmp	AL,#0x0006
+ 133 0008 06 84       		bcc	.L10
+ 134 0009 00 00 00 00 		ld	X,@(0x0002,Y)
+ 134      00 F8 
+ 135 000c 02 1B       		add	X,#.L17
+ 136 000d 00 00 00 38 		ld	X,@(0,X)
+ 137 000f 00 1A       		brxl
+ 138 0010 FE 09       		.section	.rodata.processEvent,"a",@progbits
+ 139                 		.p2align	0
+ 140                 	.L17:
+ 141                 		.word	.L11-.JTBASE17
+ 142 0000 00 00       		.word	.L12-.JTBASE17
+ 143 0001 00 00       		.word	.L13-.JTBASE17
+ 144 0002 00 00       		.word	.L14-.JTBASE17
+ 145 0003 00 00       		.word	.L15-.JTBASE17
+ 146 0004 00 00       		.word	.L16-.JTBASE17
+ 147 0005 00 00       		.section	.text.processEvent
+ 148                 	.JTBASE17:
+ 149                 	.L11:
+ 150                 		.loc 1 382 0
+ 378:spi_master.c  ****     {
+ 379:spi_master.c  ****         case TransactionState_Initialised:
+ 380:spi_master.c  ****             /* SPI master has been initialised, but not ready yet */
+ 381:spi_master.c  ****             if (event == TransactionEvent_PIOControllerStart)
+ 151                 	.L10
+ 152 0011 01 9B       		.loc 1 386 0
+ 153 0012 00 00 00 00 		ld	AL,#0x0001
+ 153      00 F0 
+ 382:spi_master.c  ****                 /* If PIO Controller has been started */
+ 383:spi_master.c  ****             {
+ 384:spi_master.c  ****                 /* Since PIO controller has started, SPI Master is ready */
+ 385:spi_master.c  ****                 ret_val = TransactionState_PIOControllerReady;
+ 154                 		AL,@(0,Y)
+ 155 0015 01 14       		bra	.L10
+ 156 0016 00 27       	.L12:
+ 157 0017 00 00 00 00 		.loc 1 391 0
+ 157      00 E0 
+ 158                 		ld	AL,@(0x0001,Y)
+ 386:spi_master.c  ****             }
+ 387:spi_master.c  ****             break;
+ 388:spi_master.c  ****         case TransactionState_PIOControllerReady:
+ 389:spi_master.c  ****             /* SPI master is currently idle and SSEL is currently de-asserted */
+ 390:spi_master.c  ****             if (event == TransactionEvent_AssertSSEL)
+ 159                 	AL,#0x0001
+ 160 001a 01 17       		bne	.L19
+ 161 001b 01 84       		.loc 1 395 0
+ 162 001c 00 00 00 00 		ld	AL,#0x0002
+ 162      00 F0 
+ 391:spi_master.c  ****                 /* SSEL is being asserted */
+ 392:spi_master.c  ****             {
+ 393:spi_master.c  ****                 /* SSEL can be asserted */
+ 394:spi_master.c  ****                 ret_val = TransactionState_TransactionStarted;
+ 163                 	AL,@(0,Y)
+ 164 001f 02 14       		bra	.L10
+ 165 0020 00 27       	.L19:
+ 166 0021 00 00 00 00 		.loc 1 397 0
+ 166      00 E0 
+ 167                 		ld	AL,@(0x0001,Y)
+ 395:spi_master.c  ****             }
+ 396:spi_master.c  ****             else if (event == TransactionEvent_Reset)
+ 168                 	AL,#0x0006
+ 169 0024 01 17       		bne	.L10
+ 170 0025 06 84       		.loc 1 401 0
+ 171 0026 00 00 00 00 		ld	AL,#0x0000
+ 171      00 F0 
+ 397:spi_master.c  ****                 /* PIO controller is to be reset */
+ 398:spi_master.c  ****             {
+ 399:spi_master.c  ****                 /* Go back to initialised state */
+ 400:spi_master.c  ****                 ret_val = TransactionState_Initialised;
+ 172                 	AL,@(0,Y)
+ 173 0029 00 14       		bra	.L10
+ 174 002a 00 27       	.L13:
+ 175 002b 00 00 00 00 		.loc 1 407 0
+ 175      00 E0 
+ 176                 		ld	AL,@(0x0001,Y)
+ 401:spi_master.c  ****             }
+ 402:spi_master.c  ****             break;
+ 403:spi_master.c  ****         case TransactionState_TransactionStarted:
+ 404:spi_master.c  ****             /* SPI master has asserted the SSEL but no data transfer is
+ 405:spi_master.c  ****              * currently in progress */
+ 406:spi_master.c  ****             if (event == TransactionEvent_DeassertSSEL)
+ 177                 	AL,#0x0002
+ 178 002e 01 17       		bne	.L21
+ 179 002f 02 84       		.loc 1 410 0
+ 180 0030 00 00 00 00 		ld	AL,#0x0001
+ 180      00 F0 
+ 407:spi_master.c  ****                 /* SSEL is being de-asserted */
+ 408:spi_master.c  ****             {
+ 409:spi_master.c  ****                 ret_val = TransactionState_PIOControllerReady;
+ 181                 	AL,@(0,Y)
+ 182 0033 01 14       		bra	.L10
+ 183 0034 00 27       	.L21:
+ 184 0035 00 00 00 00 		.loc 1 412 0
+ 184      00 E0 
+ 185                 		ld	AL,@(0x0001,Y)
+ 410:spi_master.c  ****             }
+ 411:spi_master.c  ****             else if (event ==
+ 186                 	AL,#0x0003
+ 187 0038 01 17       		bne	.L23
+ 188 0039 03 84       		.loc 1 418 0
+ 189 003a 00 00 00 00 		ld	AL,#0x0004
+ 189      00 F0 
+ 412:spi_master.c  ****                           TransactionEvent_PIOControllerUnblockedWithDataToSend)
+ 413:spi_master.c  ****                 /* If more data has been transferred to PIO controller and it is
+ 414:spi_master.c  ****                  * unblocked */
+ 415:spi_master.c  ****             {
+ 416:spi_master.c  ****                 /* More data can be transferred to PIO controller */
+ 417:spi_master.c  ****                 ret_val = TransactionState_WaitingForPioController;
+ 190                 	AL,@(0,Y)
+ 191 003d 04 14       		bra	.L10
+ 192 003e 00 27       	.L23:
+ 193 003f 00 00 00 00 		.loc 1 420 0
+ 193      00 E0 
+ 194                 		ld	AL,@(0x0001,Y)
+ 418:spi_master.c  ****             }
+ 419:spi_master.c  ****             else if (event == TransactionEvent_Reset)
+ 195                 	AL,#0x0006
+ 196 0042 01 17       		bne	.L10
+ 197 0043 06 84       		.loc 1 424 0
+ 198 0044 00 00 00 00 		ld	AL,#0x0000
+ 198      00 F0 
+ 420:spi_master.c  ****                 /* PIO controller is to be reset */
+ 421:spi_master.c  ****             {
+ 422:spi_master.c  ****                 /* Go back to initialised state */
+ 423:spi_master.c  ****                 ret_val = TransactionState_Initialised;
+ 199                 	AL,@(0,Y)
+ 200 0047 00 14       		bra	.L10
+ 201 0048 00 27       	.L14:
+ 202 0049 00 00 00 00 		.loc 1 430 0
+ 202      00 E0 
+ 203                 		ld	AL,@(0x0001,Y)
+ 424:spi_master.c  ****             }
+ 425:spi_master.c  ****             break;
+ 426:spi_master.c  ****         case TransactionState_PioControllerOnHold:
+ 427:spi_master.c  ****             /* If a transfer has just been completed PIO controller is currently
+ 428:spi_master.c  ****              * in hold */
+ 429:spi_master.c  ****             if (event == TransactionEvent_DeassertSSEL)
+ 204                 	AL,#0x0002
+ 205 004c 01 17       		bne	.L24
+ 206 004d 02 84       		.loc 1 433 0
+ 207 004e 00 00 00 00 		ld	AL,#0x0001
+ 207      00 F0 
+ 430:spi_master.c  ****                 /* SSEL is being de-asserted */
+ 431:spi_master.c  ****             {
+ 432:spi_master.c  ****                 ret_val = TransactionState_PIOControllerReady;
+ 208                 	AL,@(0,Y)
+ 209 0051 01 14       		bra	.L10
+ 210 0052 00 27       	.L24:
+ 211 0053 00 00 00 00 		.loc 1 435 0
+ 211      00 E0 
+ 212                 		ld	AL,@(0x0001,Y)
+ 433:spi_master.c  ****             }
+ 434:spi_master.c  ****             else if (event ==
+ 213                 	AL,#0x0003
+ 214 0056 01 17       		bne	.L26
+ 215 0057 03 84       		.loc 1 441 0
+ 216 0058 00 00 00 00 		ld	AL,#0x0004
+ 216      00 F0 
+ 435:spi_master.c  ****                           TransactionEvent_PIOControllerUnblockedWithDataToSend)
+ 436:spi_master.c  ****                 /* If more data has been transferred to PIO controller and it is
+ 437:spi_master.c  ****                  * unblocked */
+ 438:spi_master.c  ****             {
+ 439:spi_master.c  ****                 /* More data can be transferred to PIO controller */
+ 440:spi_master.c  ****                 ret_val = TransactionState_WaitingForPioController;
+ 217                 	AL,@(0,Y)
+ 218 005b 04 14       		bra	.L10
+ 219 005c 00 27       	.L26:
+ 220 005d 00 00 00 00 		.loc 1 443 0
+ 220      00 E0 
+ 221                 		ld	AL,@(0x0001,Y)
+ 441:spi_master.c  ****             }
+ 442:spi_master.c  ****             else if (event == TransactionEvent_PIOControllerUnblockedButNoData)
+ 222                 	AL,#0x0004
+ 223 0060 01 17       		bne	.L27
+ 224 0061 04 84       		.loc 1 448 0
+ 225 0062 00 00 00 00 		ld	AL,#0x0002
+ 225      00 F0 
+ 443:spi_master.c  ****                 /* If no data has been transferred to PIO controller and it is
+ 444:spi_master.c  ****                  * unblocked */
+ 445:spi_master.c  ****             {
+ 446:spi_master.c  ****                 /* We have nothing to wait on PIO controller */
+ 447:spi_master.c  ****                 ret_val = TransactionState_TransactionStarted;
+ 226                 	AL,@(0,Y)
+ 227 0065 02 14       		bra	.L10
+ 228 0066 00 27       	.L27:
+ 229 0067 00 00 00 00 		.loc 1 450 0
+ 229      00 E0 
+ 230                 		ld	AL,@(0x0001,Y)
+ 448:spi_master.c  ****             }
+ 449:spi_master.c  ****             else if (event == TransactionEvent_Reset)
+ 231                 	AL,#0x0006
+ 232 006a 01 17       		bne	.L10
+ 233 006b 06 84       		.loc 1 454 0
+ 234 006c 00 00 00 00 		ld	AL,#0x0000
+ 234      00 F0 
+ 450:spi_master.c  ****                 /* PIO controller is to be reset */
+ 451:spi_master.c  ****             {
+ 452:spi_master.c  ****                 /* Go back to initialised state */
+ 453:spi_master.c  ****                 ret_val = TransactionState_Initialised;
+ 235                 	AL,@(0,Y)
+ 236 006f 00 14       		bra	.L10
+ 237 0070 00 27       	.L15:
+ 238 0071 00 00 00 00 		.loc 1 459 0
+ 238      00 E0 
+ 239                 		ld	AL,@(0x0001,Y)
+ 454:spi_master.c  ****             }
+ 455:spi_master.c  ****             break;
+ 456:spi_master.c  ****         case TransactionState_WaitingForPioController:
+ 457:spi_master.c  ****             /* If PIO controller is currently doing a transfer */
+ 458:spi_master.c  ****             if (event == TransactionEvent_DeassertSSEL)
+ 240                 	AL,#0x0002
+ 241 0074 01 17       		bne	.L28
+ 242 0075 02 84       		.loc 1 463 0
+ 243 0076 00 00 00 00 		ld	AL,#0x0005
+ 243      00 F0 
+ 459:spi_master.c  ****                 /* SSEL is being de-asserted */
+ 460:spi_master.c  ****             {
+ 461:spi_master.c  ****                 /* SSEL de-assertion has to be postponed */
+ 462:spi_master.c  ****                 ret_val = TransactionState_WaitingForPioControllerToDeassert;
+ 244                 	AL,@(0,Y)
+ 245 0079 05 14       		bra	.L10
+ 246 007a 00 27       	.L28:
+ 247 007b 00 00 00 00 		.loc 1 465 0
+ 247      00 E0 
+ 248                 		ld	AL,@(0x0001,Y)
+ 463:spi_master.c  ****             }
+ 464:spi_master.c  ****             else if (event == TransactionEvent_PIOControllerEvent)
+ 249                 	AL,#0x0005
+ 250 007e 01 17       		bne	.L30
+ 251 007f 05 84       		.loc 1 470 0
+ 252 0080 00 00 00 00 		ld	AL,#0x0003
+ 252      00 F0 
+ 465:spi_master.c  ****                 /* PIO Controller has finished a data transfer and is currently
+ 466:spi_master.c  ****                  * blocked */
+ 467:spi_master.c  ****             {
+ 468:spi_master.c  ****                 /* PIO controller is on hold */
+ 469:spi_master.c  ****                 ret_val = TransactionState_PioControllerOnHold;
+ 253                 	AL,@(0,Y)
+ 254 0083 03 14       		bra	.L10
+ 255 0084 00 27       	.L30:
+ 256 0085 00 00 00 00 		.loc 1 472 0
+ 256      00 E0 
+ 257                 		ld	AL,@(0x0001,Y)
+ 470:spi_master.c  ****             }
+ 471:spi_master.c  ****             else if (event == TransactionEvent_Reset)
+ 258                 	AL,#0x0006
+ 259 0088 01 17       		bne	.L10
+ 260 0089 06 84       		.loc 1 476 0
+ 261 008a 00 00 00 00 		ld	AL,#0x0000
+ 261      00 F0 
+ 472:spi_master.c  ****                 /* PIO controller is to be reset */
+ 473:spi_master.c  ****             {
+ 474:spi_master.c  ****                 /* Go back to initialised state */
+ 475:spi_master.c  ****                 ret_val = TransactionState_Initialised;
+ 262                 	AL,@(0,Y)
+ 263 008d 00 14       		bra	.L10
+ 264 008e 00 27       	.L16:
+ 265 008f 00 00 00 00 		.loc 1 482 0
+ 265      00 E0 
+ 266                 		ld	AL,@(0x0001,Y)
+ 476:spi_master.c  ****             }
+ 477:spi_master.c  ****             break;
+ 478:spi_master.c  ****         case TransactionState_WaitingForPioControllerToDeassert:
+ 479:spi_master.c  ****             /* If waiting for PIO controller to finish a data transfer to
+ 480:spi_master.c  ****              * de-assert the SSEL */
+ 481:spi_master.c  ****             if (event == TransactionEvent_PIOControllerEvent)
+ 267                 	AL,#0x0005
+ 268 0092 01 17       		bne	.L31
+ 269 0093 05 84       		.loc 1 485 0
+ 270 0094 00 00 00 00 		ld	AL,#0x0001
+ 270      00 F0 
+ 482:spi_master.c  ****             {
+ 483:spi_master.c  ****                 /* SSEL can be de-asserted */
+ 484:spi_master.c  ****                 ret_val = TransactionState_PIOControllerReady;
+ 271                 	AL,@(0,Y)
+ 272 0097 01 14       		bra	.L10
+ 273 0098 00 27       	.L31:
+ 274 0099 00 00 00 00 		.loc 1 487 0
+ 274      00 E0 
+ 275                 		ld	AL,@(0x0001,Y)
+ 485:spi_master.c  ****             }
+ 486:spi_master.c  ****             else if (event == TransactionEvent_Reset)
+ 276                 	AL,#0x0006
+ 277 009c 01 17       		bne	.L10
+ 278 009d 06 84       		.loc 1 491 0
+ 279 009e 00 00 00 00 		ld	AL,#0x0000
+ 279      00 F0 
+ 487:spi_master.c  ****                 /* PIO controller is to be reset */
+ 488:spi_master.c  ****             {
+ 489:spi_master.c  ****                 /* Go back to initialised state */
+ 490:spi_master.c  ****                 ret_val = TransactionState_Initialised;
+ 280                 	AL,@(0,Y)
+ 281 00a1 00 14       	.L10:
+ 282 00a2 00 27       		.loc 1 501 0
+ 283                 		ld	AL,@(0,Y)
+ 491:spi_master.c  ****             }
+ 492:spi_master.c  ****             break;
+ 493:spi_master.c  ****         case TransactionState_Invalid:
+ 494:spi_master.c  ****             /* Nothing to do here */
+ 495:spi_master.c  ****             break;
+ 496:spi_master.c  ****         /* NOTE default case deliberately left out so as to catch any states
+ 497:spi_master.c  ****          * left un-handled */
+ 498:spi_master.c  ****     }
+ 499:spi_master.c  ****     
+ 500:spi_master.c  ****     return ret_val;
+ 284                 	c 1 502 0
+ 285 00a3 00 17       		leave	#0x0004
+ 501:spi_master.c  **** } /* processEvent */
+ 286                 	FE4:
+ 287 00a4 04 0F       		.size	processEvent, .-processEvent
+ 288                 		.equ	__size_of_processEvent,. - processEvent
+ 289                 		.section	.text.SpiMasterInit,"ax",@progbits
+ 290                 		.global	SpiMasterInit
+ 291                 		.type	SpiMasterInit, @function
+ 292                 	SpiMasterInit:
+ 293                 	.LFB5:
+ 294                 		.loc 1 582 0
+ 295                 		enter	#0x0006
+ 502:spi_master.c  **** 
+ 503:spi_master.c  **** /*============================================================================*
+ 504:spi_master.c  ****  *  Public Function Implementations
+ 505:spi_master.c  ****  *============================================================================*/
+ 506:spi_master.c  **** 
+ 507:spi_master.c  **** /*----------------------------------------------------------------------------*
+ 508:spi_master.c  ****  *  NAME
+ 509:spi_master.c  ****  *      SpiMasterInit
+ 510:spi_master.c  ****  *
+ 511:spi_master.c  ****  *  DESCRIPTION
+ 512:spi_master.c  ****  *      Configure the SPI master. Once the SPI master implementation on
+ 513:spi_master.c  ****  *      the PIO controller is configured, it needs to be explicitly
+ 514:spi_master.c  ****  *      started by calling #SpiMasterStart.
+ 515:spi_master.c  ****  *
+ 516:spi_master.c  ****  *      The default PIO controller code is available via the symbols
+ 517:spi_master.c  ****  *      defined in #spi_cfg.h. However, if application wants to use its
+ 518:spi_master.c  ****  *      own PIO controller code then it should specify the appropriate
+ 519:spi_master.c  ****  *      symbol name, e.g. if the PIO controller assembly is added to the
+ 520:spi_master.c  ****  *      project in a file named xyz.asm, a symbol xyz would have been
+ 521:spi_master.c  ****  *      defined, which points to the address of the PIO controller code.
+ 522:spi_master.c  ****  *      This symbol should be passed in while initialising the SPI master
+ 523:spi_master.c  ****  *      driver. Note that a custom implementation of the PIO controller
+ 524:spi_master.c  ****  *      code, must maintain the interface between the XAP processor and
+ 525:spi_master.c  ****  *      the PIO Controller.
+ 526:spi_master.c  ****  *
+ 527:spi_master.c  ****  *      In order for the PIO Controller to run with fastest clock (to be
+ 528:spi_master.c  ****  *      able to support maximum SPI bus speed), it may be necessary to
+ 529:spi_master.c  ****  *      ensure that the XAP processor doesn't go to sleep, prior to calling
+ 530:spi_master.c  ****  *      this function.
+ 531:spi_master.c  ****  *
+ 532:spi_master.c  ****  *      This function can be called multiple times and each time it
+ 533:spi_master.c  ****  *      reinitialises the PIO Controller and starts afresh. However,
+ 534:spi_master.c  ****  *      calling it while a transfer is in progress might lead to data
+ 535:spi_master.c  ****  *      corruption. In order to simply reset the PIO controller use
+ 536:spi_master.c  ****  *      #SpiMasterReset instead.
+ 537:spi_master.c  ****  *
+ 538:spi_master.c  ****  *      NOTE: See the note regarding the maintenance of rx_data_buffer
+ 539:spi_master.c  ****  *      under #SpiMasterTransactionCallbackType
+ 540:spi_master.c  ****  *
+ 541:spi_master.c  ****  *  PARAMETERS
+ 542:spi_master.c  ****  *      p_pio_controller_code_addr [in]
+ 543:spi_master.c  ****  *                              Memory address containing SPI Master code to be
+ 544:spi_master.c  ****  *                              loaded into the PIO Controller
+ 545:spi_master.c  ****  *      p_data_callback [in]    Pointer to a function to be called upon data
+ 546:spi_master.c  ****  *                              being transferred to/received from the PIO
+ 547:spi_master.c  ****  *                              controller.
+ 548:spi_master.c  ****  *      tx_data_buffer [in]     Handle to a buffer to be used by the SPI Master
+ 549:spi_master.c  ****  *                              to read the tx data from, in order to be able to
+ 550:spi_master.c  ****  *                              transfer to PIO controller for onward
+ 551:spi_master.c  ****  *                              transmission to SPI Slave. It can contain data
+ 552:spi_master.c  ****  *                              to be transferred, which would then be
+ 553:spi_master.c  ****  *                              transferred to shared RAM upon starting the PIO
+ 554:spi_master.c  ****  *                              controller ready to be sent out when
+ 555:spi_master.c  ****  *                              transactions are started.
+ 556:spi_master.c  ****  *      rx_data_buffer [in]     Handle to a buffer to be used by the SPI Master
+ 557:spi_master.c  ****  *                              to queue any data received from the PIO
+ 558:spi_master.c  ****  *                              controller over SPI.
+ 559:spi_master.c  ****  *      tx_buffer_fill [in]     If buffer filling feature is compiled into the
+ 560:spi_master.c  ****  *                              octet_queue, the empty areas of the buffer
+ 561:spi_master.c  ****  *                              containing the outgoing data in the shared RAM
+ 562:spi_master.c  ****  *                              will be filled with this octet. Useful for
+ 563:spi_master.c  ****  *                              debugging the transfers.
+ 564:spi_master.c  ****  *      inter_octet_delay [in]  Set this to a count that will affect the inter-
+ 565:spi_master.c  ****  *                              octet delay. Setting it to 0 will cause no
+ 566:spi_master.c  ****  *                              additional delay. Each increment by 1 will
+ 567:spi_master.c  ****  *                              introduce 2 clock cycles (at 16MHz this is
+ 568:spi_master.c  ****  *                              0.125us). This is in addition to the existing
+ 569:spi_master.c  ****  *                              minimum inter-octet delay, see assembly source
+ 570:spi_master.c  ****  *                              for exact value of the minimum delay.
+ 571:spi_master.c  ****  *
+ 572:spi_master.c  ****  *  RETURNS
+ 573:spi_master.c  ****  *      TRUE if success, FALSE if failed.
+ 574:spi_master.c  ****  *----------------------------------------------------------------------------*/
+ 575:spi_master.c  **** bool SpiMasterInit(uint16                           *p_pio_controller_code_addr,
+ 576:spi_master.c  ****                    SpiMasterTransactionCallbackType  p_data_callback,
+ 577:spi_master.c  ****                    OQ_HANDLE                         p_tx_data_buffer,
+ 578:spi_master.c  ****                    OQ_HANDLE                         p_rx_data_buffer,
+ 579:spi_master.c  ****                    uint8                             tx_buffer_fill,
+ 580:spi_master.c  ****                    uint8                             inter_octet_delay)
+ 581:spi_master.c  **** {
+ 296                 	t	AL,@(0x0002,Y)
+ 297 0000 06 0B       		st	AH,@(0x0003,Y)
+ 298                 		.loc 1 586 0
+ 299 0001 02 27       		tst	@(0x0006,Y)
+ 300 0002 03 23       		beq	.L34
+ 582:spi_master.c  ****     /* Check if valid tx and rx queue handles have been supplied */
+ 583:spi_master.c  ****     bool ret_val = (p_tx_data_buffer != NULL) &&
+ 584:spi_master.c  ****                    (p_rx_data_buffer != NULL) &&
+ 585:spi_master.c  ****                    (p_pio_controller_code_addr != NULL);
+ 301                 	@(0x0007,Y)
+ 302 0003 06 9B       		beq	.L34
+ 303 0004 00 00 00 00 		tst	@(0x0002,Y)
+ 303      00 F4 
+ 304 0007 07 9B       		beq	.L34
+ 305 0008 00 00 00 00 		ld	AL,#0x0001
+ 305      00 F4 
+ 306 000b 02 9B       		st	AL,@(0x0004,Y)
+ 307 000c 00 00 00 00 		bra	.L35
+ 307      00 F4 
+ 308 000f 01 14       	.L34:
+ 309 0010 04 27       		ld	AL,#0x0000
+ 310 0011 00 00 00 00 		st	AL,@(0x0004,Y)
+ 310      00 E0 
+ 311                 	.L35:
+ 312 0014 00 14       		ld	AL,@(0x0004,Y)
+ 313 0015 04 27       		st	AL,@(0x0001,Y)
+ 314                 		.loc 1 588 0
+ 315 0016 04 17       		tst	@(0x0001,Y)
+ 316 0017 01 27       		beq	.L36
+ 586:spi_master.c  **** 
+ 587:spi_master.c  ****     if (ret_val)
+ 317                 	sr	PioCtrlrStop
+ 318 0018 01 9B       		.loc 1 594 0
+ 319 0019 00 00 00 00 		ld	AL,@(0x0006,Y)
+ 319      00 F4 
+ 588:spi_master.c  ****     {
+ 589:spi_master.c  ****         /* Stop the PIO controller, in case it was already running */
+ 590:spi_master.c  ****         PioCtrlrStop();
+ 320                 		AL,@state+0x0001
+ 321 001c 00 00 00 00 		.loc 1 595 0
+ 321      00 9C 
+ 591:spi_master.c  **** 
+ 592:spi_master.c  ****         /* Set up the application buffers */
+ 593:spi_master.c  ****         state.p_tx_data = p_tx_data_buffer;
+ 322                 	d	AL,@(0x0007,Y)
+ 323 001f 06 17       		st	AL,@state+0x0002
+ 324 0020 00 00 00 25 		.loc 1 598 0
+ 594:spi_master.c  ****         state.p_rx_data = p_rx_data_buffer;
+ 325                 		AL,@(0x0003,Y)
+ 326 0022 07 17       		st	AL,@state+0x000f
+ 327 0023 00 00 00 25 		.loc 1 601 0
+ 595:spi_master.c  **** 
+ 596:spi_master.c  ****         /* Setup the data callback function */
+ 597:spi_master.c  ****         state.p_data_cb_func = p_data_callback;
+ 328                 		AL,#0x0006
+ 329 0025 03 17       		ld	AH,#0x0000
+ 330 0026 00 00 00 25 		bsr	PioSetMode
+ 598:spi_master.c  ****         
+ 599:spi_master.c  ****         /* Configure the SSEL to be controlled independently */
+ 600:spi_master.c  ****         PioSetMode(SPI_MASTER_PIO_SSEL, pio_mode_user);
+ 331                 	oc 1 604 0
+ 332 0028 06 14       		ld	AL,#0x0006
+ 333 0029 00 10       		ld	AH,#0x0001
+ 334 002a 00 00 00 00 		bsr	PioSetDir
+ 334      00 9C 
+ 601:spi_master.c  ****         
+ 602:spi_master.c  ****         /* Configure button to be input */
+ 603:spi_master.c  ****         PioSetDir(SPI_MASTER_PIO_SSEL, PIO_DIR_OUTPUT);
+ 335                 	c 1 607 0
+ 336 002d 06 14       		ld	AL,#0x0000
+ 337 002e 01 10       		bsr	setSSEL
+ 338 002f 00 00 00 00 		.loc 1 610 0
+ 338      00 9C 
+ 604:spi_master.c  ****         
+ 605:spi_master.c  ****         /* De-assert the SPI Slave select */
+ 606:spi_master.c  ****         setSSEL(FALSE);
+ 339                 	AL,#0x0010
+ 340 0032 00 14       		st	AL,@(0,Y)
+ 341 0033 00 00 00 00 		ld	AH,#0x0000
+ 341      00 9C 
+ 607:spi_master.c  ****         
+ 608:spi_master.c  ****         /* Give the PIO controller access to the SPI Slave PIOs */
+ 609:spi_master.c  ****         PioSetModes(PIO_BIT_MASK(SPI_MASTER_PIO_SCLK) |
+ 342                 		AL,#0x01a0
+ 343 0036 10 14       		bsr	PioSetModes
+ 344 0037 00 27       		.loc 1 617 0
+ 345 0038 00 10       		ld	AL,#0x0001
+ 346 0039 02 00 A0 14 		bsr	PioCtrlrClock
+ 347 003b 00 00 00 00 		.loc 1 620 0
+ 347      00 9C 
+ 610:spi_master.c  ****                     PIO_BIT_MASK(SPI_MASTER_PIO_MOSI) |
+ 611:spi_master.c  ****                     PIO_BIT_MASK(SPI_MASTER_PIO_MISO),
+ 612:spi_master.c  ****                     pio_mode_pio_controller);
+ 613:spi_master.c  ****         
+ 614:spi_master.c  ****         /* Set the PIO Controller clock to fastest available, so that it can run
+ 615:spi_master.c  ****          * off 16MHz clock when not sleeping */
+ 616:spi_master.c  ****         PioCtrlrClock(TRUE);
+ 348                 	,@(0x0002,Y)
+ 349 003e 01 14       		bsr	PioCtrlrInit
+ 350 003f 00 00 00 00 		.loc 1 623 0
+ 350      00 9C 
+ 617:spi_master.c  ****         
+ 618:spi_master.c  ****         /* Now download code onto PIO controller */
+ 619:spi_master.c  ****         PioCtrlrInit(p_pio_controller_code_addr);
+ 351                 		AL,@(0x0008,Y)
+ 352 0042 02 17       		bsr	setupSharedRAM
+ 353 0043 00 00 00 00 		st	AL,@(0x0001,Y)
+ 353      00 9C 
+ 620:spi_master.c  ****         
+ 621:spi_master.c  ****         /* Setup the PIO controller shared RAM buffer */
+ 622:spi_master.c  ****         ret_val = setupSharedRAM(tx_buffer_fill);
+ 354                 	oc 1 626 0
+ 355 0046 08 17       		ld	X,#0xe820
+ 356 0047 00 00 00 00 		ld	AL,#0x0000
+ 356      00 9C 
+ 357 004a 01 27       		st	AL,@(0,X)
+ 623:spi_master.c  ****         
+ 624:spi_master.c  ****         /* Setup the interrupt threshold */
+ 625:spi_master.c  ****         SET_SPI_TRANSFER_SIZE_REG(0U);
+ 358                 	c 1 629 0
+ 359 004b E8 00 20 18 		ld	X,#0xe824
+ 360 004d 00 14       		ld	AL,@(0x0009,Y)
+ 361 004e 00 26       		add	AL,#0x0001
+ 626:spi_master.c  ****         
+ 627:spi_master.c  ****         /* Setup the inter-octet delay */
+ 628:spi_master.c  ****         SET_INTER_BYTE_DELAY(inter_octet_delay + 1U);
+ 362                 		AL,#0x00ff
+ 363 004f E8 00 24 18 		st	AL,@(0,X)
+ 364 0051 09 17       		.loc 1 632 0
+ 365 0052 01 34       		ld	AL,#0x0000
+ 366 0053 01 00 FF C4 		st	AL,@state
+ 367 0055 00 26       	.L36:
+ 629:spi_master.c  ****         
+ 630:spi_master.c  ****         /* Initialise the SPI Master state - no transaction is in progress */
+ 631:spi_master.c  ****         state.state = TransactionState_Initialised;
+ 368                 	1 635 0
+ 369 0056 00 14       		ld	AL,@(0x0001,Y)
+ 370 0057 00 00 00 25 		.loc 1 636 0
+ 371                 		leave	#0x0006
+ 632:spi_master.c  ****     }
+ 633:spi_master.c  ****     
+ 634:spi_master.c  ****     return ret_val;
+ 372                 	5:
+ 373 0059 01 17       		.size	SpiMasterInit, .-SpiMasterInit
+ 635:spi_master.c  **** } /* SpiMasterInit */
+ 374                 	global	__size_of_SpiMasterInit
+ 375 005a 06 0F       		.equ	__size_of_SpiMasterInit,. - SpiMasterInit
+ 376                 		.section	.text.SpiMasterStart,"ax",@progbits
+ 377                 		.global	SpiMasterStart
+ 378                 		.type	SpiMasterStart, @function
+ 379                 	SpiMasterStart:
+ 380                 	.LFB6:
+ 381                 		.loc 1 653 0
+ 382                 		enter	#0x0002
+ 383                 	.LCFI4:
+ 384                 		.loc 1 656 0
+ 636:spi_master.c  **** 
+ 637:spi_master.c  **** /*----------------------------------------------------------------------------*
+ 638:spi_master.c  ****  *  NAME
+ 639:spi_master.c  ****  *      SpiMasterStart
+ 640:spi_master.c  ****  *
+ 641:spi_master.c  ****  *  DESCRIPTION
+ 642:spi_master.c  ****  *      Start the SPI Master. It must have been successfully configured
+ 643:spi_master.c  ****  *      first by calling #SpiMasterInit.
+ 644:spi_master.c  ****  *
+ 645:spi_master.c  ****  *  PARAMETERS
+ 646:spi_master.c  ****  *      None
+ 647:spi_master.c  ****  *
+ 648:spi_master.c  ****  *  RETURNS
+ 649:spi_master.c  ****  *      Nothing
+ 650:spi_master.c  ****  *----------------------------------------------------------------------------*/
+ 651:spi_master.c  **** void SpiMasterStart(void)
+ 652:spi_master.c  **** {
+ 385                 	000
+ 386 0000 02 0B       		bsr	processEvent
+ 387                 		st	AL,@(0,Y)
+ 653:spi_master.c  ****     /* Check if the SPI master has already been configured */
+ 654:spi_master.c  ****     const TransactionState newState =
+ 655:spi_master.c  ****                               processEvent(TransactionEvent_PIOControllerStart);
+ 388                 	oc 1 658 0
+ 389 0001 00 14       		ld	AL,@(0,Y)
+ 390 0002 00 00 00 00 		cmp	AL,#0x0001
+ 390      00 9C 
+ 391 0005 00 27       		bne	.L40
+ 656:spi_master.c  ****     
+ 657:spi_master.c  ****     if (newState == TransactionState_PIOControllerReady)
+ 392                 	c 1 660 0
+ 393 0006 00 17       		bsr	PioCtrlrStart
+ 394 0007 01 84       		.loc 1 661 0
+ 395 0008 00 00 00 00 		ld	AL,@(0,Y)
+ 395      00 F0 
+ 658:spi_master.c  ****     {
+ 659:spi_master.c  ****         PioCtrlrStart();
+ 396                 	AL,@state
+ 397 000b 00 00 00 00 	.L40:
+ 397      00 9C 
+ 660:spi_master.c  ****         state.state = newState;
+ 398                 	loc 1 663 0
+ 399 000e 00 17       		leave	#0x0002
+ 400 000f 00 00 00 25 	.LFE6:
+ 401                 		.size	SpiMasterStart, .-SpiMasterStart
+ 661:spi_master.c  ****     }
+ 662:spi_master.c  **** } /* SpiMasterStart */
+ 402                 	obal	__size_of_SpiMasterStart
+ 403 0011 02 0F       		.equ	__size_of_SpiMasterStart,. - SpiMasterStart
+ 404                 		.section	.text.SpiMasterStartTransaction,"ax",@progbits
+ 405                 		.global	SpiMasterStartTransaction
+ 406                 		.type	SpiMasterStartTransaction, @function
+ 407                 	SpiMasterStartTransaction:
+ 408                 	.LFB7:
+ 409                 		.loc 1 688 0
+ 410                 		enter	#0x0006
+ 411                 	.LCFI5:
+ 412                 		.loc 1 689 0
+ 663:spi_master.c  **** 
+ 664:spi_master.c  **** /*----------------------------------------------------------------------------*
+ 665:spi_master.c  ****  *  NAME
+ 666:spi_master.c  ****  *      SpiMasterStartTransaction
+ 667:spi_master.c  ****  *
+ 668:spi_master.c  ****  *  DESCRIPTION
+ 669:spi_master.c  ****  *      Transfer data from the Tx queue and issue the data transfer call-back
+ 670:spi_master.c  ****  *      when all of the data within the Tx queue has been transferred over to
+ 671:spi_master.c  ****  *      the remote SPI slave. If SSEL is currently asserted calling this
+ 672:spi_master.c  ****  *      function would simply continue sending more data without
+ 673:spi_master.c  ****  *      de-asserting/re-asserting the SSEL line, allowing the application to
+ 674:spi_master.c  ****  *      continue an existing transaction.
+ 675:spi_master.c  ****  *
+ 676:spi_master.c  ****  *  PARAMETERS
+ 677:spi_master.c  ****  *      None
+ 678:spi_master.c  ****  *
+ 679:spi_master.c  ****  *  RETURNS
+ 680:spi_master.c  ****  *      TRUE if a new transaction is started or a transfer is already in
+ 681:spi_master.c  ****  *          progress.
+ 682:spi_master.c  ****  *      FALSE if no new transaction can be started at this time
+ 683:spi_master.c  ****  *          (most probably because current transaction is scheduled to be
+ 684:spi_master.c  ****  *          ended)
+ 685:spi_master.c  ****  *----------------------------------------------------------------------------*/
+ 686:spi_master.c  **** bool SpiMasterStartTransaction(void)
+ 687:spi_master.c  **** {
+ 413                 	000
+ 414 0000 06 0B       		st	AL,@(0x0003,Y)
+ 415                 		.loc 1 691 0
+ 688:spi_master.c  ****     bool ret_val = FALSE;
+ 416                 		AL,#0x0001
+ 417 0001 00 14       		bsr	processEvent
+ 418 0002 03 27       		st	AL,@(0x0002,Y)
+ 689:spi_master.c  ****     
+ 690:spi_master.c  ****     TransactionState newState = processEvent(TransactionEvent_AssertSSEL);
+ 419                 	oc 1 693 0
+ 420 0003 01 14       		ld	AL,@(0x0002,Y)
+ 421 0004 00 00 00 00 		cmp	AL,#0x0002
+ 421      00 9C 
+ 422 0007 02 27       		bne	.L42
+ 691:spi_master.c  ****     
+ 692:spi_master.c  ****     if (newState == TransactionState_TransactionStarted)
+ 423                 	c 1 698 0
+ 424 0008 02 17       		ld	AL,@(0x0002,Y)
+ 425 0009 02 84       		st	AL,@state
+ 426 000a 00 00 00 00 	.L42:
+ 426      00 F0 
+ 693:spi_master.c  ****         /* If SSEL assertion is permitted */
+ 694:spi_master.c  ****     {
+ 695:spi_master.c  ****         /* Setup the state such that we will assert the SPI Slave select
+ 696:spi_master.c  ****          * just before starting a transfer */
+ 697:spi_master.c  ****         state.state = newState;
+ 427                 	c 1 701 0
+ 428 000d 02 17       		ld	AL,#0x0003
+ 429 000e 00 00 00 25 		bsr	processEvent
+ 430                 		st	AL,@(0x0002,Y)
+ 698:spi_master.c  ****     }
+ 699:spi_master.c  **** 
+ 700:spi_master.c  ****     newState =
+ 431                 	c 1 704 0
+ 432 0010 03 14       		ld	AL,@(0x0002,Y)
+ 433 0011 00 00 00 00 		cmp	AL,#0x0004
+ 433      00 9C 
+ 434 0014 02 27       		bne	.L43
+ 701:spi_master.c  ****             processEvent(TransactionEvent_PIOControllerUnblockedWithDataToSend);
+ 702:spi_master.c  **** 
+ 703:spi_master.c  ****     if (newState == TransactionState_WaitingForPioController)
+ 435                 	2:
+ 436 0015 02 17       		.loc 1 710 0
+ 437 0016 04 84       		ld	AL,@state+0x0001
+ 438 0017 00 00 00 00 		st	AL,@(0x0004,Y)
+ 438      00 F0 
+ 439                 		ld	AL,@state+0x0001
+ 704:spi_master.c  ****         /* If data transfer to PIO Controller shared RAM is permitted */
+ 705:spi_master.c  ****     {
+ 706:spi_master.c  ****         /* Transfer as much tx data over to PIO controller as possible */
+ 707:spi_master.c  ****         const uint16 transfer_size = OQTransferData(state.p_tx_data,
+ 708:spi_master.c  ****                                                      &(state.pio_tx_data),
+ 709:spi_master.c  ****                                                      OQSize(state.p_tx_data));
+ 440                 	OQSize
+ 441 001a 00 00 00 15 		st	AL,@(0,Y)
+ 442 001c 04 27       		ld	AL,@(0x0004,Y)
+ 443 001d 00 00 00 15 		ld	AH,#state+9
+ 444 001f 00 00 00 00 		bsr	OQTransferData
+ 444      00 9C 
+ 445 0022 00 27       		st	AL,@(0x0001,Y)
+ 446 0023 04 17       		.loc 1 713 0
+ 447 0024 00 00 00 10 		ld	X,#0xe820
+ 448 0026 00 00 00 00 		ld	AL,@(0x0001,Y)
+ 448      00 9C 
+ 449 0029 01 27       		and	AL,#0x00ff
+ 710:spi_master.c  ****         
+ 711:spi_master.c  ****         /* Set the transfer size */
+ 712:spi_master.c  ****         SET_SPI_TRANSFER_SIZE_REG(transfer_size);
+ 450                 	,X)
+ 451 002a E8 00 20 18 		.loc 1 715 0
+ 452 002c 01 17       		ld	AL,@state
+ 453 002d 01 00 FF C4 		cmp	AL,#0x0002
+ 454 002f 00 26       		bne	.L44
+ 713:spi_master.c  **** 
+ 714:spi_master.c  ****         if (state.state == TransactionState_TransactionStarted)
+ 455                 	 1 719 0
+ 456 0030 00 00 00 15 		ld	AL,#0x0001
+ 457 0032 02 84       		bsr	setSSEL
+ 458 0033 00 00 00 00 	.L44:
+ 458      00 F0 
+ 715:spi_master.c  ****             /* If SSEL is yet to be asserted */
+ 716:spi_master.c  ****         {
+ 717:spi_master.c  ****             /* Assert the SPI Slave select */
+ 718:spi_master.c  ****             setSSEL(TRUE);
+ 459                 	c 1 723 0
+ 460 0036 01 14       		bsr	PioCtrlrInterrupt
+ 461 0037 00 00 00 00 		.loc 1 726 0
+ 461      00 9C 
+ 462                 		ld	AL,@(0x0002,Y)
+ 719:spi_master.c  ****         }
+ 720:spi_master.c  ****         
+ 721:spi_master.c  ****         /* Issue interrupt to PIO controller to start the transfer */
+ 722:spi_master.c  ****         PioCtrlrInterrupt();
+ 463                 	AL,@state
+ 464 003a 00 00 00 00 		.loc 1 727 0
+ 464      00 9C 
+ 723:spi_master.c  ****         
+ 724:spi_master.c  ****         /* Transaction is in progress */
+ 725:spi_master.c  ****         state.state = newState;
+ 465                 	d	AL,#0x0001
+ 466 003d 02 17       		st	AL,@(0x0003,Y)
+ 467 003e 00 00 00 25 		bra	.L45
+ 726:spi_master.c  ****         ret_val = TRUE;
+ 468                 	3:
+ 469 0040 01 14       	.LBE2:
+ 470 0041 03 27       		.loc 1 729 0
+ 471 0042 00 00 00 00 		ld	AL,@state
+ 471      00 E0 
+ 472                 		cmp	AL,#0x0004
+ 473                 		bne	.L45
+ 727:spi_master.c  ****     }
+ 728:spi_master.c  ****     else if (state.state == TransactionState_WaitingForPioController)
+ 474                 	1 734 0
+ 475 0045 00 00 00 15 		ld	AL,#0x0001
+ 476 0047 04 84       		st	AL,@(0x0003,Y)
+ 477 0048 00 00 00 00 	.L45:
+ 477      00 F0 
+ 729:spi_master.c  ****         /* If a transfer is already in progress */
+ 730:spi_master.c  ****     {
+ 731:spi_master.c  ****         /* The data from tx data buffer will be transferred over to shared
+ 732:spi_master.c  ****          * RAM when the current transfer is completed */
+ 733:spi_master.c  ****         ret_val = TRUE;
+ 478                 	c 1 737 0
+ 479 004b 01 14       		ld	AL,@(0x0003,Y)
+ 480 004c 03 27       		.loc 1 738 0
+ 481                 		leave	#0x0006
+ 734:spi_master.c  ****     }
+ 735:spi_master.c  ****     
+ 736:spi_master.c  ****     return ret_val;
+ 482                 	7:
+ 483 004d 03 17       		.size	SpiMasterStartTransaction, .-SpiMasterStartTransaction
+ 737:spi_master.c  **** } /* SpiMasterStartTransaction */
+ 484                 	global	__size_of_SpiMasterStartTransaction
+ 485 004e 06 0F       		.equ	__size_of_SpiMasterStartTransaction,. - SpiMasterStartTransaction
+ 486                 		.section	.text.SpiMasterEndTransaction,"ax",@progbits
+ 487                 		.global	SpiMasterEndTransaction
+ 488                 		.type	SpiMasterEndTransaction, @function
+ 489                 	SpiMasterEndTransaction:
+ 490                 	.LFB8:
+ 491                 		.loc 1 780 0
+ 492                 		enter	#0x0003
+ 493                 	.LCFI6:
+ 494                 		.loc 1 781 0
+ 738:spi_master.c  **** 
+ 739:spi_master.c  **** /*----------------------------------------------------------------------------*
+ 740:spi_master.c  ****  *  NAME
+ 741:spi_master.c  ****  *      SpiMasterEndTransaction
+ 742:spi_master.c  ****  *
+ 743:spi_master.c  ****  *  DESCRIPTION
+ 744:spi_master.c  ****  *      End an existing transaction by de-asserting the SSEL. If SSEL line
+ 745:spi_master.c  ****  *      is currently not asserted, calling this function will have no
+ 746:spi_master.c  ****  *      effect. If SSEL could not be asserted at this time usually because
+ 747:spi_master.c  ****  *      PIO controller is currently carrying out a data transfer this
+ 748:spi_master.c  ****  *      function schedules it such that SSEL gets de-asserted after the
+ 749:spi_master.c  ****  *      transfer is complete. Once SSEL is de-asserted the data transfer
+ 750:spi_master.c  ****  *      call-back will be issued. If this function is called while there
+ 751:spi_master.c  ****  *      is data existing in the Tx queue that has not yet been transferred
+ 752:spi_master.c  ****  *      over to the Tx data area, then that data will not be transferred
+ 753:spi_master.c  ****  *      over. As soon as the PIO controller finishes transferring
+ 754:spi_master.c  ****  *      existing data in the Tx data area, SPI master driver de-asserts
+ 755:spi_master.c  ****  *      the SSEL. Application should however be able to start a new
+ 756:spi_master.c  ****  *      transaction which will send the pending data existing in the
+ 757:spi_master.c  ****  *      Tx queue.
+ 758:spi_master.c  ****  *
+ 759:spi_master.c  ****  *      NOTE1: If FALSE is returned, a data transfer callback will be issued
+ 760:spi_master.c  ****  *      after the transfer is completed and SSEL has been de-asserted
+ 761:spi_master.c  ****  *
+ 762:spi_master.c  ****  *      NOTE2: Any data currently in the tx data buffer, pending to be
+ 763:spi_master.c  ****  *      delivered will not be transferred until the next transaction is
+ 764:spi_master.c  ****  *      started
+ 765:spi_master.c  ****  *
+ 766:spi_master.c  ****  *      NOTE3: If SSEL is to be de-asserted when the current data transfer
+ 767:spi_master.c  ****  *      has been completed, no new transfers can be started until the
+ 768:spi_master.c  ****  *      de-assertion happens
+ 769:spi_master.c  ****  *
+ 770:spi_master.c  ****  *  PARAMETERS
+ 771:spi_master.c  ****  *      None
+ 772:spi_master.c  ****  *
+ 773:spi_master.c  ****  *  RETURNS
+ 774:spi_master.c  ****  *      TRUE If SSEL has been de-asserted and transaction has ended,
+ 775:spi_master.c  ****  *      FALSE if a transaction is currently in progress and SSEL will be
+ 776:spi_master.c  ****  *          asserted when the data transfer has been completed.
+ 777:spi_master.c  ****  *----------------------------------------------------------------------------*/
+ 778:spi_master.c  **** bool SpiMasterEndTransaction(void)
+ 779:spi_master.c  **** {
+ 495                 	000
+ 496 0000 03 0B       		st	AL,@(0x0001,Y)
+ 497                 		.loc 1 783 0
+ 780:spi_master.c  ****     bool ret_val = FALSE;
+ 498                 		AL,#0x0002
+ 499 0001 00 14       		bsr	processEvent
+ 500 0002 01 27       		st	AL,@(0,Y)
+ 781:spi_master.c  ****     const TransactionState newState =
+ 782:spi_master.c  ****                                     processEvent(TransactionEvent_DeassertSSEL);
+ 501                 	oc 1 785 0
+ 502 0003 02 14       		ld	AL,@(0,Y)
+ 503 0004 00 00 00 00 		cmp	AL,#0x0001
+ 503      00 9C 
+ 504 0007 00 27       		bne	.L48
+ 783:spi_master.c  ****     
+ 784:spi_master.c  ****     if (newState == TransactionState_PIOControllerReady)
+ 505                 	c 1 789 0
+ 506 0008 00 17       		ld	AL,#0x0000
+ 507 0009 01 84       		bsr	setSSEL
+ 508 000a 00 00 00 00 		.loc 1 792 0
+ 508      00 F0 
+ 785:spi_master.c  ****         /* If ending the transaction is permitted */
+ 786:spi_master.c  ****     {
+ 787:spi_master.c  ****         /* De-assert the SPI Slave select */
+ 788:spi_master.c  ****         setSSEL(FALSE);
+ 509                 	AL,@(0,Y)
+ 510 000d 00 14       		st	AL,@state
+ 511 000e 00 00 00 00 		.loc 1 795 0
+ 511      00 9C 
+ 789:spi_master.c  ****         
+ 790:spi_master.c  ****         /* No transaction is in progress */
+ 791:spi_master.c  ****         state.state = newState;
+ 512                 		AL,#0x0001
+ 513 0011 00 17       		st	AL,@(0x0001,Y)
+ 514 0012 00 00 00 25 		bra	.L49
+ 792:spi_master.c  ****         
+ 793:spi_master.c  ****         /* SSEL has been de-asserted */
+ 794:spi_master.c  ****         ret_val = TRUE;
+ 515                 	8:
+ 516 0014 01 14       		.loc 1 797 0
+ 517 0015 01 27       		ld	AL,@(0,Y)
+ 518 0016 00 00 00 00 		cmp	AL,#0x0005
+ 518      00 E0 
+ 519                 		bne	.L50
+ 795:spi_master.c  ****     }
+ 796:spi_master.c  ****     else if (newState == TransactionState_WaitingForPioControllerToDeassert)
+ 520                 	 1 803 0
+ 521 0019 00 17       		ld	AL,@(0,Y)
+ 522 001a 05 84       		st	AL,@state
+ 523 001b 00 00 00 00 		bra	.L49
+ 523      00 F0 
+ 797:spi_master.c  ****         /* If SSEL de-assertion is to be scheduled since a transfer is
+ 798:spi_master.c  ****          * currently in progress */
+ 799:spi_master.c  ****     {
+ 800:spi_master.c  ****         /* Schedule the SSEL to be de-asserted when PIO controller has finished
+ 801:spi_master.c  ****          * the transaction */
+ 802:spi_master.c  ****         state.state = newState;
+ 524                 	:
+ 525 001e 00 17       		.loc 1 805 0
+ 526 001f 00 00 00 25 		ld	AL,@state
+ 527 0021 00 00 00 00 		cmp	AL,#0x0001
+ 527      00 E0 
+ 528                 		bne	.L49
+ 803:spi_master.c  ****     }
+ 804:spi_master.c  ****     else if (state.state == TransactionState_PIOControllerReady)
+ 529                 	 1 808 0
+ 530 0024 00 00 00 15 		ld	AL,#0x0001
+ 531 0026 01 84       		st	AL,@(0x0001,Y)
+ 532 0027 00 00 00 00 	.L49:
+ 532      00 F0 
+ 805:spi_master.c  ****         /* If SSEL has already been de-asserted */
+ 806:spi_master.c  ****     {
+ 807:spi_master.c  ****         ret_val = TRUE;
+ 533                 	c 1 811 0
+ 534 002a 01 14       		ld	AL,@(0x0001,Y)
+ 535 002b 01 27       		.loc 1 812 0
+ 536                 		leave	#0x0003
+ 808:spi_master.c  ****     }
+ 809:spi_master.c  ****     
+ 810:spi_master.c  ****     return ret_val;
+ 537                 	8:
+ 538 002c 01 17       		.size	SpiMasterEndTransaction, .-SpiMasterEndTransaction
+ 811:spi_master.c  **** } /* SpiMasterEndTransaction */
+ 539                 	global	__size_of_SpiMasterEndTransaction
+ 540 002d 03 0F       		.equ	__size_of_SpiMasterEndTransaction,. - SpiMasterEndTransaction
+ 541                 		.section	.text.SpiMasterGetSharedRAMTxDataSize,"ax",@progbits
+ 542                 		.global	SpiMasterGetSharedRAMTxDataSize
+ 543                 		.type	SpiMasterGetSharedRAMTxDataSize, @function
+ 544                 	SpiMasterGetSharedRAMTxDataSize:
+ 545                 	.LFB9:
+ 546                 		.loc 1 833 0
+ 547                 		enter	#0x0001
+ 548                 	.LCFI7:
+ 549                 		.loc 1 834 0
+ 812:spi_master.c  **** 
+ 813:spi_master.c  **** /*----------------------------------------------------------------------------*
+ 814:spi_master.c  ****  *  NAME
+ 815:spi_master.c  ****  *      SpiMasterGetSharedRAMTxDataSize
+ 816:spi_master.c  ****  *
+ 817:spi_master.c  ****  *  DESCRIPTION
+ 818:spi_master.c  ****  *      Get the size of data in the Tx data area (see 2.1.2.2) within the
+ 819:spi_master.c  ****  *      application shared memory. This value may not reflect the true size
+ 820:spi_master.c  ****  *      of the outstanding data that has not yet been sent by the SPI master
+ 821:spi_master.c  ****  *      on the PIO controller. This value is only updated when an interrupt
+ 822:spi_master.c  ****  *      is received from the PIO controller.
+ 823:spi_master.c  ****  *
+ 824:spi_master.c  ****  *  PARAMETERS
+ 825:spi_master.c  ****  *      None
+ 826:spi_master.c  ****  *
+ 827:spi_master.c  ****  *  RETURNS
+ 828:spi_master.c  ****  *      Number of octets of data in the Tx data area within the application
+ 829:spi_master.c  ****  *      shared memory
+ 830:spi_master.c  ****  *----------------------------------------------------------------------------*/
+ 831:spi_master.c  **** uint16 SpiMasterGetSharedRAMTxDataSize(void)
+ 832:spi_master.c  **** {
+ 550                 	te+9
+ 551 0000 01 0B       		bsr	OQSize
+ 552                 		.loc 1 835 0
+ 833:spi_master.c  ****     return OQSize(&(state.pio_tx_data));
+ 553                 	ave	#0x0001
+ 554 0001 00 00 00 14 	.LFE9:
+ 555 0003 00 00 00 00 		.size	SpiMasterGetSharedRAMTxDataSize, .-SpiMasterGetSharedRAMTxDataSize
+ 555      00 9C 
+ 834:spi_master.c  **** } /* SpiMasterGetSharedRAMTxDataSize */
+ 556                 	lobal	__size_of_SpiMasterGetSharedRAMTxDataSize
+ 557 0006 01 0F       		.equ	__size_of_SpiMasterGetSharedRAMTxDataSize,. - SpiMasterGetSharedRAMTxDataSize
+ 558                 		.section	.text.SpiMasterGetSharedRAMRxDataSize,"ax",@progbits
+ 559                 		.global	SpiMasterGetSharedRAMRxDataSize
+ 560                 		.type	SpiMasterGetSharedRAMRxDataSize, @function
+ 561                 	SpiMasterGetSharedRAMRxDataSize:
+ 562                 	.LFB10:
+ 563                 		.loc 1 856 0
+ 564                 		enter	#0x0001
+ 565                 	.LCFI8:
+ 566                 		.loc 1 857 0
+ 835:spi_master.c  **** 
+ 836:spi_master.c  **** /*----------------------------------------------------------------------------*
+ 837:spi_master.c  ****  *  NAME
+ 838:spi_master.c  ****  *      SpiMasterGetSharedRAMRxDataSize
+ 839:spi_master.c  ****  *
+ 840:spi_master.c  ****  *  DESCRIPTION
+ 841:spi_master.c  ****  *      Get the size of data in the Rx data area within the application
+ 842:spi_master.c  ****  *      shared memory. This value may not reflect the true size of the
+ 843:spi_master.c  ****  *      outstanding data that has been received by the SPI master on
+ 844:spi_master.c  ****  *      the PIO controller. This value is only updated when an interrupt
+ 845:spi_master.c  ****  *      is received from the PIO controller.
+ 846:spi_master.c  ****  *
+ 847:spi_master.c  ****  *  PARAMETERS
+ 848:spi_master.c  ****  *      None
+ 849:spi_master.c  ****  *
+ 850:spi_master.c  ****  *  RETURNS
+ 851:spi_master.c  ****  *      Number of octets of data in the Rx data area within the application
+ 852:spi_master.c  ****  *      shared memory
+ 853:spi_master.c  ****  *----------------------------------------------------------------------------*/
+ 854:spi_master.c  **** uint16 SpiMasterGetSharedRAMRxDataSize(void)
+ 855:spi_master.c  **** {
+ 567                 	te+3
+ 568 0000 01 0B       		bsr	OQSize
+ 569                 		.loc 1 858 0
+ 856:spi_master.c  ****     return OQSize(&(state.pio_rx_data));
+ 570                 	ave	#0x0001
+ 571 0001 00 00 00 14 	.LFE10:
+ 572 0003 00 00 00 00 		.size	SpiMasterGetSharedRAMRxDataSize, .-SpiMasterGetSharedRAMRxDataSize
+ 572      00 9C 
+ 857:spi_master.c  **** } /* SpiMasterGetSharedRAMRxDataSize */
+ 573                 	lobal	__size_of_SpiMasterGetSharedRAMRxDataSize
+ 574 0006 01 0F       		.equ	__size_of_SpiMasterGetSharedRAMRxDataSize,. - SpiMasterGetSharedRAMRxDataSize
+ 575                 		.section	.text.SpiMasterReset,"ax",@progbits
+ 576                 		.global	SpiMasterReset
+ 577                 		.type	SpiMasterReset, @function
+ 578                 	SpiMasterReset:
+ 579                 	.LFB11:
+ 580                 		.loc 1 884 0
+ 581                 		enter	#0x0004
+ 582                 	.LCFI9:
+ 583                 		st	AL,@(0x0002,Y)
+ 858:spi_master.c  **** 
+ 859:spi_master.c  **** /*----------------------------------------------------------------------------*
+ 860:spi_master.c  ****  *  NAME
+ 861:spi_master.c  ****  *      SpiMasterReset
+ 862:spi_master.c  ****  *
+ 863:spi_master.c  ****  *  DESCRIPTION
+ 864:spi_master.c  ****  *      Restarts the PIO controller and clears the application shared memory
+ 865:spi_master.c  ****  *      including the Tx/Rx data areas. Data in the Tx and Rx queues will not
+ 866:spi_master.c  ****  *      be cleared. This is useful when the application needs to reset and
+ 867:spi_master.c  ****  *      start over. Subsequent Tx data will be queued from the start of the Tx
+ 868:spi_master.c  ****  *      data area within the application shared memory.
+ 869:spi_master.c  ****  *
+ 870:spi_master.c  ****  *      NOTE: If failed, PIO controller would be stopped. The failure is
+ 871:spi_master.c  ****  *      usually attributed to the configuration of the octet queue.
+ 872:spi_master.c  ****  *
+ 873:spi_master.c  ****  *  PARAMETERS
+ 874:spi_master.c  ****  *      tx_buffer_fill [in]     If buffer filling feature is compiled into the
+ 875:spi_master.c  ****  *                              octet_queue, the empty areas of the buffer
+ 876:spi_master.c  ****  *                              containing the outgoing data in the shared RAM
+ 877:spi_master.c  ****  *                              will be filled with this octet
+ 878:spi_master.c  ****  *
+ 879:spi_master.c  ****  *  RETURNS
+ 880:spi_master.c  ****  *      TRUE if success, FALSE otherwise
+ 881:spi_master.c  ****  *----------------------------------------------------------------------------*/
+ 882:spi_master.c  **** bool SpiMasterReset(uint8 tx_buffer_fill)
+ 883:spi_master.c  **** {
+ 584                 	 0
+ 585 0000 04 0B       		ld	AL,#0x0000
+ 586                 		st	AL,@(0x0001,Y)
+ 587 0001 02 27       		.loc 1 886 0
+ 884:spi_master.c  ****     bool ret_val = FALSE;
+ 588                 	AL,#0x0006
+ 589 0002 00 14       		bsr	processEvent
+ 590 0003 01 27       		st	AL,@(0,Y)
+ 885:spi_master.c  ****     const TransactionState newState = processEvent(TransactionEvent_Reset);
+ 591                 	oc 1 888 0
+ 592 0004 06 14       		tst	@(0,Y)
+ 593 0005 00 00 00 00 		bne	.L57
+ 593      00 9C 
+ 594 0008 00 27       		.loc 1 892 0
+ 886:spi_master.c  ****     
+ 887:spi_master.c  ****     if (newState == TransactionState_Initialised)
+ 595                 		PioCtrlrStop
+ 596 0009 00 9B       		.loc 1 895 0
+ 597 000a 00 00 00 00 		ld	AL,@(0x0002,Y)
+ 597      00 F0 
+ 888:spi_master.c  ****         /* If a reset can be done */
+ 889:spi_master.c  ****     {
+ 890:spi_master.c  ****         /* Stop the PIO controller */
+ 891:spi_master.c  ****         PioCtrlrStop();
+ 598                 	r	setupSharedRAM
+ 599 000d 00 00 00 00 		tst	@$XAP_AL
+ 599      00 9C 
+ 892:spi_master.c  ****         
+ 893:spi_master.c  ****         /* Setup the shared RAM buffers */
+ 894:spi_master.c  ****         if (setupSharedRAM(tx_buffer_fill))
+ 600                 	eq	.L59
+ 601 0010 02 17       		.loc 1 898 0
+ 602 0011 00 00 00 00 		bsr	PioCtrlrStart
+ 602      00 9C 
+ 603 0014 00 00 00 99 		.loc 1 901 0
+ 604 0016 00 00 00 00 		ld	AL,#0x0000
+ 604      00 F4 
+ 895:spi_master.c  ****         {
+ 896:spi_master.c  ****             /* Restart PIO Controller */
+ 897:spi_master.c  ****             PioCtrlrStart();
+ 605                 	setSSEL
+ 606 0019 00 00 00 00 		.loc 1 904 0
+ 606      00 9C 
+ 898:spi_master.c  **** 
+ 899:spi_master.c  ****             /* De-assert slave select */
+ 900:spi_master.c  ****             setSSEL(FALSE);
+ 607                 	d	AL,#0x0001
+ 608 001c 00 14       		st	AL,@state
+ 609 001d 00 00 00 00 		.loc 1 907 0
+ 609      00 9C 
+ 901:spi_master.c  **** 
+ 902:spi_master.c  ****             /* Reset the state */
+ 903:spi_master.c  ****             state.state = TransactionState_PIOControllerReady;
+ 610                 		AL,#0x0001
+ 611 0020 01 14       		st	AL,@(0x0001,Y)
+ 612 0021 00 00 00 25 		bra	.L59
+ 904:spi_master.c  **** 
+ 905:spi_master.c  ****             /* return success */
+ 906:spi_master.c  ****             ret_val = TRUE;
+ 613                 	7:
+ 614 0023 01 14       		.loc 1 910 0
+ 615 0024 01 27       		ld	AL,@state
+ 616 0025 00 00 00 00 		tst	@$XAP_AL
+ 616      00 E0 
+ 617                 		bne	.L59
+ 907:spi_master.c  ****         }
+ 908:spi_master.c  ****     }
+ 909:spi_master.c  ****     else if (state.state == TransactionState_Initialised)
+ 618                 	 1 914 0
+ 619 0028 00 00 00 15 		ld	AL,#0x0001
+ 620 002a 00 00 00 99 		st	AL,@(0x0001,Y)
+ 621 002c 00 00 00 00 	.L59:
+ 621      00 F0 
+ 910:spi_master.c  ****         /* If already reset */
+ 911:spi_master.c  ****     {
+ 912:spi_master.c  ****         /* return success */
+ 913:spi_master.c  ****         ret_val = TRUE;
+ 622                 	c 1 917 0
+ 623 002f 01 14       		ld	AL,@(0x0001,Y)
+ 624 0030 01 27       		.loc 1 918 0
+ 625                 		leave	#0x0004
+ 914:spi_master.c  ****     }
+ 915:spi_master.c  ****     
+ 916:spi_master.c  ****     return ret_val;
+ 626                 	11:
+ 627 0031 01 17       		.size	SpiMasterReset, .-SpiMasterReset
+ 917:spi_master.c  **** } /* SpiMasterReset */
+ 628                 	global	__size_of_SpiMasterReset
+ 629 0032 04 0F       		.equ	__size_of_SpiMasterReset,. - SpiMasterReset
+ 630                 		.section	.text.SpiMasterDeinit,"ax",@progbits
+ 631                 		.global	SpiMasterDeinit
+ 632                 		.type	SpiMasterDeinit, @function
+ 633                 	SpiMasterDeinit:
+ 634                 	.LFB12:
+ 635                 		.loc 1 940 0
+ 636                 		enter	#0x0001
+ 637                 	.LCFI10:
+ 638                 		.loc 1 942 0
+ 918:spi_master.c  **** 
+ 919:spi_master.c  **** /*----------------------------------------------------------------------------*
+ 920:spi_master.c  ****  *  NAME
+ 921:spi_master.c  ****  *      SpiMasterDeinit
+ 922:spi_master.c  ****  *
+ 923:spi_master.c  ****  *  DESCRIPTION
+ 924:spi_master.c  ****  *      Stops the SPI master and frees the PIO Controller. The Tx and Rx queues
+ 925:spi_master.c  ****  *      allocated to the SPI master are now free for the application to use for
+ 926:spi_master.c  ****  *      any other purposes. In order to use the SPI master, it must be
+ 927:spi_master.c  ****  *      configured again by calling SpiMasterInit.
+ 928:spi_master.c  ****  *
+ 929:spi_master.c  ****  *      The data already existing in the Tx and Rx queues will not be
+ 930:spi_master.c  ****  *      affected.
+ 931:spi_master.c  ****  *
+ 932:spi_master.c  ****  *  PARAMETERS
+ 933:spi_master.c  ****  *      None
+ 934:spi_master.c  ****  *
+ 935:spi_master.c  ****  *  RETURNS
+ 936:spi_master.c  ****  *      Nothing
+ 937:spi_master.c  ****  *----------------------------------------------------------------------------*/
+ 938:spi_master.c  **** void SpiMasterDeinit(void)
+ 939:spi_master.c  **** {
+ 639                 	lrStop
+ 640 0000 01 0B       		.loc 1 945 0
+ 641                 		ld	AL,#0x0000
+ 940:spi_master.c  ****     /* Stop the SPI Slave */
+ 941:spi_master.c  ****     PioCtrlrStop();
+ 642                 		AL,@state+0x0001
+ 643 0001 00 00 00 00 		.loc 1 946 0
+ 643      00 9C 
+ 942:spi_master.c  **** 
+ 943:spi_master.c  ****     /* Release the application buffers */
+ 944:spi_master.c  ****     state.p_tx_data = NULL;
+ 644                 	d	AL,#0x0000
+ 645 0004 00 14       		st	AL,@state+0x0002
+ 646 0005 00 00 00 25 		.loc 1 949 0
+ 945:spi_master.c  ****     state.p_rx_data = NULL;
+ 647                 		AL,#state+9
+ 648 0007 00 14       		bsr	OQDestroy
+ 649 0008 00 00 00 25 		.loc 1 951 0
+ 946:spi_master.c  **** 
+ 947:spi_master.c  ****     /* Release the pio data buffer */
+ 948:spi_master.c  ****     OQDestroy(&(state.pio_tx_data));
+ 650                 		AL,#state+3
+ 651 000a 00 00 00 14 		bsr	OQDestroy
+ 652 000c 00 00 00 00 		.loc 1 953 0
+ 652      00 9C 
+ 949:spi_master.c  ****     /* Release the pio data buffer */
+ 950:spi_master.c  ****     OQDestroy(&(state.pio_rx_data));
+ 653                 		AL,#0x0000
+ 654 000f 00 00 00 14 		st	AL,@state+0x000f
+ 655 0011 00 00 00 00 		.loc 1 956 0
+ 655      00 9C 
+ 951:spi_master.c  ****     /* Clear the data callback pointer */
+ 952:spi_master.c  ****     state.p_data_cb_func = NULL;
+ 656                 		AL,#0x0000
+ 657 0014 00 14       		bsr	setSSEL
+ 658 0015 00 00 00 25 		.loc 1 959 0
+ 953:spi_master.c  **** 
+ 954:spi_master.c  ****     /* De-assert slave select */
+ 955:spi_master.c  ****     setSSEL(FALSE);
+ 659                 		AL,#0x0006
+ 660 0017 00 14       		st	AL,@state
+ 661 0018 00 00 00 00 		.loc 1 962 0
+ 661      00 9C 
+ 956:spi_master.c  **** 
+ 957:spi_master.c  ****     /* Reset the state */
+ 958:spi_master.c  ****     state.state = TransactionState_Invalid;
+ 662                 	ave	#0x0001
+ 663 001b 06 14       	.LFE12:
+ 664 001c 00 00 00 25 		.size	SpiMasterDeinit, .-SpiMasterDeinit
+ 959:spi_master.c  **** 
+ 960:spi_master.c  ****     /* We can't release the PIOs as we won't know what to set them to */
+ 961:spi_master.c  **** } /* SpiMasterDeinit */
+ 665                 	lobal	__size_of_SpiMasterDeinit
+ 666 001e 01 0F       		.equ	__size_of_SpiMasterDeinit,. - SpiMasterDeinit
+ 667                 		.section	.text.SpiMasterProcessPioControllerEvent,"ax",@progbits
+ 668                 		.global	SpiMasterProcessPioControllerEvent
+ 669                 		.type	SpiMasterProcessPioControllerEvent, @function
+ 670                 	SpiMasterProcessPioControllerEvent:
+ 671                 	.LFB13:
+ 672                 		.loc 1 983 0
+ 673                 		enter	#0x0009
+ 674                 	.LCFI11:
+ 675                 		st	AL,@(0x0006,Y)
+ 962:spi_master.c  **** 
+ 963:spi_master.c  **** /*----------------------------------------------------------------------------*
+ 964:spi_master.c  ****  *  NAME
+ 965:spi_master.c  ****  *      SpiMasterProcessPioControllerEvent
+ 966:spi_master.c  ****  *
+ 967:spi_master.c  ****  *  DESCRIPTION
+ 968:spi_master.c  ****  *      Processes an interrupt from the PIO controller. When the PIO controller
+ 969:spi_master.c  ****  *      issues an interrupt the system event "sys_event_pio_ctrlr" is received
+ 970:spi_master.c  ****  *      via the system event handler, AppProcessSystemEvent.
+ 971:spi_master.c  ****  *
+ 972:spi_master.c  ****  *      SpiMasterProcessPioControllerEvent must be called as soon as possible
+ 973:spi_master.c  ****  *      upon receiving the system event.
+ 974:spi_master.c  ****  *
+ 975:spi_master.c  ****  * PARAMETERS
+ 976:spi_master.c  ****  *      p_data [in]             Data associated with the PIO controller event
+ 977:spi_master.c  ****  *
+ 978:spi_master.c  ****  * RETURNS
+ 979:spi_master.c  ****  *      Nothing
+ 980:spi_master.c  ****  *----------------------------------------------------------------------------*/
+ 981:spi_master.c  **** void SpiMasterProcessPioControllerEvent(uint16 *p_data)
+ 982:spi_master.c  **** {
+ 676                 	 0
+ 677 0000 09 0B       		ld	X,#0xe823
+ 678                 		ld	AL,@(0,X)
+ 679 0001 06 27       		ld	X,@$XAP_AL
+ 983:spi_master.c  ****     /* Check this is not a duplicate interrupt */
+ 984:spi_master.c  ****     const uint16 valid_interrupt = GET_SPI_INT_ACK;
+ 680                 		X,#0x00ff
+ 681 0002 E8 00 23 18 		st	X,@(0x0005,Y)
+ 682 0004 00 16       		.loc 1 987 0
+ 683 0005 00 00 00 19 		tst	@(0x0005,Y)
+ 684 0007 01 00 FF C8 		beq	.L75
+ 685 0009 05 2B       	.LBB3:
+ 985:spi_master.c  ****     
+ 986:spi_master.c  ****     if (valid_interrupt)
+ 686                 	1 990 0
+ 687 000a 05 9B       		ld	AL,#0x0005
+ 688 000b 00 00 00 00 		bsr	processEvent
+ 688      00 F4 
+ 689                 		st	AL,@(0x0004,Y)
+ 987:spi_master.c  ****     {
+ 988:spi_master.c  ****         TransactionState newState =
+ 989:spi_master.c  ****                               processEvent(TransactionEvent_PIOControllerEvent);
+ 690                 	c 1 992 0
+ 691 000e 05 14       		ld	AL,@(0x0004,Y)
+ 692 000f 00 00 00 00 		cmp	AL,#0x0006
+ 692      00 9C 
+ 693 0012 04 27       		beq	.L65
+ 990:spi_master.c  ****         
+ 991:spi_master.c  ****         if (newState != TransactionState_Invalid)
+ 694                 	4:
+ 695 0013 04 17       		.loc 1 996 0
+ 696 0014 06 84       		ld	X,#0xe820
+ 697 0015 00 00 00 00 		ld	AL,@(0,X)
+ 697      00 F4 
+ 698                 		ld	X,@$XAP_AL
+ 992:spi_master.c  ****             /* If PIO Controller event is expected */
+ 993:spi_master.c  ****         {
+ 994:spi_master.c  ****             /* Get the previous transfer size */
+ 995:spi_master.c  ****             uint16 transfer_size = GET_SPI_TRANSFER_SIZE_REG;
+ 699                 	X,#0x00ff
+ 700 0018 E8 00 20 18 		st	X,@(0x0003,Y)
+ 701 001a 00 16       		.loc 1 1004 0
+ 702 001b 00 00 00 19 		ld	AL,#state+3
+ 703 001d 01 00 FF C8 		ld	AH,@(0x0003,Y)
+ 704 001f 03 2B       		bsr	OQIncrementSize
+ 996:spi_master.c  ****             /* Previous data size in the PIO shared tx data buffer */
+ 997:spi_master.c  ****             uint16 pio_tx_data_size;
+ 998:spi_master.c  ****             /* Data size in the PIO shared rx data buffer */
+ 999:spi_master.c  ****             uint16 pio_rx_data_size;
+1000:spi_master.c  **** 
+1001:spi_master.c  ****             /* Adjust the rx data buffer to include the octets that have been
+1002:spi_master.c  ****              * received */
+1003:spi_master.c  ****             OQIncrementSize(&(state.pio_rx_data), transfer_size);
+ 705                 	1 1008 0
+ 706 0020 00 00 00 14 		ld	AH,@state+0x0002
+ 707 0022 03 13       		ld	AL,#0x0018
+ 708 0023 00 00 00 00 		st	AL,@(0,Y)
+ 708      00 9C 
+1004:spi_master.c  **** 
+1005:spi_master.c  ****             /* Transfer the received data from the shared RAM into the rx data
+1006:spi_master.c  ****              * buffer */
+1007:spi_master.c  ****             OQTransferData(&(state.pio_rx_data), state.p_rx_data,
+ 709                 	AL,#state+3
+ 710 0026 00 00 00 11 		bsr	OQTransferData
+ 711 0028 18 14       		.loc 1 1012 0
+ 712 0029 00 27       		ld	AL,#state+3
+ 713 002a 00 00 00 14 		bsr	OQSize
+ 714 002c 00 00 00 00 		st	AL,@(0x0001,Y)
+ 714      00 9C 
+1008:spi_master.c  ****                                                 PIO_CONTROLLER_SPI_RAM_RX_SIZE);
+1009:spi_master.c  **** 
+1010:spi_master.c  ****             /* Rx data buffer should now be empty, unless Rx queue is full */
+1011:spi_master.c  ****             pio_rx_data_size = OQSize(&(state.pio_rx_data));
+ 715                 	1 1015 0
+ 716 002f 00 00 00 14 		ld	AL,#state+9
+ 717 0031 00 00 00 00 		bsr	OQSize
+ 717      00 9C 
+ 718 0034 01 27       		st	AL,@(0x0002,Y)
+1012:spi_master.c  **** 
+1013:spi_master.c  ****             /* Get the transfer size in the PIO controller */
+1014:spi_master.c  ****             pio_tx_data_size = OQSize(&(state.pio_tx_data));
+ 719                 	c 1 1017 0
+ 720 0035 00 00 00 14 		ld	AL,@(0x0002,Y)
+ 721 0037 00 00 00 00 		cmp	AL,@(0x0003,Y)
+ 721      00 9C 
+ 722 003a 02 27       		bcc	.L66
+1015:spi_master.c  **** 
+1016:spi_master.c  ****             if (pio_tx_data_size < transfer_size)
+ 723                 	c 1 1025 0
+ 724 003b 02 17       		ld	AH,@(0x0003,Y)
+ 725 003c 03 87       		sub	AH,@(0x0002,Y)
+ 726 003d 00 00 00 00 		ld	AL,#state+9
+ 726      00 F8 
+1017:spi_master.c  ****                 /* If there was buffer under-run in the tx data area of the
+1018:spi_master.c  ****                  * shared RAM. This should never happen since we would never
+1019:spi_master.c  ****                  * set the transfer size to be more than the data we have
+1020:spi_master.c  ****                  * actually copied over to the PIO controller shared RAM */
+1021:spi_master.c  ****             {
+1022:spi_master.c  ****                 /* Adjust the PIO shared tx data buffer size to account for the
+1023:spi_master.c  ****                  * data under-run in the tx buffer */
+1024:spi_master.c  ****                 OQIncrementSize(&(state.pio_tx_data),
+ 727                 		OQIncrementSize
+ 728 0040 03 13       	.L66:
+ 729 0041 02 53       		.loc 1 1032 0
+ 730 0042 00 00 00 14 		ld	AL,#state+9
+ 731 0044 00 00 00 00 		ld	AH,@(0x0003,Y)
+ 731      00 9C 
+ 732                 		bsr	OQDecrementSize
+1025:spi_master.c  ****                                               transfer_size - pio_tx_data_size);
+1026:spi_master.c  ****             }
+1027:spi_master.c  **** 
+1028:spi_master.c  ****             /* Adjust the PIO shared tx data buffer size to account for the
+1029:spi_master.c  ****              * data that has been sent. By this point the tx data in the PIO
+1030:spi_master.c  ****              * controller shared RAM must have been empty */
+1031:spi_master.c  ****             OQDecrementSize(&(state.pio_tx_data), transfer_size);
+ 733                 	1 1034 0
+ 734 0047 00 00 00 14 		ld	AL,@state
+ 735 0049 03 13       		cmp	AL,#0x0005
+ 736 004a 00 00 00 00 		bne	.L67
+ 736      00 9C 
+1032:spi_master.c  **** 
+1033:spi_master.c  ****             if (state.state ==
+ 737                 	c 1 1040 0
+ 738 004d 00 00 00 15 		ld	X,#0xe820
+ 739 004f 05 84       		ld	AL,#0x0000
+ 740 0050 00 00 00 00 		st	AL,@(0,X)
+ 740      00 F0 
+1034:spi_master.c  ****                              TransactionState_WaitingForPioControllerToDeassert)
+1035:spi_master.c  ****                 /* If no more data can be transferred and SSEL needs to be
+1036:spi_master.c  ****                  * de-asserted */
+1037:spi_master.c  ****             {
+1038:spi_master.c  ****                 /* Set the transfer size */
+1039:spi_master.c  ****                 SET_SPI_TRANSFER_SIZE_REG(0U);
+ 741                 	c 1 1043 0
+ 742 0053 E8 00 20 18 		ld	AL,#0x0000
+ 743 0055 00 14       		bsr	setSSEL
+ 744 0056 00 26       		.loc 1 1046 0
+1040:spi_master.c  ****                 
+1041:spi_master.c  ****                 /* De-assert the SPI Slave select */
+1042:spi_master.c  ****                 setSSEL(FALSE);
+ 745                 	AL,@(0x0004,Y)
+ 746 0057 00 14       		st	AL,@state
+ 747 0058 00 00 00 00 		.loc 1 1050 0
+ 747      00 9C 
+1043:spi_master.c  ****                 
+1044:spi_master.c  ****                 /* No transaction is in progress */
+1045:spi_master.c  ****                 state.state = newState;
+ 748                 		AL,@state+0x000f
+ 749 005b 04 17       		tst	@$XAP_AL
+ 750 005c 00 00 00 25 		beq	.L65
+1046:spi_master.c  ****                 
+1047:spi_master.c  ****                 /* Issue the callback notifying the current status of the
+1048:spi_master.c  ****                  * transfer */
+1049:spi_master.c  ****                 if (state.p_data_cb_func != NULL)
+ 751                 	oc 1 1052 0
+ 752 005e 00 00 00 15 		ld	X,@state+0x000f
+ 753 0060 00 00 00 99 		ld	AL,@state+0x0002
+ 754 0062 00 00 00 00 		ld	AH,@state+0x0001
+ 754      00 F4 
+1050:spi_master.c  ****                 {
+1051:spi_master.c  ****                     (*(state.p_data_cb_func))(state.p_rx_data, state.p_tx_data);
+ 755                 	X,@(-1,Y)
+ 756 0065 00 00 00 19 		bsr	@(-1,Y)
+ 757 0067 00 00 00 15 		bra	.L65
+ 758 0069 00 00 00 11 	.L67:
+ 759 006b FF 2B       		.loc 1 1055 0
+ 760 006c FF 9F       		ld	AL,@state
+ 761 006d 00 00 00 00 		cmp	AL,#0x0004
+ 761      00 E0 
+ 762                 		bne	.L65
+1052:spi_master.c  ****                 }
+1053:spi_master.c  ****             }
+1054:spi_master.c  ****             else if (state.state == TransactionState_WaitingForPioController)
+ 763                 	1059 0
+ 764 0070 00 00 00 15 		ld	AL,@(0x0004,Y)
+ 765 0072 04 84       		st	AL,@state
+ 766 0073 00 00 00 00 		.loc 1 1061 0
+ 766      00 F0 
+1055:spi_master.c  ****                 /* If data transfer has to be continued */
+1056:spi_master.c  ****             {
+1057:spi_master.c  ****                 /* PIO controller on hold */
+1058:spi_master.c  ****                 state.state = newState;
+ 767                 	AL,@state+0x0001
+ 768 0076 04 17       		bsr	OQSize
+ 769 0077 00 00 00 25 		tst	@$XAP_AL
+1059:spi_master.c  **** 
+1060:spi_master.c  ****                 if (((OQSize(state.p_tx_data) == 0) ||
+ 770                 	q	.L69
+ 771 0079 00 00 00 15 		tst	@(0x0001,Y)
+ 772 007b 00 00 00 00 		beq	.L70
+ 772      00 9C 
+ 773 007e 00 00 00 99 	.L69:
+ 774 0080 00 00 00 00 		ld	AL,@state+0x000f
+ 774      00 F4 
+ 775 0083 01 9B       		tst	@$XAP_AL
+ 776 0084 00 00 00 00 		beq	.L70
+ 776      00 F4 
+ 777                 		.loc 1 1070 0
+ 778 0087 00 00 00 15 		ld	X,@state+0x000f
+ 779 0089 00 00 00 99 		ld	AL,@state+0x0002
+ 780 008b 00 00 00 00 		ld	AH,@state+0x0001
+ 780      00 F4 
+1061:spi_master.c  ****                     /* If no more data is left in the tx data buffer to be
+1062:spi_master.c  ****                      * transferred over to the PIO Controller shared RAM,
+1063:spi_master.c  ****                      * it means the data transfer has been completed */
+1064:spi_master.c  ****                     (pio_rx_data_size > 0)) &&
+1065:spi_master.c  ****                     /* If there is no room in the Rx queue to transfer all
+1066:spi_master.c  ****                      * of the data from the rx data area */
+1067:spi_master.c  ****                     (state.p_data_cb_func != NULL))
+1068:spi_master.c  ****                 {
+1069:spi_master.c  ****                     (*(state.p_data_cb_func))(state.p_rx_data, state.p_tx_data);
+ 781                 	Y)
+ 782 008e 00 00 00 19 		bsr	@(-1,Y)
+ 783 0090 00 00 00 15 	.L70:
+ 784 0092 00 00 00 11 		.loc 1 1073 0
+ 785 0094 FF 2B       		tst	@(0x0001,Y)
+ 786 0095 FF 9F       		beq	.L71
+ 787                 		.loc 1 1080 0
+1070:spi_master.c  ****                 }
+1071:spi_master.c  **** 
+1072:spi_master.c  ****                 if (pio_rx_data_size > 0)
+ 788                 	@state+0x0002
+ 789 0096 01 9B       		ld	AL,#0x0018
+ 790 0097 00 00 00 00 		st	AL,@(0,Y)
+ 790      00 F4 
+1073:spi_master.c  ****                     /* There was no room in the Rx queue to transfer all
+1074:spi_master.c  ****                      * of the data from the rx data buffer, see if applications
+1075:spi_master.c  ****                      * made more room available from the call-back */
+1076:spi_master.c  ****                 {
+1077:spi_master.c  ****                     /* Transfer the received data from the shared RAM into the
+1078:spi_master.c  ****                      * rx data buffer */
+1079:spi_master.c  ****                     OQTransferData(&(state.pio_rx_data), state.p_rx_data,
+ 791                 		AL,#state+3
+ 792 009a 00 00 00 11 		bsr	OQTransferData
+ 793 009c 18 14       	.L71:
+ 794 009d 00 27       		.loc 1 1084 0
+ 795 009e 00 00 00 14 		ld	AL,@state
+ 796 00a0 00 00 00 00 		cmp	AL,@(0x0004,Y)
+ 796      00 9C 
+ 797                 		bne	.L65
+1080:spi_master.c  ****                                                 PIO_CONTROLLER_SPI_RAM_RX_SIZE);
+1081:spi_master.c  ****                 }
+1082:spi_master.c  **** 
+1083:spi_master.c  ****                 if (state.state == newState)
+ 798                 	 1089 0
+ 799 00a3 00 00 00 15 		ld	AL,@state+0x0001
+ 800 00a5 04 87       		bsr	OQSize
+ 801 00a6 00 00 00 00 		tst	@$XAP_AL
+ 801      00 F0 
+1084:spi_master.c  ****                     /* If the callback did not change the state, which would
+1085:spi_master.c  ****                      * be the case if the transaction has ended and/or new
+1086:spi_master.c  ****                      * transaction has started */
+1087:spi_master.c  ****                 {
+1088:spi_master.c  ****                     if (OQSize(state.p_tx_data) > 0)
+ 802                 		.L72
+ 803 00a9 00 00 00 15 		.loc 1 1092 0
+ 804 00ab 00 00 00 00 		ld	AL,#0x0003
+ 804      00 9C 
+ 805 00ae 00 00 00 99 		bsr	processEvent
+ 806 00b0 00 00 00 00 		st	AL,@(0x0004,Y)
+ 806      00 F4 
+1089:spi_master.c  ****                         /* If there is more data to be transferred */
+1090:spi_master.c  ****                     {
+1091:spi_master.c  ****                         newState = processEvent(
+ 807                 	.L73
+ 808 00b3 03 14       	.L72:
+ 809 00b4 00 00 00 00 		.loc 1 1098 0
+ 809      00 9C 
+ 810 00b7 04 27       		ld	AL,#0x0004
+ 811 00b8 00 00 00 00 		bsr	processEvent
+ 811      00 E0 
+ 812                 		st	AL,@(0x0004,Y)
+1092:spi_master.c  ****                          TransactionEvent_PIOControllerUnblockedWithDataToSend);
+1093:spi_master.c  ****                     }
+1094:spi_master.c  ****                     else
+1095:spi_master.c  ****                         /* If there is no more data to be transferred */
+1096:spi_master.c  ****                     {
+1097:spi_master.c  ****                         newState = processEvent(
+ 813                 		.loc 1 1102 0
+ 814 00bb 04 14       		ld	AL,@(0x0004,Y)
+ 815 00bc 00 00 00 00 		cmp	AL,#0x0004
+ 815      00 9C 
+ 816 00bf 04 27       		bne	.L74
+ 817                 		.loc 1 1107 0
+1098:spi_master.c  ****                               TransactionEvent_PIOControllerUnblockedButNoData);
+1099:spi_master.c  ****                     }
+1100:spi_master.c  **** 
+1101:spi_master.c  ****                     if (newState == TransactionState_WaitingForPioController)
+ 818                 	L,@state+0x0001
+ 819 00c0 04 17       		st	AL,@(0x0007,Y)
+ 820 00c1 04 84       		ld	AL,@state+0x0001
+ 821 00c2 00 00 00 00 		bsr	OQSize
+ 821      00 F0 
+1102:spi_master.c  ****                         /* If more data is to be transferred over to shared RAM */
+1103:spi_master.c  ****                     {
+1104:spi_master.c  ****                         /* Transfer as much tx data over to PIO controller as
+1105:spi_master.c  ****                          * possible */
+1106:spi_master.c  ****                         transfer_size = OQTransferData(state.p_tx_data,
+ 822                 	AL,@(0,Y)
+ 823 00c5 00 00 00 15 		ld	AL,@(0x0007,Y)
+ 824 00c7 07 27       		ld	AH,#state+9
+ 825 00c8 00 00 00 15 		bsr	OQTransferData
+ 826 00ca 00 00 00 00 		st	AL,@(0x0003,Y)
+ 826      00 9C 
+ 827 00cd 00 27       		.loc 1 1112 0
+ 828 00ce 07 17       		ld	X,#0xe820
+ 829 00cf 00 00 00 10 		ld	AL,@(0x0003,Y)
+ 830 00d1 00 00 00 00 		and	AL,#0x00ff
+ 830      00 9C 
+ 831 00d4 03 27       		st	AL,@(0,X)
+1107:spi_master.c  ****                                                       &(state.pio_tx_data),
+1108:spi_master.c  ****                                                       OQSize(state.p_tx_data));
+1109:spi_master.c  ****                         
+1110:spi_master.c  ****                         /* Set the transfer size */
+1111:spi_master.c  ****                         SET_SPI_TRANSFER_SIZE_REG(transfer_size);
+ 832                 	16 0
+ 833 00d5 E8 00 20 18 		bsr	PioCtrlrInterrupt
+ 834 00d7 03 17       	.L74:
+ 835 00d8 01 00 FF C4 		.loc 1 1120 0
+ 836 00da 00 26       		ld	AL,@(0x0004,Y)
+1112:spi_master.c  ****                         
+1113:spi_master.c  ****                         /* Issue interrupt to PIO controller to resume the
+1114:spi_master.c  ****                          * transfer */
+1115:spi_master.c  ****                         PioCtrlrInterrupt();
+ 837                 	L,@state
+ 838 00db 00 00 00 00 	.L65:
+ 838      00 9C 
+ 839                 	.LBE4:
+1116:spi_master.c  ****                     }
+1117:spi_master.c  ****                     
+1118:spi_master.c  ****                     /* Transaction is in progress */
+1119:spi_master.c  ****                     state.state = newState;
+ 840                 	oc 1 1126 0
+ 841 00de 04 17       		ld	X,#0xe823
+ 842 00df 00 00 00 25 		ld	AL,#0x0000
+ 843                 		st	AL,@(0,X)
+ 844                 	.L75:
+1120:spi_master.c  ****                 }
+1121:spi_master.c  ****             }
+1122:spi_master.c  ****         }
+1123:spi_master.c  ****         
+1124:spi_master.c  ****         /* Acknowledge the interrupt */
+1125:spi_master.c  ****         SET_SPI_INT_ACK(0U);
+ 845                 	:
+ 846 00e1 E8 00 23 18 		.loc 1 1128 0
+ 847 00e3 00 14       		leave	#0x0009
+ 848 00e4 00 26       	.LFE13:
+ 849                 		.size	SpiMasterProcessPioControllerEvent, .-SpiMasterProcessPioControllerEvent
+ 850                 		.global	__size_of_SpiMasterProcessPioControllerEvent
+1126:spi_master.c  ****     }
+1127:spi_master.c  **** } /* SpiMasterProcessPioControllerEvent */
+ 851                 	__size_of_SpiMasterProcessPioControllerEvent,. - SpiMasterProcessPioControllerEvent
+ 852 00e5 09 0F       		.section	.bss.state,"aw",@nobits
+ 853                 		.type	state, @object
+ 854                 		.size	state, 16
+ 855                 	state:
+ 856                 		.space	16
+ 857                 		.section	.debug_frame,"",@progbits
+ 858                 	.Lframe0:
+ 859                 		.4byte	.LECIE0-.LSCIE0
+ 860                 	.LSCIE0:
+ 861 0000 00 00 00 00 		.4byte	0xffffffff
+ 861      00 00 00 00 
+ 861      00 00 00 00 
+ 861      00 00 00 00 
+ 861      00 00 00 00 
+ 862                 		.1byte	0x1
+ 863                 		.ascii "\000"
+ 864 0000 00 00 00 00 		.1byte	0x1
+ 865                 		.1byte	0x7f
+ 866 0002 FF FF FF FF 		.1byte	0x3
+ 867 0004 01          		.1byte	0xc
+ 868 0004 00          		.1byte	0x5
+ 869 0005 01          		.1byte	0x0
+ 870 0005 7F          		.p2align	2
+ 871 0006 03          	.LECIE0:
+ 872 0006 0C          	.LSFDE0:
+ 873 0007 05          		.4byte	.LEFDE0-.LASFDE0
+ 874 0007 00          	.LASFDE0:
+ 875                 		.4byte	.Lframe0
+ 876                 		.4byte	.LFB2
+ 877                 		.4byte	.LFE2-.LFB2
+ 878 0008 00 00 00 00 		.1byte	0x4
+ 879                 		.4byte	.LCFI0-.LFB2
+ 880 000a 00 00 00 00 		.1byte	0xe
+ 881 000c 00 00 00 00 		.1byte	0x5
+ 882 000e 00 00 00 00 		.1byte	0x83
+ 883 0010 41          		.1byte	0x1
+ 884                 		.p2align	2
+ 885 0010 0E          	.LEFDE0:
+ 886 0011 05          	.LSFDE2:
+ 887 0011 83          		.4byte	.LEFDE2-.LASFDE2
+ 888 0012 01          	.LASFDE2:
+ 889 0012 00 00 00    		.4byte	.Lframe0
+ 890                 		.4byte	.LFB3
+ 891                 		.4byte	.LFE3-.LFB3
+ 892 0014 00 00 00 00 		.1byte	0x4
+ 893                 		.4byte	.LCFI1-.LFB3
+ 894 0016 00 00 00 00 		.1byte	0xe
+ 895 0018 00 00 00 00 		.1byte	0x3
+ 896 001a 00 00 00 00 		.1byte	0x83
+ 897 001c 41          		.1byte	0x1
+ 898                 		.p2align	2
+ 899 001c 0E          	.LEFDE2:
+ 900 001d 03          	.LSFDE4:
+ 901 001d 83          		.4byte	.LEFDE4-.LASFDE4
+ 902 001e 01          	.LASFDE4:
+ 903 001e 00 00 00    		.4byte	.Lframe0
+ 904                 		.4byte	.LFB4
+ 905                 		.4byte	.LFE4-.LFB4
+ 906 0020 00 00 00 00 		.1byte	0x4
+ 907                 		.4byte	.LCFI2-.LFB4
+ 908 0022 00 00 00 00 		.1byte	0xe
+ 909 0024 00 00 00 00 		.1byte	0x4
+ 910 0026 00 00 00 00 		.1byte	0x83
+ 911 0028 41          		.1byte	0x1
+ 912                 		.p2align	2
+ 913 0028 0E          	.LEFDE4:
+ 914 0029 04          	.LSFDE6:
+ 915 0029 83          		.4byte	.LEFDE6-.LASFDE6
+ 916 002a 01          	.LASFDE6:
+ 917 002a 00 00 00    		.4byte	.Lframe0
+ 918                 		.4byte	.LFB5
+ 919                 		.4byte	.LFE5-.LFB5
+ 920 002c 00 00 00 00 		.1byte	0x4
+ 921                 		.4byte	.LCFI3-.LFB5
+ 922 002e 00 00 00 00 		.1byte	0xe
+ 923 0030 00 00 00 00 		.1byte	0x6
+ 924 0032 00 00 00 00 		.1byte	0x83
+ 925 0034 41          		.1byte	0x1
+ 926                 		.p2align	2
+ 927 0034 0E          	.LEFDE6:
+ 928 0035 06          	.LSFDE8:
+ 929 0035 83          		.4byte	.LEFDE8-.LASFDE8
+ 930 0036 01          	.LASFDE8:
+ 931 0036 00 00 00    		.4byte	.Lframe0
+ 932                 		.4byte	.LFB6
+ 933                 		.4byte	.LFE6-.LFB6
+ 934 0038 00 00 00 00 		.1byte	0x4
+ 935                 		.4byte	.LCFI4-.LFB6
+ 936 003a 00 00 00 00 		.1byte	0xe
+ 937 003c 00 00 00 00 		.1byte	0x2
+ 938 003e 00 00 00 00 		.1byte	0x83
+ 939 0040 41          		.1byte	0x1
+ 940                 		.p2align	2
+ 941 0040 0E          	.LEFDE8:
+ 942 0041 02          	.LSFDE10:
+ 943 0041 83          		.4byte	.LEFDE10-.LASFDE10
+ 944 0042 01          	.LASFDE10:
+ 945 0042 00 00 00    		.4byte	.Lframe0
+ 946                 		.4byte	.LFB7
+ 947                 		.4byte	.LFE7-.LFB7
+ 948 0044 00 00 00 00 		.1byte	0x4
+ 949                 		.4byte	.LCFI5-.LFB7
+ 950 0046 00 00 00 00 		.1byte	0xe
+ 951 0048 00 00 00 00 		.1byte	0x6
+ 952 004a 00 00 00 00 		.1byte	0x83
+ 953 004c 41          		.1byte	0x1
+ 954                 		.p2align	2
+ 955 004c 0E          	.LEFDE10:
+ 956 004d 06          	.LSFDE12:
+ 957 004d 83          		.4byte	.LEFDE12-.LASFDE12
+ 958 004e 01          	.LASFDE12:
+ 959 004e 00 00 00    		.4byte	.Lframe0
+ 960                 		.4byte	.LFB8
+ 961                 		.4byte	.LFE8-.LFB8
+ 962 0050 00 00 00 00 		.1byte	0x4
+ 963                 		.4byte	.LCFI6-.LFB8
+ 964 0052 00 00 00 00 		.1byte	0xe
+ 965 0054 00 00 00 00 		.1byte	0x3
+ 966 0056 00 00 00 00 		.1byte	0x83
+ 967 0058 41          		.1byte	0x1
+ 968                 		.p2align	2
+ 969 0058 0E          	.LEFDE12:
+ 970 0059 03          	.LSFDE14:
+ 971 0059 83          		.4byte	.LEFDE14-.LASFDE14
+ 972 005a 01          	.LASFDE14:
+ 973 005a 00 00 00    		.4byte	.Lframe0
+ 974                 		.4byte	.LFB9
+ 975                 		.4byte	.LFE9-.LFB9
+ 976 005c 00 00 00 00 		.1byte	0x4
+ 977                 		.4byte	.LCFI7-.LFB9
+ 978 005e 00 00 00 00 		.1byte	0xe
+ 979 0060 00 00 00 00 		.1byte	0x1
+ 980 0062 00 00 00 00 		.1byte	0x83
+ 981 0064 41          		.1byte	0x1
+ 982                 		.p2align	2
+ 983 0064 0E          	.LEFDE14:
+ 984 0065 01          	.LSFDE16:
+ 985 0065 83          		.4byte	.LEFDE16-.LASFDE16
+ 986 0066 01          	.LASFDE16:
+ 987 0066 00 00 00    		.4byte	.Lframe0
+ 988                 		.4byte	.LFB10
+ 989                 		.4byte	.LFE10-.LFB10
+ 990 0068 00 00 00 00 		.1byte	0x4
+ 991                 		.4byte	.LCFI8-.LFB10
+ 992 006a 00 00 00 00 		.1byte	0xe
+ 993 006c 00 00 00 00 		.1byte	0x1
+ 994 006e 00 00 00 00 		.1byte	0x83
+ 995 0070 41          		.1byte	0x1
+ 996                 		.p2align	2
+ 997 0070 0E          	.LEFDE16:
+ 998 0071 01          	.LSFDE18:
+ 999 0071 83          		.4byte	.LEFDE18-.LASFDE18
+ 1000 0072 01          	.LASFDE18:
+ 1001 0072 00 00 00    		.4byte	.Lframe0
+ 1002                 		.4byte	.LFB11
+ 1003                 		.4byte	.LFE11-.LFB11
+ 1004 0074 00 00 00 00 		.1byte	0x4
+ 1005                 		.4byte	.LCFI9-.LFB11
+ 1006 0076 00 00 00 00 		.1byte	0xe
+ 1007 0078 00 00 00 00 		.1byte	0x4
+ 1008 007a 00 00 00 00 		.1byte	0x83
+ 1009 007c 41          		.1byte	0x1
+ 1010                 		.p2align	2
+ 1011 007c 0E          	.LEFDE18:
+ 1012 007d 04          	.LSFDE20:
+ 1013 007d 83          		.4byte	.LEFDE20-.LASFDE20
+ 1014 007e 01          	.LASFDE20:
+ 1015 007e 00 00 00    		.4byte	.Lframe0
+ 1016                 		.4byte	.LFB12
+ 1017                 		.4byte	.LFE12-.LFB12
+ 1018 0080 00 00 00 00 		.1byte	0x4
+ 1019                 		.4byte	.LCFI10-.LFB12
+ 1020 0082 00 00 00 00 		.1byte	0xe
+ 1021 0084 00 00 00 00 		.1byte	0x1
+ 1022 0086 00 00 00 00 		.1byte	0x83
+ 1023 0088 41          		.1byte	0x1
+ 1024                 		.p2align	2
+ 1025 0088 0E          	.LEFDE20:
+ 1026 0089 01          	.LSFDE22:
+ 1027 0089 83          		.4byte	.LEFDE22-.LASFDE22
+ 1028 008a 01          	.LASFDE22:
+ 1029 008a 00 00 00    		.4byte	.Lframe0
+ 1030                 		.4byte	.LFB13
+ 1031                 		.4byte	.LFE13-.LFB13
+ 1032 008c 00 00 00 00 		.1byte	0x4
+ 1033                 		.4byte	.LCFI11-.LFB13
+ 1034 008e 00 00 00 00 		.1byte	0xe
+ 1035 0090 00 00 00 00 		.1byte	0x9
+ 1036 0092 00 00 00 00 		.1byte	0x83
+ 1037 0094 41          		.1byte	0x1
+ 1038                 		.p2align	2
+ 1039 0094 0E          	.LEFDE22:
+ 1040 0095 09          		.text
+ 1041 0095 83          	.Letext0:
+ 1042 0096 01          		.section	.debug_loc,"",@progbits
+ 1043 0096 00 00 00    	.Ldebug_loc0:
+ 1044                 	.LLST0:
+ 1045                 		.4byte	.LFB2
+ 1046                 		.4byte	.LCFI0
+ 1047                 		.2byte	0x1
+ 1048                 		.1byte	0x55
+ 1049                 		.4byte	.LCFI0
+ 1050 0000 00 00 00 00 		.4byte	.LFE2
+ 1051 0002 00 00 00 00 		.2byte	0x2
+ 1052 0004 00 01       		.1byte	0x75
+ 1053 0005 55          		.1byte	0x5
+ 1054 0005 00 00 00 00 		.4byte	0x0
+ 1055 0007 00 00 00 00 		.4byte	0x0
+ 1056 0009 00 02       	.LLST1:
+ 1057 000a 75          		.4byte	.LFB3
+ 1058 000b 05          		.4byte	.LCFI1
+ 1059 000b 00 00 00 00 		.2byte	0x1
+ 1060 000d 00 00 00 00 		.1byte	0x55
+ 1061                 		.4byte	.LCFI1
+ 1062 000f 00 00 00 00 		.4byte	.LFE3
+ 1063 0011 00 00 00 00 		.2byte	0x2
+ 1064 0013 00 01       		.1byte	0x75
+ 1065 0014 55          		.1byte	0x3
+ 1066 0015 00 00 00 00 		.4byte	0x0
+ 1067 0017 00 00 00 00 		.4byte	0x0
+ 1068 0019 00 02       	.LLST2:
+ 1069 001a 75          		.4byte	.LFB4
+ 1070 001a 03          		.4byte	.LCFI2
+ 1071 001b 00 00 00 00 		.2byte	0x1
+ 1072 001d 00 00 00 00 		.1byte	0x55
+ 1073                 		.4byte	.LCFI2
+ 1074 001f 00 00 00 00 		.4byte	.LFE4
+ 1075 0021 00 00 00 00 		.2byte	0x2
+ 1076 0023 00 01       		.1byte	0x75
+ 1077 0024 55          		.1byte	0x4
+ 1078 0024 00 00 00 00 		.4byte	0x0
+ 1079 0026 00 00 00 00 		.4byte	0x0
+ 1080 0028 00 02       	.LLST3:
+ 1081 0029 75          		.4byte	.LFB5
+ 1082 002a 04          		.4byte	.LCFI3
+ 1083 002a 00 00 00 00 		.2byte	0x1
+ 1084 002c 00 00 00 00 		.1byte	0x55
+ 1085                 		.4byte	.LCFI3
+ 1086 002e 00 00 00 00 		.4byte	.LFE5
+ 1087 0030 00 00 00 00 		.2byte	0x2
+ 1088 0032 00 01       		.1byte	0x75
+ 1089 0033 55          		.1byte	0x6
+ 1090 0034 00 00 00 00 		.4byte	0x0
+ 1091 0036 00 00 00 00 		.4byte	0x0
+ 1092 0038 00 02       	.LLST4:
+ 1093 0039 75          		.4byte	.LFB6
+ 1094 0039 06          		.4byte	.LCFI4
+ 1095 003a 00 00 00 00 		.2byte	0x1
+ 1096 003c 00 00 00 00 		.1byte	0x55
+ 1097                 		.4byte	.LCFI4
+ 1098 003e 00 00 00 00 		.4byte	.LFE6
+ 1099 0040 00 00 00 00 		.2byte	0x2
+ 1100 0042 00 01       		.1byte	0x75
+ 1101 0043 55          		.1byte	0x2
+ 1102 0043 00 00 00 00 		.4byte	0x0
+ 1103 0045 00 00 00 00 		.4byte	0x0
+ 1104 0047 00 02       	.LLST5:
+ 1105 0048 75          		.4byte	.LFB7
+ 1106 0049 02          		.4byte	.LCFI5
+ 1107 0049 00 00 00 00 		.2byte	0x1
+ 1108 004b 00 00 00 00 		.1byte	0x55
+ 1109                 		.4byte	.LCFI5
+ 1110 004d 00 00 00 00 		.4byte	.LFE7
+ 1111 004f 00 00 00 00 		.2byte	0x2
+ 1112 0051 00 01       		.1byte	0x75
+ 1113 0052 55          		.1byte	0x6
+ 1114 0053 00 00 00 00 		.4byte	0x0
+ 1115 0055 00 00 00 00 		.4byte	0x0
+ 1116 0057 00 02       	.LLST6:
+ 1117 0058 75          		.4byte	.LFB8
+ 1118 0058 06          		.4byte	.LCFI6
+ 1119 0059 00 00 00 00 		.2byte	0x1
+ 1120 005b 00 00 00 00 		.1byte	0x55
+ 1121                 		.4byte	.LCFI6
+ 1122 005d 00 00 00 00 		.4byte	.LFE8
+ 1123 005f 00 00 00 00 		.2byte	0x2
+ 1124 0061 00 01       		.1byte	0x75
+ 1125 0062 55          		.1byte	0x3
+ 1126 0062 00 00 00 00 		.4byte	0x0
+ 1127 0064 00 00 00 00 		.4byte	0x0
+ 1128 0066 00 02       	.LLST7:
+ 1129 0067 75          		.4byte	.LFB9
+ 1130 0068 03          		.4byte	.LCFI7
+ 1131 0068 00 00 00 00 		.2byte	0x1
+ 1132 006a 00 00 00 00 		.1byte	0x55
+ 1133                 		.4byte	.LCFI7
+ 1134 006c 00 00 00 00 		.4byte	.LFE9
+ 1135 006e 00 00 00 00 		.2byte	0x2
+ 1136 0070 00 01       		.1byte	0x75
+ 1137 0071 55          		.1byte	0x1
+ 1138 0072 00 00 00 00 		.4byte	0x0
+ 1139 0074 00 00 00 00 		.4byte	0x0
+ 1140 0076 00 02       	.LLST8:
+ 1141 0077 75          		.4byte	.LFB10
+ 1142 0077 01          		.4byte	.LCFI8
+ 1143 0078 00 00 00 00 		.2byte	0x1
+ 1144 007a 00 00 00 00 		.1byte	0x55
+ 1145                 		.4byte	.LCFI8
+ 1146 007c 00 00 00 00 		.4byte	.LFE10
+ 1147 007e 00 00 00 00 		.2byte	0x2
+ 1148 0080 00 01       		.1byte	0x75
+ 1149 0081 55          		.1byte	0x1
+ 1150 0081 00 00 00 00 		.4byte	0x0
+ 1151 0083 00 00 00 00 		.4byte	0x0
+ 1152 0085 00 02       	.LLST9:
+ 1153 0086 75          		.4byte	.LFB11
+ 1154 0087 01          		.4byte	.LCFI9
+ 1155 0087 00 00 00 00 		.2byte	0x1
+ 1156 0089 00 00 00 00 		.1byte	0x55
+ 1157                 		.4byte	.LCFI9
+ 1158 008b 00 00 00 00 		.4byte	.LFE11
+ 1159 008d 00 00 00 00 		.2byte	0x2
+ 1160 008f 00 01       		.1byte	0x75
+ 1161 0090 55          		.1byte	0x4
+ 1162 0091 00 00 00 00 		.4byte	0x0
+ 1163 0093 00 00 00 00 		.4byte	0x0
+ 1164 0095 00 02       	.LLST10:
+ 1165 0096 75          		.4byte	.LFB12
+ 1166 0096 04          		.4byte	.LCFI10
+ 1167 0097 00 00 00 00 		.2byte	0x1
+ 1168 0099 00 00 00 00 		.1byte	0x55
+ 1169                 		.4byte	.LCFI10
+ 1170 009b 00 00 00 00 		.4byte	.LFE12
+ 1171 009d 00 00 00 00 		.2byte	0x2
+ 1172 009f 00 01       		.1byte	0x75
+ 1173 00a0 55          		.1byte	0x1
+ 1174 00a0 00 00 00 00 		.4byte	0x0
+ 1175 00a2 00 00 00 00 		.4byte	0x0
+ 1176 00a4 00 02       	.LLST11:
+ 1177 00a5 75          		.4byte	.LFB13
+ 1178 00a6 01          		.4byte	.LCFI11
+ 1179 00a6 00 00 00 00 		.2byte	0x1
+ 1180 00a8 00 00 00 00 		.1byte	0x55
+ 1181                 		.4byte	.LCFI11
+ 1182 00aa 00 00 00 00 		.4byte	.LFE13
+ 1183 00ac 00 00 00 00 		.2byte	0x2
+ 1184 00ae 00 01       		.1byte	0x75
+ 1185 00af 55          		.1byte	0x9
+ 1186 00b0 00 00 00 00 		.4byte	0x0
+ 1187 00b2 00 00 00 00 		.4byte	0x0
+ 1188 00b4 00 02       		.file 2 "C:/CSR_uEnergy_SDK-2.3.0.31/tools/include/CSR101x_A05/types.h"
+ 1189 00b5 75          		.file 3 "C:/CSR_uEnergy_SDK-2.3.0.31/tools/include/CSR101x_A05/pio.h"
+ 1190 00b5 09          		.file 4 "octet_queue.h"
+ 1191 00b6 00 00 00 00 		.file 5 "spi_master.h"
+ 1192 00b8 00 00 00 00 		.section	.debug_info
+ 1193                 		.4byte	0x5e9
+ 1194                 		.2byte	0x2
+ 1195                 		.4byte	.Ldebug_abbrev0
+ 1196                 		.1byte	0x4
+ 1197                 		.1byte	0x1
+ 1198 0000 00 00 05 E9 		.4byte	.LASF98
+ 1199 0002 00 02       		.1byte	0x1
+ 1200 0003 00 00 00 00 		.4byte	.LASF99
+ 1201 0005 04          		.4byte	.LASF100
+ 1202 0005 01          		.4byte	0x0
+ 1203 0006 00 00 00 00 		.4byte	0x0
+ 1204 0008 01          		.4byte	.Ldebug_ranges0+0x0
+ 1205 0008 00 00 00 00 		.4byte	.Ldebug_line0
+ 1206 000a 00 00 00 00 		.1byte	0x2
+ 1207 000c 00 00 00 00 		.4byte	.LASF0
+ 1208 000e 00 00 00 00 		.1byte	0x2
+ 1209 0010 00 00 00 00 		.1byte	0x1e
+ 1210 0012 00 00 00 00 		.4byte	0x34
+ 1211 0014 02          		.1byte	0x3
+ 1212 0015 00 00 00 00 		.1byte	0x2
+ 1213 0017 02          		.1byte	0x8
+ 1214 0017 1E          		.4byte	.LASF2
+ 1215 0018 00 00 00 34 		.1byte	0x2
+ 1216 001a 03          		.4byte	.LASF1
+ 1217 001a 02          		.1byte	0x2
+ 1218 001b 08          		.1byte	0x1f
+ 1219 001b 00 00 00 00 		.4byte	0x46
+ 1220 001d 02          		.1byte	0x3
+ 1221 001e 00 00 00 00 		.1byte	0x2
+ 1222 0020 02          		.1byte	0x7
+ 1223 0020 1F          		.4byte	.LASF3
+ 1224 0021 00 00 00 46 		.1byte	0x3
+ 1225 0023 03          		.1byte	0x4
+ 1226 0023 02          		.1byte	0x7
+ 1227 0024 07          		.4byte	.LASF4
+ 1228 0024 00 00 00 00 		.1byte	0x3
+ 1229 0026 03          		.1byte	0x2
+ 1230 0027 04          		.1byte	0x6
+ 1231 0027 07          		.4byte	.LASF5
+ 1232 0028 00 00 00 00 		.1byte	0x3
+ 1233 002a 03          		.1byte	0x2
+ 1234 002a 02          		.1byte	0x5
+ 1235 002b 06          		.4byte	.LASF6
+ 1236 002b 00 00 00 00 		.1byte	0x3
+ 1237 002d 03          		.1byte	0x4
+ 1238 002e 02          		.1byte	0x5
+ 1239 002e 05          		.4byte	.LASF7
+ 1240 002f 00 00 00 00 		.1byte	0x2
+ 1241 0031 03          		.4byte	.LASF8
+ 1242 0031 04          		.1byte	0x2
+ 1243 0032 05          		.1byte	0x2a
+ 1244 0032 00 00 00 00 		.4byte	0x74
+ 1245 0034 02          		.1byte	0x3
+ 1246 0035 00 00 00 00 		.1byte	0x2
+ 1247 0037 02          		.1byte	0x7
+ 1248 0037 2A          		.4byte	.LASF9
+ 1249 0038 00 00 00 74 		.1byte	0x4
+ 1250 003a 03          		.1byte	0x2
+ 1251 003a 02          		.1byte	0x3
+ 1252 003b 07          		.1byte	0x1b
+ 1253 003b 00 00 00 00 		.4byte	0x11a
+ 1254 003d 04          		.1byte	0x5
+ 1255 003e 02          		.4byte	.LASF10
+ 1256 003e 03          		.1byte	0x0
+ 1257 003f 1B          		.1byte	0x5
+ 1258 003f 00 00 01 1A 		.4byte	.LASF11
+ 1259 0041 05          		.1byte	0x1
+ 1260 0042 00 00 00 00 		.1byte	0x5
+ 1261 0044 00          		.4byte	.LASF12
+ 1262 0044 05          		.1byte	0x3
+ 1263 0045 00 00 00 00 		.1byte	0x5
+ 1264 0047 01          		.4byte	.LASF13
+ 1265 0047 05          		.1byte	0x4
+ 1266 0048 00 00 00 00 		.1byte	0x5
+ 1267 004a 03          		.4byte	.LASF14
+ 1268 004a 05          		.1byte	0x5
+ 1269 004b 00 00 00 00 		.1byte	0x5
+ 1270 004d 04          		.4byte	.LASF15
+ 1271 004d 05          		.1byte	0x6
+ 1272 004e 00 00 00 00 		.1byte	0x5
+ 1273 0050 05          		.4byte	.LASF16
+ 1274 0050 05          		.1byte	0x7
+ 1275 0051 00 00 00 00 		.1byte	0x5
+ 1276 0053 06          		.4byte	.LASF17
+ 1277 0053 05          		.1byte	0x8
+ 1278 0054 00 00 00 00 		.1byte	0x5
+ 1279 0056 07          		.4byte	.LASF18
+ 1280 0056 05          		.1byte	0x9
+ 1281 0057 00 00 00 00 		.1byte	0x5
+ 1282 0059 08          		.4byte	.LASF19
+ 1283 0059 05          		.1byte	0xa
+ 1284 005a 00 00 00 00 		.1byte	0x5
+ 1285 005c 09          		.4byte	.LASF20
+ 1286 005c 05          		.1byte	0xb
+ 1287 005d 00 00 00 00 		.1byte	0x5
+ 1288 005f 0A          		.4byte	.LASF21
+ 1289 005f 05          		.1byte	0xc
+ 1290 0060 00 00 00 00 		.1byte	0x5
+ 1291 0062 0B          		.4byte	.LASF22
+ 1292 0062 05          		.1byte	0xd
+ 1293 0063 00 00 00 00 		.1byte	0x5
+ 1294 0065 0C          		.4byte	.LASF23
+ 1295 0065 05          		.1byte	0xe
+ 1296 0066 00 00 00 00 		.1byte	0x5
+ 1297 0068 0D          		.4byte	.LASF24
+ 1298 0068 05          		.1byte	0xf
+ 1299 0069 00 00 00 00 		.1byte	0x5
+ 1300 006b 0E          		.4byte	.LASF25
+ 1301 006b 05          		.1byte	0x10
+ 1302 006c 00 00 00 00 		.1byte	0x5
+ 1303 006e 0F          		.4byte	.LASF26
+ 1304 006e 05          		.1byte	0x11
+ 1305 006f 00 00 00 00 		.1byte	0x5
+ 1306 0071 10          		.4byte	.LASF27
+ 1307 0071 05          		.1byte	0x12
+ 1308 0072 00 00 00 00 		.1byte	0x5
+ 1309 0074 11          		.4byte	.LASF28
+ 1310 0074 05          		.1byte	0x13
+ 1311 0075 00 00 00 00 		.1byte	0x5
+ 1312 0077 12          		.4byte	.LASF29
+ 1313 0077 05          		.1byte	0x14
+ 1314 0078 00 00 00 00 		.1byte	0x5
+ 1315 007a 13          		.4byte	.LASF30
+ 1316 007a 05          		.1byte	0x15
+ 1317 007b 00 00 00 00 		.1byte	0x5
+ 1318 007d 14          		.4byte	.LASF31
+ 1319 007d 05          		.1byte	0x16
+ 1320 007e 00 00 00 00 		.1byte	0x5
+ 1321 0080 15          		.4byte	.LASF32
+ 1322 0080 05          		.1byte	0x17
+ 1323 0081 00 00 00 00 		.1byte	0x5
+ 1324 0083 16          		.4byte	.LASF33
+ 1325 0083 05          		.1byte	0x18
+ 1326 0084 00 00 00 00 		.1byte	0x5
+ 1327 0086 17          		.4byte	.LASF34
+ 1328 0086 05          		.1byte	0x19
+ 1329 0087 00 00 00 00 		.1byte	0x0
+ 1330 0089 18          		.1byte	0x4
+ 1331 0089 05          		.1byte	0x2
+ 1332 008a 00 00 00 00 		.1byte	0x4
+ 1333 008c 19          		.1byte	0x2b
+ 1334 008c 00          		.4byte	0x135
+ 1335 008d 04          		.1byte	0x5
+ 1336 008d 02          		.4byte	.LASF35
+ 1337 008e 04          		.1byte	0x0
+ 1338 008e 2B          		.1byte	0x5
+ 1339 008f 00 00 01 35 		.4byte	.LASF36
+ 1340 0091 05          		.1byte	0x1
+ 1341 0091 00 00 00 00 		.1byte	0x5
+ 1342 0093 00          		.4byte	.LASF37
+ 1343 0094 05          		.1byte	0x2
+ 1344 0094 00 00 00 00 		.1byte	0x0
+ 1345 0096 01          		.1byte	0x2
+ 1346 0097 05          		.4byte	.LASF38
+ 1347 0097 00 00 00 00 		.1byte	0x4
+ 1348 0099 02          		.1byte	0x3a
+ 1349 009a 00          		.4byte	0x11a
+ 1350 009a 02          		.1byte	0x6
+ 1351 009b 00 00 00 00 		.4byte	.LASF64
+ 1352 009d 04          		.1byte	0xc
+ 1353 009d 3A          		.1byte	0x4
+ 1354 009e 00 00 01 1A 		.1byte	0x3e
+ 1355 00a0 06          		.4byte	0x1a1
+ 1356 00a0 00 00 00 00 		.1byte	0x7
+ 1357 00a2 0C          		.4byte	.LASF39
+ 1358 00a3 04          		.1byte	0x4
+ 1359 00a3 3E          		.1byte	0x42
+ 1360 00a4 00 00 01 A1 		.4byte	0x1a1
+ 1361 00a6 07          		.1byte	0x2
+ 1362 00a6 00 00 00 00 		.1byte	0x23
+ 1363 00a8 04          		.1byte	0x0
+ 1364 00a9 42          		.1byte	0x7
+ 1365 00a9 00 00 01 A1 		.4byte	.LASF40
+ 1366 00ab 02          		.1byte	0x4
+ 1367 00ac 23          		.1byte	0x49
+ 1368 00ac 00          		.4byte	0x3b
+ 1369 00ad 07          		.1byte	0x2
+ 1370 00ad 00 00 00 00 		.1byte	0x23
+ 1371 00af 04          		.1byte	0x1
+ 1372 00b0 49          		.1byte	0x7
+ 1373 00b0 00 00 00 3B 		.4byte	.LASF41
+ 1374 00b2 02          		.1byte	0x4
+ 1375 00b3 23          		.1byte	0x52
+ 1376 00b3 01          		.4byte	0x3b
+ 1377 00b4 07          		.1byte	0x2
+ 1378 00b4 00 00 00 00 		.1byte	0x23
+ 1379 00b6 04          		.1byte	0x2
+ 1380 00b7 52          		.1byte	0x7
+ 1381 00b7 00 00 00 3B 		.4byte	.LASF42
+ 1382 00b9 02          		.1byte	0x4
+ 1383 00ba 23          		.1byte	0x5b
+ 1384 00ba 02          		.4byte	0x3b
+ 1385 00bb 07          		.1byte	0x2
+ 1386 00bb 00 00 00 00 		.1byte	0x23
+ 1387 00bd 04          		.1byte	0x3
+ 1388 00be 5B          		.1byte	0x7
+ 1389 00be 00 00 00 3B 		.4byte	.LASF43
+ 1390 00c0 02          		.1byte	0x4
+ 1391 00c1 23          		.1byte	0x61
+ 1392 00c1 03          		.4byte	0x69
+ 1393 00c2 07          		.1byte	0x2
+ 1394 00c2 00 00 00 00 		.1byte	0x23
+ 1395 00c4 04          		.1byte	0x4
+ 1396 00c5 61          		.1byte	0x7
+ 1397 00c5 00 00 00 69 		.4byte	.LASF44
+ 1398 00c7 02          		.1byte	0x4
+ 1399 00c8 23          		.1byte	0x73
+ 1400 00c8 04          		.4byte	0x135
+ 1401 00c9 07          		.1byte	0x2
+ 1402 00c9 00 00 00 00 		.1byte	0x23
+ 1403 00cb 04          		.1byte	0x5
+ 1404 00cc 73          		.1byte	0x0
+ 1405 00cc 00 00 01 35 		.1byte	0x8
+ 1406 00ce 02          		.1byte	0x2
+ 1407 00cf 23          		.1byte	0x2
+ 1408 00cf 05          		.4byte	.LASF45
+ 1409 00d0 00          		.1byte	0x4
+ 1410 00d0 08          		.1byte	0x74
+ 1411 00d1 02          		.4byte	0x140
+ 1412 00d1 02          		.1byte	0x2
+ 1413 00d2 00 00 00 00 		.4byte	.LASF46
+ 1414 00d4 04          		.1byte	0x4
+ 1415 00d4 74          		.1byte	0x77
+ 1416 00d5 00 00 01 40 		.4byte	0x1b9
+ 1417 00d7 02          		.1byte	0x9
+ 1418 00d7 00 00 00 00 		.1byte	0x2
+ 1419 00d9 04          		.4byte	0x1a3
+ 1420 00da 77          		.1byte	0x2
+ 1421 00da 00 00 01 B9 		.4byte	.LASF47
+ 1422 00dc 09          		.1byte	0x5
+ 1423 00dd 02          		.1byte	0x42
+ 1424 00dd 00 00 01 A3 		.4byte	0x1ca
+ 1425 00df 02          		.1byte	0x9
+ 1426 00e0 00 00 00 00 		.1byte	0x2
+ 1427 00e2 05          		.4byte	0x1d0
+ 1428 00e2 42          		.1byte	0xa
+ 1429 00e3 00 00 01 CA 		.1byte	0x1
+ 1430 00e5 09          		.4byte	0x1e1
+ 1431 00e5 02          		.1byte	0xb
+ 1432 00e6 00 00 01 D0 		.4byte	0x1ae
+ 1433 00e8 0A          		.1byte	0xb
+ 1434 00e8 01          		.4byte	0x1ae
+ 1435 00e9 00 00 01 E1 		.1byte	0x0
+ 1436 00eb 0B          		.1byte	0x4
+ 1437 00eb 00 00 01 AE 		.1byte	0x2
+ 1438 00ed 0B          		.1byte	0x1
+ 1439 00ee 00 00 01 AE 		.1byte	0x8d
+ 1440 00f0 00          		.4byte	0x214
+ 1441 00f0 04          		.1byte	0x5
+ 1442 00f1 02          		.4byte	.LASF48
+ 1443 00f1 01          		.1byte	0x0
+ 1444 00f2 8D          		.1byte	0x5
+ 1445 00f2 00 00 02 14 		.4byte	.LASF49
+ 1446 00f4 05          		.1byte	0x1
+ 1447 00f5 00 00 00 00 		.1byte	0x5
+ 1448 00f7 00          		.4byte	.LASF50
+ 1449 00f7 05          		.1byte	0x2
+ 1450 00f8 00 00 00 00 		.1byte	0x5
+ 1451 00fa 01          		.4byte	.LASF51
+ 1452 00fa 05          		.1byte	0x3
+ 1453 00fb 00 00 00 00 		.1byte	0x5
+ 1454 00fd 02          		.4byte	.LASF52
+ 1455 00fd 05          		.1byte	0x4
+ 1456 00fe 00 00 00 00 		.1byte	0x5
+ 1457 0100 03          		.4byte	.LASF53
+ 1458 0100 05          		.1byte	0x5
+ 1459 0101 00 00 00 00 		.1byte	0x5
+ 1460 0103 04          		.4byte	.LASF54
+ 1461 0103 05          		.1byte	0x6
+ 1462 0104 00 00 00 00 		.1byte	0x0
+ 1463 0106 05          		.1byte	0x2
+ 1464 0106 05          		.4byte	.LASF55
+ 1465 0107 00 00 00 00 		.1byte	0x1
+ 1466 0109 06          		.1byte	0x9f
+ 1467 0109 00          		.4byte	0x1e1
+ 1468 010a 02          		.1byte	0x4
+ 1469 010a 00 00 00 00 		.1byte	0x2
+ 1470 010c 01          		.1byte	0x1
+ 1471 010d 9F          		.1byte	0xa5
+ 1472 010d 00 00 01 E1 		.4byte	0x252
+ 1473 010f 04          		.1byte	0x5
+ 1474 0110 02          		.4byte	.LASF56
+ 1475 0110 01          		.1byte	0x0
+ 1476 0111 A5          		.1byte	0x5
+ 1477 0111 00 00 02 52 		.4byte	.LASF57
+ 1478 0113 05          		.1byte	0x1
+ 1479 0114 00 00 00 00 		.1byte	0x5
+ 1480 0116 00          		.4byte	.LASF58
+ 1481 0116 05          		.1byte	0x2
+ 1482 0117 00 00 00 00 		.1byte	0x5
+ 1483 0119 01          		.4byte	.LASF59
+ 1484 0119 05          		.1byte	0x3
+ 1485 011a 00 00 00 00 		.1byte	0x5
+ 1486 011c 02          		.4byte	.LASF60
+ 1487 011c 05          		.1byte	0x4
+ 1488 011d 00 00 00 00 		.1byte	0x5
+ 1489 011f 03          		.4byte	.LASF61
+ 1490 011f 05          		.1byte	0x5
+ 1491 0120 00 00 00 00 		.1byte	0x5
+ 1492 0122 04          		.4byte	.LASF62
+ 1493 0122 05          		.1byte	0x6
+ 1494 0123 00 00 00 00 		.1byte	0x0
+ 1495 0125 05          		.1byte	0x2
+ 1496 0125 05          		.4byte	.LASF63
+ 1497 0126 00 00 00 00 		.1byte	0x1
+ 1498 0128 06          		.1byte	0xb7
+ 1499 0128 00          		.4byte	0x21f
+ 1500 0129 02          		.1byte	0x6
+ 1501 0129 00 00 00 00 		.4byte	.LASF65
+ 1502 012b 01          		.1byte	0x20
+ 1503 012c B7          		.1byte	0x1
+ 1504 012c 00 00 02 1F 		.1byte	0xbd
+ 1505 012e 06          		.4byte	0x2be
+ 1506 012f 00 00 00 00 		.1byte	0x7
+ 1507 0131 20          		.4byte	.LASF66
+ 1508 0131 01          		.1byte	0x1
+ 1509 0132 BD          		.1byte	0xbf
+ 1510 0132 00 00 02 BE 		.4byte	0x214
+ 1511 0134 07          		.1byte	0x2
+ 1512 0135 00 00 00 00 		.1byte	0x23
+ 1513 0137 01          		.1byte	0x0
+ 1514 0137 BF          		.1byte	0x7
+ 1515 0138 00 00 02 14 		.4byte	.LASF67
+ 1516 013a 02          		.1byte	0x1
+ 1517 013a 23          		.1byte	0xc1
+ 1518 013b 00          		.4byte	0x1ae
+ 1519 013b 07          		.1byte	0x2
+ 1520 013c 00 00 00 00 		.1byte	0x23
+ 1521 013e 01          		.1byte	0x1
+ 1522 013e C1          		.1byte	0x7
+ 1523 013f 00 00 01 AE 		.4byte	.LASF68
+ 1524 0141 02          		.1byte	0x1
+ 1525 0141 23          		.1byte	0xc3
+ 1526 0142 01          		.4byte	0x1ae
+ 1527 0142 07          		.1byte	0x2
+ 1528 0143 00 00 00 00 		.1byte	0x23
+ 1529 0145 01          		.1byte	0x2
+ 1530 0145 C3          		.1byte	0x7
+ 1531 0146 00 00 01 AE 		.4byte	.LASF69
+ 1532 0148 02          		.1byte	0x1
+ 1533 0148 23          		.1byte	0xc5
+ 1534 0149 02          		.4byte	0x1a3
+ 1535 0149 07          		.1byte	0x2
+ 1536 014a 00 00 00 00 		.1byte	0x23
+ 1537 014c 01          		.1byte	0x3
+ 1538 014c C5          		.1byte	0x7
+ 1539 014d 00 00 01 A3 		.4byte	.LASF70
+ 1540 014f 02          		.1byte	0x1
+ 1541 014f 23          		.1byte	0xc7
+ 1542 0150 03          		.4byte	0x1a3
+ 1543 0150 07          		.1byte	0x2
+ 1544 0151 00 00 00 00 		.1byte	0x23
+ 1545 0153 01          		.1byte	0x9
+ 1546 0153 C7          		.1byte	0x7
+ 1547 0154 00 00 01 A3 		.4byte	.LASF71
+ 1548 0156 02          		.1byte	0x1
+ 1549 0156 23          		.1byte	0xc9
+ 1550 0157 09          		.4byte	0x1bf
+ 1551 0157 07          		.1byte	0x2
+ 1552 0158 00 00 00 00 		.1byte	0x23
+ 1553 015a 01          		.1byte	0xf
+ 1554 015a C9          		.1byte	0x0
+ 1555 015b 00 00 01 BF 		.1byte	0x2
+ 1556 015d 02          		.4byte	.LASF72
+ 1557 015d 23          		.1byte	0x1
+ 1558 015e 0F          		.1byte	0xca
+ 1559 015e 00          		.4byte	0x25d
+ 1560 015f 02          		.1byte	0xc
+ 1561 015f 00 00 00 00 		.4byte	.LASF75
+ 1562 0161 01          		.1byte	0x1
+ 1563 0162 CA          		.1byte	0xf5
+ 1564 0162 00 00 02 5D 		.1byte	0x1
+ 1565 0164 0C          		.4byte	0x69
+ 1566 0165 00 00 00 00 		.4byte	.LFB2
+ 1567 0167 01          		.4byte	.LFE2
+ 1568 0167 F5          		.4byte	.LLST0
+ 1569 0168 01          		.4byte	0x302
+ 1570 0168 00 00 00 69 		.1byte	0xd
+ 1571 016a 00 00 00 00 		.4byte	.LASF73
+ 1572 016c 00 00 00 00 		.1byte	0x1
+ 1573 016e 00 00 00 00 		.1byte	0xf4
+ 1574 0170 00 00 03 02 		.4byte	0x29
+ 1575 0172 0D          		.1byte	0x2
+ 1576 0173 00 00 00 00 		.1byte	0x76
+ 1577 0175 01          		.1byte	0x3
+ 1578 0175 F4          		.1byte	0xe
+ 1579 0176 00 00 00 29 		.4byte	.LASF78
+ 1580 0178 02          		.1byte	0x1
+ 1581 0178 76          		.1byte	0xf6
+ 1582 0179 03          		.4byte	0x69
+ 1583 0179 0E          		.1byte	0x2
+ 1584 017a 00 00 00 00 		.1byte	0x76
+ 1585 017c 01          		.1byte	0x2
+ 1586 017c F6          		.1byte	0x0
+ 1587 017d 00 00 00 69 		.1byte	0xf
+ 1588 017f 02          		.4byte	.LASF101
+ 1589 017f 76          		.1byte	0x1
+ 1590 0180 02          		.2byte	0x12c
+ 1591 0180 00          		.1byte	0x1
+ 1592 0181 0F          		.4byte	.LFB3
+ 1593 0181 00 00 00 00 		.4byte	.LFE3
+ 1594 0183 01          		.4byte	.LLST1
+ 1595 0184 01 2C       		.4byte	0x32b
+ 1596 0185 01          		.1byte	0x10
+ 1597 0185 00 00 00 00 		.4byte	.LASF74
+ 1598 0187 00 00 00 00 		.1byte	0x1
+ 1599 0189 00 00 00 00 		.2byte	0x12b
+ 1600 018b 00 00 03 2B 		.4byte	0x69
+ 1601 018d 10          		.1byte	0x2
+ 1602 018e 00 00 00 00 		.1byte	0x76
+ 1603 0190 01          		.1byte	0x0
+ 1604 0190 01 2B       		.1byte	0x0
+ 1605 0191 00 00 00 69 		.1byte	0x11
+ 1606 0193 02          		.4byte	.LASF76
+ 1607 0194 76          		.1byte	0x1
+ 1608 0194 00          		.2byte	0x176
+ 1609 0195 00          		.1byte	0x1
+ 1610 0195 11          		.4byte	0x214
+ 1611 0196 00 00 00 00 		.4byte	.LFB4
+ 1612 0198 01          		.4byte	.LFE4
+ 1613 0198 01 76       		.4byte	.LLST2
+ 1614 0199 01          		.4byte	0x367
+ 1615 019a 00 00 02 14 		.1byte	0x10
+ 1616 019c 00 00 00 00 		.4byte	.LASF77
+ 1617 019e 00 00 00 00 		.1byte	0x1
+ 1618 01a0 00 00 00 00 		.2byte	0x175
+ 1619 01a2 00 00 03 67 		.4byte	0x252
+ 1620 01a4 10          		.1byte	0x2
+ 1621 01a4 00 00 00 00 		.1byte	0x76
+ 1622 01a6 01          		.1byte	0x1
+ 1623 01a7 01 75       		.1byte	0x12
+ 1624 01a8 00 00 02 52 		.4byte	.LASF78
+ 1625 01aa 02          		.1byte	0x1
+ 1626 01aa 76          		.2byte	0x178
+ 1627 01ab 01          		.4byte	0x214
+ 1628 01ab 12          		.1byte	0x2
+ 1629 01ac 00 00 00 00 		.1byte	0x76
+ 1630 01ae 01          		.1byte	0x0
+ 1631 01ae 01 78       		.1byte	0x0
+ 1632 01af 00 00 02 14 		.1byte	0x13
+ 1633 01b1 02          		.1byte	0x1
+ 1634 01b2 76          		.4byte	.LASF85
+ 1635 01b2 00          		.1byte	0x1
+ 1636 01b3 00          		.2byte	0x246
+ 1637 01b3 13          		.1byte	0x1
+ 1638 01b4 01          		.4byte	0x69
+ 1639 01b4 00 00 00 00 		.4byte	.LFB5
+ 1640 01b6 01          		.4byte	.LFE5
+ 1641 01b7 02 46       		.4byte	.LLST3
+ 1642 01b8 01          		.4byte	0x3ef
+ 1643 01b8 00 00 00 69 		.1byte	0x10
+ 1644 01ba 00 00 00 00 		.4byte	.LASF79
+ 1645 01bc 00 00 00 00 		.1byte	0x1
+ 1646 01be 00 00 00 00 		.2byte	0x240
+ 1647 01c0 00 00 03 EF 		.4byte	0x3ef
+ 1648 01c2 10          		.1byte	0x2
+ 1649 01c3 00 00 00 00 		.1byte	0x76
+ 1650 01c5 01          		.1byte	0x2
+ 1651 01c5 02 40       		.1byte	0x10
+ 1652 01c6 00 00 03 EF 		.4byte	.LASF80
+ 1653 01c8 02          		.1byte	0x1
+ 1654 01c9 76          		.2byte	0x241
+ 1655 01c9 02          		.4byte	0x1bf
+ 1656 01ca 10          		.1byte	0x2
+ 1657 01ca 00 00 00 00 		.1byte	0x76
+ 1658 01cc 01          		.1byte	0x3
+ 1659 01cd 02 41       		.1byte	0x10
+ 1660 01ce 00 00 01 BF 		.4byte	.LASF81
+ 1661 01d0 02          		.1byte	0x1
+ 1662 01d0 76          		.2byte	0x242
+ 1663 01d1 03          		.4byte	0x1ae
+ 1664 01d1 10          		.1byte	0x2
+ 1665 01d2 00 00 00 00 		.1byte	0x91
+ 1666 01d4 01          		.1byte	0x0
+ 1667 01d4 02 42       		.1byte	0x10
+ 1668 01d5 00 00 01 AE 		.4byte	.LASF82
+ 1669 01d7 02          		.1byte	0x1
+ 1670 01d8 91          		.2byte	0x243
+ 1671 01d8 00          		.4byte	0x1ae
+ 1672 01d9 10          		.1byte	0x2
+ 1673 01d9 00 00 00 00 		.1byte	0x91
+ 1674 01db 01          		.1byte	0x1
+ 1675 01dc 02 43       		.1byte	0x10
+ 1676 01dd 00 00 01 AE 		.4byte	.LASF73
+ 1677 01df 02          		.1byte	0x1
+ 1678 01df 91          		.2byte	0x244
+ 1679 01e0 01          		.4byte	0x29
+ 1680 01e0 10          		.1byte	0x2
+ 1681 01e1 00 00 00 00 		.1byte	0x91
+ 1682 01e3 01          		.1byte	0x2
+ 1683 01e3 02 44       		.1byte	0x10
+ 1684 01e4 00 00 00 29 		.4byte	.LASF83
+ 1685 01e6 02          		.1byte	0x1
+ 1686 01e7 91          		.2byte	0x245
+ 1687 01e7 02          		.4byte	0x29
+ 1688 01e8 10          		.1byte	0x2
+ 1689 01e8 00 00 00 00 		.1byte	0x91
+ 1690 01ea 01          		.1byte	0x3
+ 1691 01eb 02 45       		.1byte	0x12
+ 1692 01ec 00 00 00 29 		.4byte	.LASF78
+ 1693 01ee 02          		.1byte	0x1
+ 1694 01ee 91          		.2byte	0x248
+ 1695 01ef 03          		.4byte	0x69
+ 1696 01ef 12          		.1byte	0x2
+ 1697 01f0 00 00 00 00 		.1byte	0x76
+ 1698 01f2 01          		.1byte	0x1
+ 1699 01f2 02 48       		.1byte	0x0
+ 1700 01f3 00 00 00 69 		.1byte	0x9
+ 1701 01f5 02          		.1byte	0x2
+ 1702 01f6 76          		.4byte	0x3b
+ 1703 01f6 01          		.1byte	0x14
+ 1704 01f7 00          		.1byte	0x1
+ 1705 01f7 09          		.4byte	.LASF92
+ 1706 01f8 02          		.1byte	0x1
+ 1707 01f8 00 00 00 3B 		.2byte	0x28d
+ 1708 01fa 14          		.1byte	0x1
+ 1709 01fb 01          		.4byte	.LFB6
+ 1710 01fb 00 00 00 00 		.4byte	.LFE6
+ 1711 01fd 01          		.4byte	.LLST4
+ 1712 01fe 02 8D       		.4byte	0x41f
+ 1713 01ff 01          		.1byte	0x12
+ 1714 01ff 00 00 00 00 		.4byte	.LASF84
+ 1715 0201 00 00 00 00 		.1byte	0x1
+ 1716 0203 00 00 00 00 		.2byte	0x28f
+ 1717 0205 00 00 04 1F 		.4byte	0x41f
+ 1718 0207 12          		.1byte	0x2
+ 1719 0208 00 00 00 00 		.1byte	0x76
+ 1720 020a 01          		.1byte	0x0
+ 1721 020a 02 8F       		.1byte	0x0
+ 1722 020b 00 00 04 1F 		.1byte	0x15
+ 1723 020d 02          		.4byte	0x214
+ 1724 020e 76          		.1byte	0x13
+ 1725 020e 00          		.1byte	0x1
+ 1726 020f 00          		.4byte	.LASF86
+ 1727 020f 15          		.1byte	0x1
+ 1728 0210 00 00 02 14 		.2byte	0x2b0
+ 1729 0212 13          		.1byte	0x1
+ 1730 0212 01          		.4byte	0x69
+ 1731 0213 00 00 00 00 		.4byte	.LFB7
+ 1732 0215 01          		.4byte	.LFE7
+ 1733 0215 02 B0       		.4byte	.LLST5
+ 1734 0216 01          		.4byte	0x47a
+ 1735 0217 00 00 00 69 		.1byte	0x12
+ 1736 0219 00 00 00 00 		.4byte	.LASF78
+ 1737 021b 00 00 00 00 		.1byte	0x1
+ 1738 021d 00 00 00 00 		.2byte	0x2b1
+ 1739 021f 00 00 04 7A 		.4byte	0x69
+ 1740 0221 12          		.1byte	0x2
+ 1741 0221 00 00 00 00 		.1byte	0x76
+ 1742 0223 01          		.1byte	0x3
+ 1743 0224 02 B1       		.1byte	0x12
+ 1744 0225 00 00 00 69 		.4byte	.LASF84
+ 1745 0227 02          		.1byte	0x1
+ 1746 0227 76          		.2byte	0x2b3
+ 1747 0228 03          		.4byte	0x214
+ 1748 0228 12          		.1byte	0x2
+ 1749 0229 00 00 00 00 		.1byte	0x76
+ 1750 022b 01          		.1byte	0x2
+ 1751 022b 02 B3       		.1byte	0x16
+ 1752 022c 00 00 02 14 		.4byte	.LBB2
+ 1753 022e 02          		.4byte	.LBE2
+ 1754 022f 76          		.1byte	0x12
+ 1755 022f 02          		.4byte	.LASF87
+ 1756 0230 16          		.1byte	0x1
+ 1757 0230 00 00 00 00 		.2byte	0x2c4
+ 1758 0232 00 00 00 00 		.4byte	0x47a
+ 1759 0234 12          		.1byte	0x2
+ 1760 0235 00 00 00 00 		.1byte	0x76
+ 1761 0237 01          		.1byte	0x1
+ 1762 0237 02 C4       		.1byte	0x0
+ 1763 0238 00 00 04 7A 		.1byte	0x0
+ 1764 023a 02          		.1byte	0x15
+ 1765 023b 76          		.4byte	0x3b
+ 1766 023b 01          		.1byte	0x13
+ 1767 023c 00          		.1byte	0x1
+ 1768 023c 00          		.4byte	.LASF88
+ 1769 023d 15          		.1byte	0x1
+ 1770 023d 00 00 00 3B 		.2byte	0x30c
+ 1771 023f 13          		.1byte	0x1
+ 1772 0240 01          		.4byte	0x69
+ 1773 0240 00 00 00 00 		.4byte	.LFB8
+ 1774 0242 01          		.4byte	.LFE8
+ 1775 0243 03 0C       		.4byte	.LLST6
+ 1776 0244 01          		.4byte	0x4bc
+ 1777 0244 00 00 00 69 		.1byte	0x12
+ 1778 0246 00 00 00 00 		.4byte	.LASF78
+ 1779 0248 00 00 00 00 		.1byte	0x1
+ 1780 024a 00 00 00 00 		.2byte	0x30d
+ 1781 024c 00 00 04 BC 		.4byte	0x69
+ 1782 024e 12          		.1byte	0x2
+ 1783 024f 00 00 00 00 		.1byte	0x76
+ 1784 0251 01          		.1byte	0x1
+ 1785 0251 03 0D       		.1byte	0x12
+ 1786 0252 00 00 00 69 		.4byte	.LASF84
+ 1787 0254 02          		.1byte	0x1
+ 1788 0255 76          		.2byte	0x30e
+ 1789 0255 01          		.4byte	0x41f
+ 1790 0256 12          		.1byte	0x2
+ 1791 0256 00 00 00 00 		.1byte	0x76
+ 1792 0258 01          		.1byte	0x0
+ 1793 0259 03 0E       		.1byte	0x0
+ 1794 025a 00 00 04 1F 		.1byte	0x17
+ 1795 025c 02          		.1byte	0x1
+ 1796 025c 76          		.4byte	.LASF89
+ 1797 025d 00          		.1byte	0x1
+ 1798 025d 00          		.2byte	0x341
+ 1799 025e 17          		.1byte	0x1
+ 1800 025e 01          		.4byte	0x3b
+ 1801 025f 00 00 00 00 		.4byte	.LFB9
+ 1802 0261 01          		.4byte	.LFE9
+ 1803 0261 03 41       		.4byte	.LLST7
+ 1804 0262 01          		.1byte	0x17
+ 1805 0263 00 00 00 3B 		.1byte	0x1
+ 1806 0265 00 00 00 00 		.4byte	.LASF90
+ 1807 0267 00 00 00 00 		.1byte	0x1
+ 1808 0269 00 00 00 00 		.2byte	0x358
+ 1809 026b 17          		.1byte	0x1
+ 1810 026b 01          		.4byte	0x3b
+ 1811 026c 00 00 00 00 		.4byte	.LFB10
+ 1812 026e 01          		.4byte	.LFE10
+ 1813 026e 03 58       		.4byte	.LLST8
+ 1814 026f 01          		.1byte	0x13
+ 1815 0270 00 00 00 3B 		.1byte	0x1
+ 1816 0272 00 00 00 00 		.4byte	.LASF91
+ 1817 0274 00 00 00 00 		.1byte	0x1
+ 1818 0276 00 00 00 00 		.2byte	0x374
+ 1819 0278 13          		.1byte	0x1
+ 1820 0278 01          		.4byte	0x69
+ 1821 0279 00 00 00 00 		.4byte	.LFB11
+ 1822 027b 01          		.4byte	.LFE11
+ 1823 027b 03 74       		.4byte	.LLST9
+ 1824 027c 01          		.4byte	0x53c
+ 1825 027d 00 00 00 69 		.1byte	0x10
+ 1826 027f 00 00 00 00 		.4byte	.LASF73
+ 1827 0281 00 00 00 00 		.1byte	0x1
+ 1828 0283 00 00 00 00 		.2byte	0x373
+ 1829 0285 00 00 05 3C 		.4byte	0x29
+ 1830 0287 10          		.1byte	0x2
+ 1831 0287 00 00 00 00 		.1byte	0x76
+ 1832 0289 01          		.1byte	0x2
+ 1833 028a 03 73       		.1byte	0x12
+ 1834 028b 00 00 00 29 		.4byte	.LASF78
+ 1835 028d 02          		.1byte	0x1
+ 1836 028d 76          		.2byte	0x375
+ 1837 028e 02          		.4byte	0x69
+ 1838 028e 12          		.1byte	0x2
+ 1839 028f 00 00 00 00 		.1byte	0x76
+ 1840 0291 01          		.1byte	0x1
+ 1841 0291 03 75       		.1byte	0x12
+ 1842 0292 00 00 00 69 		.4byte	.LASF84
+ 1843 0294 02          		.1byte	0x1
+ 1844 0295 76          		.2byte	0x376
+ 1845 0295 01          		.4byte	0x41f
+ 1846 0296 12          		.1byte	0x2
+ 1847 0296 00 00 00 00 		.1byte	0x76
+ 1848 0298 01          		.1byte	0x0
+ 1849 0299 03 76       		.1byte	0x0
+ 1850 029a 00 00 04 1F 		.1byte	0x18
+ 1851 029c 02          		.1byte	0x1
+ 1852 029c 76          		.4byte	.LASF102
+ 1853 029d 00          		.1byte	0x1
+ 1854 029d 00          		.2byte	0x3ac
+ 1855 029e 18          		.1byte	0x1
+ 1856 029e 01          		.4byte	.LFB12
+ 1857 029f 00 00 00 00 		.4byte	.LFE12
+ 1858 02a1 01          		.4byte	.LLST10
+ 1859 02a1 03 AC       		.1byte	0x14
+ 1860 02a2 01          		.1byte	0x1
+ 1861 02a3 00 00 00 00 		.4byte	.LASF93
+ 1862 02a5 00 00 00 00 		.1byte	0x1
+ 1863 02a7 00 00 00 00 		.2byte	0x3d7
+ 1864 02a9 14          		.1byte	0x1
+ 1865 02a9 01          		.4byte	.LFB13
+ 1866 02aa 00 00 00 00 		.4byte	.LFE13
+ 1867 02ac 01          		.4byte	.LLST11
+ 1868 02ac 03 D7       		.4byte	0x5db
+ 1869 02ad 01          		.1byte	0x10
+ 1870 02ae 00 00 00 00 		.4byte	.LASF94
+ 1871 02b0 00 00 00 00 		.1byte	0x1
+ 1872 02b2 00 00 00 00 		.2byte	0x3d6
+ 1873 02b4 00 00 05 DB 		.4byte	0x3ef
+ 1874 02b6 10          		.1byte	0x2
+ 1875 02b6 00 00 00 00 		.1byte	0x76
+ 1876 02b8 01          		.1byte	0x6
+ 1877 02b9 03 D6       		.1byte	0x12
+ 1878 02ba 00 00 03 EF 		.4byte	.LASF95
+ 1879 02bc 02          		.1byte	0x1
+ 1880 02bc 76          		.2byte	0x3d9
+ 1881 02bd 06          		.4byte	0x47a
+ 1882 02bd 12          		.1byte	0x2
+ 1883 02be 00 00 00 00 		.1byte	0x76
+ 1884 02c0 01          		.1byte	0x5
+ 1885 02c0 03 D9       		.1byte	0x16
+ 1886 02c1 00 00 04 7A 		.4byte	.LBB3
+ 1887 02c3 02          		.4byte	.LBE3
+ 1888 02c4 76          		.1byte	0x12
+ 1889 02c4 05          		.4byte	.LASF84
+ 1890 02c5 16          		.1byte	0x1
+ 1891 02c5 00 00 00 00 		.2byte	0x3dd
+ 1892 02c7 00 00 00 00 		.4byte	0x214
+ 1893 02c9 12          		.1byte	0x2
+ 1894 02ca 00 00 00 00 		.1byte	0x76
+ 1895 02cc 01          		.1byte	0x4
+ 1896 02cc 03 DD       		.1byte	0x16
+ 1897 02cd 00 00 02 14 		.4byte	.LBB4
+ 1898 02cf 02          		.4byte	.LBE4
+ 1899 02d0 76          		.1byte	0x12
+ 1900 02d0 04          		.4byte	.LASF87
+ 1901 02d1 16          		.1byte	0x1
+ 1902 02d1 00 00 00 00 		.2byte	0x3e4
+ 1903 02d3 00 00 00 00 		.4byte	0x3b
+ 1904 02d5 12          		.1byte	0x2
+ 1905 02d6 00 00 00 00 		.1byte	0x76
+ 1906 02d8 01          		.1byte	0x3
+ 1907 02d8 03 E4       		.1byte	0x12
+ 1908 02d9 00 00 00 3B 		.4byte	.LASF96
+ 1909 02db 02          		.1byte	0x1
+ 1910 02dc 76          		.2byte	0x3e6
+ 1911 02dc 03          		.4byte	0x3b
+ 1912 02dd 12          		.1byte	0x2
+ 1913 02dd 00 00 00 00 		.1byte	0x76
+ 1914 02df 01          		.1byte	0x2
+ 1915 02e0 03 E6       		.1byte	0x12
+ 1916 02e1 00 00 00 3B 		.4byte	.LASF97
+ 1917 02e3 02          		.1byte	0x1
+ 1918 02e3 76          		.2byte	0x3e8
+ 1919 02e4 02          		.4byte	0x3b
+ 1920 02e4 12          		.1byte	0x2
+ 1921 02e5 00 00 00 00 		.1byte	0x76
+ 1922 02e7 01          		.1byte	0x1
+ 1923 02e7 03 E8       		.1byte	0x0
+ 1924 02e8 00 00 00 3B 		.1byte	0x0
+ 1925 02ea 02          		.1byte	0x0
+ 1926 02eb 76          		.1byte	0xe
+ 1927 02eb 01          		.4byte	.LASF66
+ 1928 02ec 00          		.1byte	0x1
+ 1929 02ec 00          		.1byte	0xd1
+ 1930 02ed 00          		.4byte	0x2be
+ 1931 02ed 0E          		.1byte	0x5
+ 1932 02ee 00 00 00 00 		.1byte	0x3
+ 1933 02f0 01          		.4byte	state
+ 1934 02f0 D1          		.1byte	0x0
+ 1935 02f1 00 00 02 BE 		.section	.debug_abbrev
+ 1936 02f3 05          		.1byte	0x1
+ 1937 02f3 03          		.1byte	0x11
+ 1938 02f4 00 00 00 00 		.1byte	0x1
+ 1939 02f6 00          		.1byte	0x25
+ 1940                 		.1byte	0xe
+ 1941 0000 01          		.1byte	0x13
+ 1942 0000 11          		.1byte	0xb
+ 1943 0001 01          		.1byte	0x3
+ 1944 0001 25          		.1byte	0xe
+ 1945 0002 0E          		.1byte	0x1b
+ 1946 0002 13          		.1byte	0xe
+ 1947 0003 0B          		.1byte	0x11
+ 1948 0003 03          		.1byte	0x1
+ 1949 0004 0E          		.1byte	0x52
+ 1950 0004 1B          		.1byte	0x1
+ 1951 0005 0E          		.1byte	0x55
+ 1952 0005 11          		.1byte	0x6
+ 1953 0006 01          		.1byte	0x10
+ 1954 0006 52          		.1byte	0x6
+ 1955 0007 01          		.1byte	0x0
+ 1956 0007 55          		.1byte	0x0
+ 1957 0008 06          		.1byte	0x2
+ 1958 0008 10          		.1byte	0x16
+ 1959 0009 06          		.1byte	0x0
+ 1960 0009 00          		.1byte	0x3
+ 1961 000a 00          		.1byte	0xe
+ 1962 000a 02          		.1byte	0x3a
+ 1963 000b 16          		.1byte	0xb
+ 1964 000b 00          		.1byte	0x3b
+ 1965 000c 03          		.1byte	0xb
+ 1966 000c 0E          		.1byte	0x49
+ 1967 000d 3A          		.1byte	0x13
+ 1968 000d 0B          		.1byte	0x0
+ 1969 000e 3B          		.1byte	0x0
+ 1970 000e 0B          		.1byte	0x3
+ 1971 000f 49          		.1byte	0x24
+ 1972 000f 13          		.1byte	0x0
+ 1973 0010 00          		.1byte	0xb
+ 1974 0010 00          		.1byte	0xb
+ 1975 0011 03          		.1byte	0x3e
+ 1976 0011 24          		.1byte	0xb
+ 1977 0012 00          		.1byte	0x3
+ 1978 0012 0B          		.1byte	0xe
+ 1979 0013 0B          		.1byte	0x0
+ 1980 0013 3E          		.1byte	0x0
+ 1981 0014 0B          		.1byte	0x4
+ 1982 0014 03          		.1byte	0x4
+ 1983 0015 0E          		.1byte	0x1
+ 1984 0015 00          		.1byte	0xb
+ 1985 0016 00          		.1byte	0xb
+ 1986 0016 04          		.1byte	0x3a
+ 1987 0017 04          		.1byte	0xb
+ 1988 0017 01          		.1byte	0x3b
+ 1989 0018 0B          		.1byte	0xb
+ 1990 0018 0B          		.1byte	0x1
+ 1991 0019 3A          		.1byte	0x13
+ 1992 0019 0B          		.1byte	0x0
+ 1993 001a 3B          		.1byte	0x0
+ 1994 001a 0B          		.1byte	0x5
+ 1995 001b 01          		.1byte	0x28
+ 1996 001b 13          		.1byte	0x0
+ 1997 001c 00          		.1byte	0x3
+ 1998 001c 00          		.1byte	0xe
+ 1999 001d 05          		.1byte	0x1c
+ 2000 001d 28          		.1byte	0xd
+ 2001 001e 00          		.1byte	0x0
+ 2002 001e 03          		.1byte	0x0
+ 2003 001f 0E          		.1byte	0x6
+ 2004 001f 1C          		.1byte	0x13
+ 2005 0020 0D          		.1byte	0x1
+ 2006 0020 00          		.1byte	0x3
+ 2007 0021 00          		.1byte	0xe
+ 2008 0021 06          		.1byte	0xb
+ 2009 0022 13          		.1byte	0xb
+ 2010 0022 01          		.1byte	0x3a
+ 2011 0023 03          		.1byte	0xb
+ 2012 0023 0E          		.1byte	0x3b
+ 2013 0024 0B          		.1byte	0xb
+ 2014 0024 0B          		.1byte	0x1
+ 2015 0025 3A          		.1byte	0x13
+ 2016 0025 0B          		.1byte	0x0
+ 2017 0026 3B          		.1byte	0x0
+ 2018 0026 0B          		.1byte	0x7
+ 2019 0027 01          		.1byte	0xd
+ 2020 0027 13          		.1byte	0x0
+ 2021 0028 00          		.1byte	0x3
+ 2022 0028 00          		.1byte	0xe
+ 2023 0029 07          		.1byte	0x3a
+ 2024 0029 0D          		.1byte	0xb
+ 2025 002a 00          		.1byte	0x3b
+ 2026 002a 03          		.1byte	0xb
+ 2027 002b 0E          		.1byte	0x49
+ 2028 002b 3A          		.1byte	0x13
+ 2029 002c 0B          		.1byte	0x38
+ 2030 002c 3B          		.1byte	0xa
+ 2031 002d 0B          		.1byte	0x0
+ 2032 002d 49          		.1byte	0x0
+ 2033 002e 13          		.1byte	0x8
+ 2034 002e 38          		.1byte	0xf
+ 2035 002f 0A          		.1byte	0x0
+ 2036 002f 00          		.1byte	0xb
+ 2037 0030 00          		.1byte	0xb
+ 2038 0030 08          		.1byte	0x0
+ 2039 0031 0F          		.1byte	0x0
+ 2040 0031 00          		.1byte	0x9
+ 2041 0032 0B          		.1byte	0xf
+ 2042 0032 0B          		.1byte	0x0
+ 2043 0033 00          		.1byte	0xb
+ 2044 0033 00          		.1byte	0xb
+ 2045 0034 09          		.1byte	0x49
+ 2046 0034 0F          		.1byte	0x13
+ 2047 0035 00          		.1byte	0x0
+ 2048 0035 0B          		.1byte	0x0
+ 2049 0036 0B          		.1byte	0xa
+ 2050 0036 49          		.1byte	0x15
+ 2051 0037 13          		.1byte	0x1
+ 2052 0037 00          		.1byte	0x27
+ 2053 0038 00          		.1byte	0xc
+ 2054 0038 0A          		.1byte	0x1
+ 2055 0039 15          		.1byte	0x13
+ 2056 0039 01          		.1byte	0x0
+ 2057 003a 27          		.1byte	0x0
+ 2058 003a 0C          		.1byte	0xb
+ 2059 003b 01          		.1byte	0x5
+ 2060 003b 13          		.1byte	0x0
+ 2061 003c 00          		.1byte	0x49
+ 2062 003c 00          		.1byte	0x13
+ 2063 003d 0B          		.1byte	0x0
+ 2064 003d 05          		.1byte	0x0
+ 2065 003e 00          		.1byte	0xc
+ 2066 003e 49          		.1byte	0x2e
+ 2067 003f 13          		.1byte	0x1
+ 2068 003f 00          		.1byte	0x3
+ 2069 0040 00          		.1byte	0xe
+ 2070 0040 0C          		.1byte	0x3a
+ 2071 0041 2E          		.1byte	0xb
+ 2072 0041 01          		.1byte	0x3b
+ 2073 0042 03          		.1byte	0xb
+ 2074 0042 0E          		.1byte	0x27
+ 2075 0043 3A          		.1byte	0xc
+ 2076 0043 0B          		.1byte	0x49
+ 2077 0044 3B          		.1byte	0x13
+ 2078 0044 0B          		.1byte	0x11
+ 2079 0045 27          		.1byte	0x1
+ 2080 0045 0C          		.1byte	0x12
+ 2081 0046 49          		.1byte	0x1
+ 2082 0046 13          		.1byte	0x40
+ 2083 0047 11          		.1byte	0x6
+ 2084 0047 01          		.1byte	0x1
+ 2085 0048 12          		.1byte	0x13
+ 2086 0048 01          		.1byte	0x0
+ 2087 0049 40          		.1byte	0x0
+ 2088 0049 06          		.1byte	0xd
+ 2089 004a 01          		.1byte	0x5
+ 2090 004a 13          		.1byte	0x0
+ 2091 004b 00          		.1byte	0x3
+ 2092 004b 00          		.1byte	0xe
+ 2093 004c 0D          		.1byte	0x3a
+ 2094 004c 05          		.1byte	0xb
+ 2095 004d 00          		.1byte	0x3b
+ 2096 004d 03          		.1byte	0xb
+ 2097 004e 0E          		.1byte	0x49
+ 2098 004e 3A          		.1byte	0x13
+ 2099 004f 0B          		.1byte	0x2
+ 2100 004f 3B          		.1byte	0xa
+ 2101 0050 0B          		.1byte	0x0
+ 2102 0050 49          		.1byte	0x0
+ 2103 0051 13          		.1byte	0xe
+ 2104 0051 02          		.1byte	0x34
+ 2105 0052 0A          		.1byte	0x0
+ 2106 0052 00          		.1byte	0x3
+ 2107 0053 00          		.1byte	0xe
+ 2108 0053 0E          		.1byte	0x3a
+ 2109 0054 34          		.1byte	0xb
+ 2110 0054 00          		.1byte	0x3b
+ 2111 0055 03          		.1byte	0xb
+ 2112 0055 0E          		.1byte	0x49
+ 2113 0056 3A          		.1byte	0x13
+ 2114 0056 0B          		.1byte	0x2
+ 2115 0057 3B          		.1byte	0xa
+ 2116 0057 0B          		.1byte	0x0
+ 2117 0058 49          		.1byte	0x0
+ 2118 0058 13          		.1byte	0xf
+ 2119 0059 02          		.1byte	0x2e
+ 2120 0059 0A          		.1byte	0x1
+ 2121 005a 00          		.1byte	0x3
+ 2122 005a 00          		.1byte	0xe
+ 2123 005b 0F          		.1byte	0x3a
+ 2124 005b 2E          		.1byte	0xb
+ 2125 005c 01          		.1byte	0x3b
+ 2126 005c 03          		.1byte	0x5
+ 2127 005d 0E          		.1byte	0x27
+ 2128 005d 3A          		.1byte	0xc
+ 2129 005e 0B          		.1byte	0x11
+ 2130 005e 3B          		.1byte	0x1
+ 2131 005f 05          		.1byte	0x12
+ 2132 005f 27          		.1byte	0x1
+ 2133 0060 0C          		.1byte	0x40
+ 2134 0060 11          		.1byte	0x6
+ 2135 0061 01          		.1byte	0x1
+ 2136 0061 12          		.1byte	0x13
+ 2137 0062 01          		.1byte	0x0
+ 2138 0062 40          		.1byte	0x0
+ 2139 0063 06          		.1byte	0x10
+ 2140 0063 01          		.1byte	0x5
+ 2141 0064 13          		.1byte	0x0
+ 2142 0064 00          		.1byte	0x3
+ 2143 0065 00          		.1byte	0xe
+ 2144 0065 10          		.1byte	0x3a
+ 2145 0066 05          		.1byte	0xb
+ 2146 0066 00          		.1byte	0x3b
+ 2147 0067 03          		.1byte	0x5
+ 2148 0067 0E          		.1byte	0x49
+ 2149 0068 3A          		.1byte	0x13
+ 2150 0068 0B          		.1byte	0x2
+ 2151 0069 3B          		.1byte	0xa
+ 2152 0069 05          		.1byte	0x0
+ 2153 006a 49          		.1byte	0x0
+ 2154 006a 13          		.1byte	0x11
+ 2155 006b 02          		.1byte	0x2e
+ 2156 006b 0A          		.1byte	0x1
+ 2157 006c 00          		.1byte	0x3
+ 2158 006c 00          		.1byte	0xe
+ 2159 006d 11          		.1byte	0x3a
+ 2160 006d 2E          		.1byte	0xb
+ 2161 006e 01          		.1byte	0x3b
+ 2162 006e 03          		.1byte	0x5
+ 2163 006f 0E          		.1byte	0x27
+ 2164 006f 3A          		.1byte	0xc
+ 2165 0070 0B          		.1byte	0x49
+ 2166 0070 3B          		.1byte	0x13
+ 2167 0071 05          		.1byte	0x11
+ 2168 0071 27          		.1byte	0x1
+ 2169 0072 0C          		.1byte	0x12
+ 2170 0072 49          		.1byte	0x1
+ 2171 0073 13          		.1byte	0x40
+ 2172 0073 11          		.1byte	0x6
+ 2173 0074 01          		.1byte	0x1
+ 2174 0074 12          		.1byte	0x13
+ 2175 0075 01          		.1byte	0x0
+ 2176 0075 40          		.1byte	0x0
+ 2177 0076 06          		.1byte	0x12
+ 2178 0076 01          		.1byte	0x34
+ 2179 0077 13          		.1byte	0x0
+ 2180 0077 00          		.1byte	0x3
+ 2181 0078 00          		.1byte	0xe
+ 2182 0078 12          		.1byte	0x3a
+ 2183 0079 34          		.1byte	0xb
+ 2184 0079 00          		.1byte	0x3b
+ 2185 007a 03          		.1byte	0x5
+ 2186 007a 0E          		.1byte	0x49
+ 2187 007b 3A          		.1byte	0x13
+ 2188 007b 0B          		.1byte	0x2
+ 2189 007c 3B          		.1byte	0xa
+ 2190 007c 05          		.1byte	0x0
+ 2191 007d 49          		.1byte	0x0
+ 2192 007d 13          		.1byte	0x13
+ 2193 007e 02          		.1byte	0x2e
+ 2194 007e 0A          		.1byte	0x1
+ 2195 007f 00          		.1byte	0x3f
+ 2196 007f 00          		.1byte	0xc
+ 2197 0080 13          		.1byte	0x3
+ 2198 0080 2E          		.1byte	0xe
+ 2199 0081 01          		.1byte	0x3a
+ 2200 0081 3F          		.1byte	0xb
+ 2201 0082 0C          		.1byte	0x3b
+ 2202 0082 03          		.1byte	0x5
+ 2203 0083 0E          		.1byte	0x27
+ 2204 0083 3A          		.1byte	0xc
+ 2205 0084 0B          		.1byte	0x49
+ 2206 0084 3B          		.1byte	0x13
+ 2207 0085 05          		.1byte	0x11
+ 2208 0085 27          		.1byte	0x1
+ 2209 0086 0C          		.1byte	0x12
+ 2210 0086 49          		.1byte	0x1
+ 2211 0087 13          		.1byte	0x40
+ 2212 0087 11          		.1byte	0x6
+ 2213 0088 01          		.1byte	0x1
+ 2214 0088 12          		.1byte	0x13
+ 2215 0089 01          		.1byte	0x0
+ 2216 0089 40          		.1byte	0x0
+ 2217 008a 06          		.1byte	0x14
+ 2218 008a 01          		.1byte	0x2e
+ 2219 008b 13          		.1byte	0x1
+ 2220 008b 00          		.1byte	0x3f
+ 2221 008c 00          		.1byte	0xc
+ 2222 008c 14          		.1byte	0x3
+ 2223 008d 2E          		.1byte	0xe
+ 2224 008d 01          		.1byte	0x3a
+ 2225 008e 3F          		.1byte	0xb
+ 2226 008e 0C          		.1byte	0x3b
+ 2227 008f 03          		.1byte	0x5
+ 2228 008f 0E          		.1byte	0x27
+ 2229 0090 3A          		.1byte	0xc
+ 2230 0090 0B          		.1byte	0x11
+ 2231 0091 3B          		.1byte	0x1
+ 2232 0091 05          		.1byte	0x12
+ 2233 0092 27          		.1byte	0x1
+ 2234 0092 0C          		.1byte	0x40
+ 2235 0093 11          		.1byte	0x6
+ 2236 0093 01          		.1byte	0x1
+ 2237 0094 12          		.1byte	0x13
+ 2238 0094 01          		.1byte	0x0
+ 2239 0095 40          		.1byte	0x0
+ 2240 0095 06          		.1byte	0x15
+ 2241 0096 01          		.1byte	0x26
+ 2242 0096 13          		.1byte	0x0
+ 2243 0097 00          		.1byte	0x49
+ 2244 0097 00          		.1byte	0x13
+ 2245 0098 15          		.1byte	0x0
+ 2246 0098 26          		.1byte	0x0
+ 2247 0099 00          		.1byte	0x16
+ 2248 0099 49          		.1byte	0xb
+ 2249 009a 13          		.1byte	0x1
+ 2250 009a 00          		.1byte	0x11
+ 2251 009b 00          		.1byte	0x1
+ 2252 009b 16          		.1byte	0x12
+ 2253 009c 0B          		.1byte	0x1
+ 2254 009c 01          		.1byte	0x0
+ 2255 009d 11          		.1byte	0x0
+ 2256 009d 01          		.1byte	0x17
+ 2257 009e 12          		.1byte	0x2e
+ 2258 009e 01          		.1byte	0x0
+ 2259 009f 00          		.1byte	0x3f
+ 2260 009f 00          		.1byte	0xc
+ 2261 00a0 17          		.1byte	0x3
+ 2262 00a0 2E          		.1byte	0xe
+ 2263 00a1 00          		.1byte	0x3a
+ 2264 00a1 3F          		.1byte	0xb
+ 2265 00a2 0C          		.1byte	0x3b
+ 2266 00a2 03          		.1byte	0x5
+ 2267 00a3 0E          		.1byte	0x27
+ 2268 00a3 3A          		.1byte	0xc
+ 2269 00a4 0B          		.1byte	0x49
+ 2270 00a4 3B          		.1byte	0x13
+ 2271 00a5 05          		.1byte	0x11
+ 2272 00a5 27          		.1byte	0x1
+ 2273 00a6 0C          		.1byte	0x12
+ 2274 00a6 49          		.1byte	0x1
+ 2275 00a7 13          		.1byte	0x40
+ 2276 00a7 11          		.1byte	0x6
+ 2277 00a8 01          		.1byte	0x0
+ 2278 00a8 12          		.1byte	0x0
+ 2279 00a9 01          		.1byte	0x18
+ 2280 00a9 40          		.1byte	0x2e
+ 2281 00aa 06          		.1byte	0x0
+ 2282 00aa 00          		.1byte	0x3f
+ 2283 00ab 00          		.1byte	0xc
+ 2284 00ab 18          		.1byte	0x3
+ 2285 00ac 2E          		.1byte	0xe
+ 2286 00ac 00          		.1byte	0x3a
+ 2287 00ad 3F          		.1byte	0xb
+ 2288 00ad 0C          		.1byte	0x3b
+ 2289 00ae 03          		.1byte	0x5
+ 2290 00ae 0E          		.1byte	0x27
+ 2291 00af 3A          		.1byte	0xc
+ 2292 00af 0B          		.1byte	0x11
+ 2293 00b0 3B          		.1byte	0x1
+ 2294 00b0 05          		.1byte	0x12
+ 2295 00b1 27          		.1byte	0x1
+ 2296 00b1 0C          		.1byte	0x40
+ 2297 00b2 11          		.1byte	0x6
+ 2298 00b2 01          		.1byte	0x0
+ 2299 00b3 12          		.1byte	0x0
+ 2300 00b3 01          		.1byte	0x0
+ 2301 00b4 40          		.section	.debug_pubnames,"",@progbits
+ 2302 00b4 06          		.4byte	0x103
+ 2303 00b5 00          		.2byte	0x2
+ 2304 00b5 00          		.4byte	.Ldebug_info0
+ 2305 00b6 00          		.4byte	0x5ed
+ 2306                 		.4byte	0x367
+ 2307 0000 00 00 01 03 		.ascii "SpiMasterInit\000"
+ 2308 0002 00 02       		.4byte	0x3f5
+ 2309 0003 00 00 00 00 		.ascii "SpiMasterStart\000"
+ 2310 0005 00 00 05 ED 		.4byte	0x424
+ 2311 0007 00 00 03 67 		.ascii "SpiMasterStartTransaction\000"
+ 2312 0009 53 70 69 4D 		.4byte	0x47f
+ 2312      61 73 74 65 
+ 2312      72 49 6E 69 
+ 2312      74 00 
+ 2313 0010 00 00 03 F5 		.ascii "SpiMasterEndTransaction\000"
+ 2314 0012 53 70 69 4D 		.4byte	0x4bc
+ 2314      61 73 74 65 
+ 2314      72 53 74 61 
+ 2314      72 74 00 
+ 2315 0019 00 00 04 24 		.ascii "SpiMasterGetSharedRAMTxDataSize\000"
+ 2316 001b 53 70 69 4D 		.4byte	0x4d6
+ 2316      61 73 74 65 
+ 2316      72 53 74 61 
+ 2316      72 74 54 72 
+ 2316      61 6E 73 61 
+ 2317 0028 00 00 04 7F 		.ascii "SpiMasterGetSharedRAMRxDataSize\000"
+ 2318 002a 53 70 69 4D 		.4byte	0x4f0
+ 2318      61 73 74 65 
+ 2318      72 45 6E 64 
+ 2318      54 72 61 6E 
+ 2318      73 61 63 74 
+ 2319 0036 00 00 04 BC 		.ascii "SpiMasterReset\000"
+ 2320 0038 53 70 69 4D 		.4byte	0x53c
+ 2320      61 73 74 65 
+ 2320      72 47 65 74 
+ 2320      53 68 61 72 
+ 2320      65 64 52 41 
+ 2321 0048 00 00 04 D6 		.ascii "SpiMasterDeinit\000"
+ 2322 004a 53 70 69 4D 		.4byte	0x552
+ 2322      61 73 74 65 
+ 2322      72 47 65 74 
+ 2322      53 68 61 72 
+ 2322      65 64 52 41 
+ 2323 005a 00 00 04 F0 		.ascii "SpiMasterProcessPioControllerEvent\000"
+ 2324 005c 53 70 69 4D 		.4byte	0x0
+ 2324      61 73 74 65 
+ 2324      72 52 65 73 
+ 2324      65 74 00 
+ 2325 0064 00 00 05 3C 		.section	.debug_aranges,"",@progbits
+ 2326 0066 53 70 69 4D 		.4byte	0x74
+ 2326      61 73 74 65 
+ 2326      72 44 65 69 
+ 2326      6E 69 74 00 
+ 2327 006e 00 00 05 52 		.2byte	0x2
+ 2328 0070 53 70 69 4D 		.4byte	.Ldebug_info0
+ 2328      61 73 74 65 
+ 2328      72 50 72 6F 
+ 2328      63 65 73 73 
+ 2328      50 69 6F 43 
+ 2329 0081 00 00 00 00 		.1byte	0x4
+ 2330                 		.1byte	0x0
+ 2331 0000 00 00 00 74 		.2byte	0x0
+ 2332 0002 00 02       		.2byte	0x0
+ 2333 0003 00 00 00 00 		.4byte	.LFB2
+ 2334 0005 04          		.4byte	.LFE2-.LFB2
+ 2335 0005 00          		.4byte	.LFB3
+ 2336 0006 00 00       		.4byte	.LFE3-.LFB3
+ 2337 0007 00 00       		.4byte	.LFB4
+ 2338 0008 00 00 00 00 		.4byte	.LFE4-.LFB4
+ 2339 000a 00 00 00 00 		.4byte	.LFB5
+ 2340 000c 00 00 00 00 		.4byte	.LFE5-.LFB5
+ 2341 000e 00 00 00 00 		.4byte	.LFB6
+ 2342 0010 00 00 00 00 		.4byte	.LFE6-.LFB6
+ 2343 0012 00 00 00 00 		.4byte	.LFB7
+ 2344 0014 00 00 00 00 		.4byte	.LFE7-.LFB7
+ 2345 0016 00 00 00 00 		.4byte	.LFB8
+ 2346 0018 00 00 00 00 		.4byte	.LFE8-.LFB8
+ 2347 001a 00 00 00 00 		.4byte	.LFB9
+ 2348 001c 00 00 00 00 		.4byte	.LFE9-.LFB9
+ 2349 001e 00 00 00 00 		.4byte	.LFB10
+ 2350 0020 00 00 00 00 		.4byte	.LFE10-.LFB10
+ 2351 0022 00 00 00 00 		.4byte	.LFB11
+ 2352 0024 00 00 00 00 		.4byte	.LFE11-.LFB11
+ 2353 0026 00 00 00 00 		.4byte	.LFB12
+ 2354 0028 00 00 00 00 		.4byte	.LFE12-.LFB12
+ 2355 002a 00 00 00 00 		.4byte	.LFB13
+ 2356 002c 00 00 00 00 		.4byte	.LFE13-.LFB13
+ 2357 002e 00 00 00 00 		.4byte	0x0
+ 2358 0030 00 00 00 00 		.4byte	0x0
+ 2359 0032 00 00 00 00 		.section	.debug_ranges,"",@progbits
+ 2360 0034 00 00 00 00 	.Ldebug_ranges0:
+ 2361 0036 00 00 00 00 		.4byte	.Ltext0
+ 2362 0038 00 00 00 00 		.4byte	.Letext0
+ 2363 003a 00 00 00 00 		.4byte	.LFB2
+ 2364                 		.4byte	.LFE2
+ 2365                 		.4byte	.LFB3
+ 2366 0000 00 00 00 00 		.4byte	.LFE3
+ 2367 0002 00 00 00 00 		.4byte	.LFB4
+ 2368 0004 00 00 00 00 		.4byte	.LFE4
+ 2369 0006 00 00 00 00 		.4byte	.LFB5
+ 2370 0008 00 00 00 00 		.4byte	.LFE5
+ 2371 000a 00 00 00 00 		.4byte	.LFB6
+ 2372 000c 00 00 00 00 		.4byte	.LFE6
+ 2373 000e 00 00 00 00 		.4byte	.LFB7
+ 2374 0010 00 00 00 00 		.4byte	.LFE7
+ 2375 0012 00 00 00 00 		.4byte	.LFB8
+ 2376 0014 00 00 00 00 		.4byte	.LFE8
+ 2377 0016 00 00 00 00 		.4byte	.LFB9
+ 2378 0018 00 00 00 00 		.4byte	.LFE9
+ 2379 001a 00 00 00 00 		.4byte	.LFB10
+ 2380 001c 00 00 00 00 		.4byte	.LFE10
+ 2381 001e 00 00 00 00 		.4byte	.LFB11
+ 2382 0020 00 00 00 00 		.4byte	.LFE11
+ 2383 0022 00 00 00 00 		.4byte	.LFB12
+ 2384 0024 00 00 00 00 		.4byte	.LFE12
+ 2385 0026 00 00 00 00 		.4byte	.LFB13
+ 2386 0028 00 00 00 00 		.4byte	.LFE13
+ 2387 002a 00 00 00 00 		.4byte	0x0
+ 2388 002c 00 00 00 00 		.4byte	0x0
+ 2389 002e 00 00 00 00 		.section	.debug_str,"MS",@progbits,1
+ 2390 0030 00 00 00 00 	.LASF40:
+ 2391 0032 00 00 00 00 		.ascii "capacity\000"
+ 2392 0034 00 00 00 00 	.LASF1:
+ 2393 0036 00 00 00 00 		.ascii "uint16\000"
+ 2394                 	.LASF75:
+ 2395                 		.ascii "setupSharedRAM\000"
+ 2396 0000 63 61 70 61 	.LASF68:
+ 2396      63 69 74 79 
+ 2396      00 
+ 2397                 		.ascii "p_rx_data\000"
+ 2398 0004 75 69 6E 74 	.LASF62:
+ 2398      31 36 00 
+ 2399                 		.ascii "TransactionEvent_Reset\000"
+ 2400 0008 73 65 74 75 	.LASF12:
+ 2400      70 53 68 61 
+ 2400      72 65 64 52 
+ 2400      41 4D 00 
+ 2401                 		.ascii "pio_mode_clk_req\000"
+ 2402 000f 70 5F 72 78 	.LASF78:
+ 2402      5F 64 61 74 
+ 2402      61 00 
+ 2403                 		.ascii "ret_val\000"
+ 2404 0014 54 72 61 6E 	.LASF37:
+ 2404      73 61 63 74 
+ 2404      69 6F 6E 45 
+ 2404      76 65 6E 74 
+ 2404      5F 52 65 73 
+ 2405                 		.ascii "OQDataMode_INVALID\000"
+ 2406 0020 70 69 6F 5F 	.LASF67:
+ 2406      6D 6F 64 65 
+ 2406      5F 63 6C 6B 
+ 2406      5F 72 65 71 
+ 2406      00 
+ 2407                 		.ascii "p_tx_data\000"
+ 2408 0028 72 65 74 5F 	.LASF57:
+ 2408      76 61 6C 00 
+ 2409                 		.ascii "TransactionEvent_AssertSSEL\000"
+ 2410 002c 4F 51 44 61 	.LASF54:
+ 2410      74 61 4D 6F 
+ 2410      64 65 5F 49 
+ 2410      4E 56 41 4C 
+ 2410      49 44 00 
+ 2411                 		.ascii "TransactionState_Invalid\000"
+ 2412 0036 70 5F 74 78 	.LASF93:
+ 2412      5F 64 61 74 
+ 2412      61 00 
+ 2413                 		.ascii "SpiMasterProcessPioControllerEvent\000"
+ 2414 003b 54 72 61 6E 	.LASF21:
+ 2414      73 61 63 74 
+ 2414      69 6F 6E 45 
+ 2414      76 65 6E 74 
+ 2414      5F 41 73 73 
+ 2415                 		.ascii "pio_mode_uart\000"
+ 2416 0049 54 72 61 6E 	.LASF82:
+ 2416      73 61 63 74 
+ 2416      69 6F 6E 53 
+ 2416      74 61 74 65 
+ 2416      5F 49 6E 76 
+ 2417                 		.ascii "p_rx_data_buffer\000"
+ 2418 0055 53 70 69 4D 	.LASF101:
+ 2418      61 73 74 65 
+ 2418      72 50 72 6F 
+ 2418      63 65 73 73 
+ 2418      50 69 6F 43 
+ 2419                 		.ascii "setSSEL\000"
+ 2420 0067 70 69 6F 5F 	.LASF10:
+ 2420      6D 6F 64 65 
+ 2420      5F 75 61 72 
+ 2420      74 00 
+ 2421                 		.ascii "pio_mode_user\000"
+ 2422 006e 70 5F 72 78 	.LASF102:
+ 2422      5F 64 61 74 
+ 2422      61 5F 62 75 
+ 2422      66 66 65 72 
+ 2422      00 
+ 2423                 		.ascii "SpiMasterDeinit\000"
+ 2424 0076 73 65 74 53 	.LASF35:
+ 2424      53 45 4C 00 
+ 2425                 		.ascii "OQDataMode_unpacked\000"
+ 2426 007a 70 69 6F 5F 	.LASF11:
+ 2426      6D 6F 64 65 
+ 2426      5F 75 73 65 
+ 2426      72 00 
+ 2427                 		.ascii "pio_mode_edge_capture\000"
+ 2428 0081 53 70 69 4D 	.LASF55:
+ 2428      61 73 74 65 
+ 2428      72 44 65 69 
+ 2428      6E 69 74 00 
+ 2429                 		.ascii "TransactionState\000"
+ 2430 0089 4F 51 44 61 	.LASF5:
+ 2430      74 61 4D 6F 
+ 2430      64 65 5F 75 
+ 2430      6E 70 61 63 
+ 2430      6B 65 64 00 
+ 2431                 		.ascii "signed char\000"
+ 2432 0093 70 69 6F 5F 	.LASF76:
+ 2432      6D 6F 64 65 
+ 2432      5F 65 64 67 
+ 2432      65 5F 63 61 
+ 2432      70 74 75 72 
+ 2433                 		.ascii "processEvent\000"
+ 2434 009e 54 72 61 6E 	.LASF30:
+ 2434      73 61 63 74 
+ 2434      69 6F 6E 53 
+ 2434      74 61 74 65 
+ 2434      00 
+ 2435                 		.ascii "pio_mode_i2c_data\000"
+ 2436 00a7 73 69 67 6E 	.LASF86:
+ 2436      65 64 20 63 
+ 2436      68 61 72 00 
+ 2437                 		.ascii "SpiMasterStartTransaction\000"
+ 2438 00ad 70 72 6F 63 	.LASF43:
+ 2438      65 73 73 45 
+ 2438      76 65 6E 74 
+ 2438      00 
+ 2439                 		.ascii "empty\000"
+ 2440 00b3 70 69 6F 5F 	.LASF66:
+ 2440      6D 6F 64 65 
+ 2440      5F 69 32 63 
+ 2440      5F 64 61 74 
+ 2440      61 00 
+ 2441                 		.ascii "state\000"
+ 2442 00bc 53 70 69 4D 	.LASF7:
+ 2442      61 73 74 65 
+ 2442      72 53 74 61 
+ 2442      72 74 54 72 
+ 2442      61 6E 73 61 
+ 2443                 		.ascii "long int\000"
+ 2444 00c9 65 6D 70 74 	.LASF0:
+ 2444      79 00 
+ 2445                 		.ascii "uint8\000"
+ 2446 00cc 73 74 61 74 	.LASF98:
+ 2446      65 00 
+ 2447                 		.ascii "GNU C 4.3.4 CSR version 22 for xap [1468380]\000"
+ 2448 00cf 6C 6F 6E 67 	.LASF42:
+ 2448      20 69 6E 74 
+ 2448      00 
+ 2449                 		.ascii "boundary\000"
+ 2450 00d4 75 69 6E 74 	.LASF90:
+ 2450      38 00 
+ 2451                 		.ascii "SpiMasterGetSharedRAMRxDataSize\000"
+ 2452 00d7 47 4E 55 20 	.LASF89:
+ 2452      43 20 34 2E 
+ 2452      33 2E 34 20 
+ 2452      43 53 52 20 
+ 2452      76 65 72 73 
+ 2453                 		.ascii "SpiMasterGetSharedRAMTxDataSize\000"
+ 2454 00ed 62 6F 75 6E 	.LASF36:
+ 2454      64 61 72 79 
+ 2454      00 
+ 2455                 		.ascii "OQDataMode_packed\000"
+ 2456 00f2 53 70 69 4D 	.LASF9:
+ 2456      61 73 74 65 
+ 2456      72 47 65 74 
+ 2456      53 68 61 72 
+ 2456      65 64 52 41 
+ 2457                 		.ascii "unsigned int\000"
+ 2458 0102 53 70 69 4D 	.LASF53:
+ 2458      61 73 74 65 
+ 2458      72 47 65 74 
+ 2458      53 68 61 72 
+ 2458      65 64 52 41 
+ 2459                 		.ascii "TransactionState_WaitingForPioControllerToDeassert\000"
+ 2460 0112 4F 51 44 61 	.LASF4:
+ 2460      74 61 4D 6F 
+ 2460      64 65 5F 70 
+ 2460      61 63 6B 65 
+ 2460      64 00 
+ 2461                 		.ascii "long unsigned int\000"
+ 2462 011b 75 6E 73 69 	.LASF61:
+ 2462      67 6E 65 64 
+ 2462      20 69 6E 74 
+ 2462      00 
+ 2463                 		.ascii "TransactionEvent_PIOControllerEvent\000"
+ 2464 0121 54 72 61 6E 	.LASF77:
+ 2464      73 61 63 74 
+ 2464      69 6F 6E 53 
+ 2464      74 61 74 65 
+ 2464      5F 57 61 69 
+ 2465                 		.ascii "event\000"
+ 2466 013b 6C 6F 6E 67 	.LASF3:
+ 2466      20 75 6E 73 
+ 2466      69 67 6E 65 
+ 2466      64 20 69 6E 
+ 2466      74 00 
+ 2467                 		.ascii "short unsigned int\000"
+ 2468 0144 54 72 61 6E 	.LASF69:
+ 2468      73 61 63 74 
+ 2468      69 6F 6E 45 
+ 2468      76 65 6E 74 
+ 2468      5F 50 49 4F 
+ 2469                 		.ascii "pio_rx_data\000"
+ 2470 0156 65 76 65 6E 	.LASF100:
+ 2470      74 00 
+ 2471                 		.ascii "D:\\SVN\\Prj01051MigrosEtiketRepo\\trunk\\05_DetailedDesignProcess\\01_DetailedDesignDocum
+ 2472 0159 73 68 6F 72 	.LASF71:
+ 2472      74 20 75 6E 
+ 2472      73 69 67 6E 
+ 2472      65 64 20 69 
+ 2472      6E 74 00 
+ 2473                 		.ascii "p_data_cb_func\000"
+ 2474 0162 70 69 6F 5F 	.LASF80:
+ 2474      72 78 5F 64 
+ 2474      61 74 61 00 
+ 2475                 		.ascii "p_data_callback\000"
+ 2476 0168 44 3A 5C 53 	.LASF70:
+ 2476      56 4E 5C 50 
+ 2476      72 6A 30 31 
+ 2476      30 35 31 4D 
+ 2476      69 67 72 6F 
+ 2477                 		.ascii "pio_tx_data\000"
+ 2478 01bc 70 5F 64 61 	.LASF8:
+ 2478      74 61 5F 63 
+ 2478      62 5F 66 75 
+ 2478      6E 63 00 
+ 2479                 		.ascii "bool\000"
+ 2480 01c3 70 5F 64 61 	.LASF88:
+ 2480      74 61 5F 63 
+ 2480      61 6C 6C 62 
+ 2480      61 63 6B 00 
+ 2481                 		.ascii "SpiMasterEndTransaction\000"
+ 2482 01cb 70 69 6F 5F 	.LASF38:
+ 2482      74 78 5F 64 
+ 2482      61 74 61 00 
+ 2483                 		.ascii "OQDataMode\000"
+ 2484 01d1 62 6F 6F 6C 	.LASF33:
+ 2484      00 
+ 2485                 		.ascii "pio_mode_pio_control_timer\000"
+ 2486 01d4 53 70 69 4D 	.LASF48:
+ 2486      61 73 74 65 
+ 2486      72 45 6E 64 
+ 2486      54 72 61 6E 
+ 2486      73 61 63 74 
+ 2487                 		.ascii "TransactionState_Initialised\000"
+ 2488 01e0 4F 51 44 61 	.LASF52:
+ 2488      74 61 4D 6F 
+ 2488      64 65 00 
+ 2489                 		.ascii "TransactionState_WaitingForPioController\000"
+ 2490 01e5 70 69 6F 5F 	.LASF60:
+ 2490      6D 6F 64 65 
+ 2490      5F 70 69 6F 
+ 2490      5F 63 6F 6E 
+ 2490      74 72 6F 6C 
+ 2491                 		.ascii "TransactionEvent_PIOControllerUnblockedButNoData\000"
+ 2492 01f3 54 72 61 6E 	.LASF92:
+ 2492      73 61 63 74 
+ 2492      69 6F 6E 53 
+ 2492      74 61 74 65 
+ 2492      5F 49 6E 69 
+ 2493                 		.ascii "SpiMasterStart\000"
+ 2494 0201 54 72 61 6E 	.LASF17:
+ 2494      73 61 63 74 
+ 2494      69 6F 6E 53 
+ 2494      74 61 74 65 
+ 2494      5F 57 61 69 
+ 2495                 		.ascii "pio_mode_quadrature0\000"
+ 2496 0216 54 72 61 6E 	.LASF18:
+ 2496      73 61 63 74 
+ 2496      69 6F 6E 45 
+ 2496      76 65 6E 74 
+ 2496      5F 50 49 4F 
+ 2497                 		.ascii "pio_mode_quadrature1\000"
+ 2498 022e 53 70 69 4D 	.LASF19:
+ 2498      61 73 74 65 
+ 2498      72 53 74 61 
+ 2498      72 74 00 
+ 2499                 		.ascii "pio_mode_quadrature2\000"
+ 2500 0236 70 69 6F 5F 	.LASF20:
+ 2500      6D 6F 64 65 
+ 2500      5F 71 75 61 
+ 2500      64 72 61 74 
+ 2500      75 72 65 30 
+ 2501                 		.ascii "pio_mode_quadrature3\000"
+ 2502 0240 70 69 6F 5F 	.LASF79:
+ 2502      6D 6F 64 65 
+ 2502      5F 71 75 61 
+ 2502      64 72 61 74 
+ 2502      75 72 65 31 
+ 2503                 		.ascii "p_pio_controller_code_addr\000"
+ 2504 024b 70 69 6F 5F 	.LASF45:
+ 2504      6D 6F 64 65 
+ 2504      5F 71 75 61 
+ 2504      64 72 61 74 
+ 2504      75 72 65 32 
+ 2505                 		.ascii "OQ_HANDLE_T\000"
+ 2506 0255 70 69 6F 5F 	.LASF39:
+ 2506      6D 6F 64 65 
+ 2506      5F 71 75 61 
+ 2506      64 72 61 74 
+ 2506      75 72 65 33 
+ 2507                 		.ascii "p_buffer\000"
+ 2508 0260 70 5F 70 69 	.LASF84:
+ 2508      6F 5F 63 6F 
+ 2508      6E 74 72 6F 
+ 2508      6C 6C 65 72 
+ 2508      5F 63 6F 64 
+ 2509                 		.ascii "newState\000"
+ 2510 026d 4F 51 5F 48 	.LASF24:
+ 2510      41 4E 44 4C 
+ 2510      45 5F 54 00 
+ 2511                 		.ascii "pio_mode_nvm_power_en\000"
+ 2512 0273 70 5F 62 75 	.LASF26:
+ 2512      66 66 65 72 
+ 2512      00 
+ 2513                 		.ascii "pio_mode_pio_control_txd\000"
+ 2514 0278 6E 65 77 53 	.LASF81:
+ 2514      74 61 74 65 
+ 2514      00 
+ 2515                 		.ascii "p_tx_data_buffer\000"
+ 2516 027c 70 69 6F 5F 	.LASF91:
+ 2516      6D 6F 64 65 
+ 2516      5F 6E 76 6D 
+ 2516      5F 70 6F 77 
+ 2516      65 72 5F 65 
+ 2517                 		.ascii "SpiMasterReset\000"
+ 2518 0287 70 69 6F 5F 	.LASF25:
+ 2518      6D 6F 64 65 
+ 2518      5F 70 69 6F 
+ 2518      5F 63 6F 6E 
+ 2518      74 72 6F 6C 
+ 2519                 		.ascii "pio_mode_pio_controller\000"
+ 2520 0294 70 5F 74 78 	.LASF74:
+ 2520      5F 64 61 74 
+ 2520      61 5F 62 75 
+ 2520      66 66 65 72 
+ 2520      00 
+ 2521                 		.ascii "assert\000"
+ 2522 029c 53 70 69 4D 	.LASF97:
+ 2522      61 73 74 65 
+ 2522      72 52 65 73 
+ 2522      65 74 00 
+ 2523                 		.ascii "pio_rx_data_size\000"
+ 2524 02a4 70 69 6F 5F 	.LASF22:
+ 2524      6D 6F 64 65 
+ 2524      5F 70 69 6F 
+ 2524      5F 63 6F 6E 
+ 2524      74 72 6F 6C 
+ 2525                 		.ascii "pio_mode_radio_rx_en\000"
+ 2526 02b0 61 73 73 65 	.LASF65:
+ 2526      72 74 00 
+ 2527                 		.ascii "_SPI_MASTER_STATE_T\000"
+ 2528 02b3 70 69 6F 5F 	.LASF63:
+ 2528      72 78 5F 64 
+ 2528      61 74 61 5F 
+ 2528      73 69 7A 65 
+ 2528      00 
+ 2529                 		.ascii "TransactionEvent\000"
+ 2530 02bc 70 69 6F 5F 	.LASF2:
+ 2530      6D 6F 64 65 
+ 2530      5F 72 61 64 
+ 2530      69 6F 5F 72 
+ 2530      78 5F 65 6E 
+ 2531                 		.ascii "unsigned char\000"
+ 2532 02c6 5F 53 50 49 	.LASF99:
+ 2532      5F 4D 41 53 
+ 2532      54 45 52 5F 
+ 2532      53 54 41 54 
+ 2532      45 5F 54 00 
+ 2533                 		.ascii "spi_master.c\000"
+ 2534 02d0 54 72 61 6E 	.LASF6:
+ 2534      73 61 63 74 
+ 2534      69 6F 6E 45 
+ 2534      76 65 6E 74 
+ 2534      00 
+ 2535                 		.ascii "short int\000"
+ 2536 02d9 75 6E 73 69 	.LASF59:
+ 2536      67 6E 65 64 
+ 2536      20 63 68 61 
+ 2536      72 00 
+ 2537                 		.ascii "TransactionEvent_PIOControllerUnblockedWithDataToSend\000"
+ 2538 02e0 73 70 69 5F 	.LASF73:
+ 2538      6D 61 73 74 
+ 2538      65 72 2E 63 
+ 2538      00 
+ 2539                 		.ascii "tx_buffer_fill\000"
+ 2540 02e6 73 68 6F 72 	.LASF32:
+ 2540      74 20 69 6E 
+ 2540      74 00 
+ 2541                 		.ascii "pio_mode_uart_flow_ctrl\000"
+ 2542 02eb 54 72 61 6E 	.LASF95:
+ 2542      73 61 63 74 
+ 2542      69 6F 6E 45 
+ 2542      76 65 6E 74 
+ 2542      5F 50 49 4F 
+ 2543                 		.ascii "valid_interrupt\000"
+ 2544 0306 74 78 5F 62 	.LASF46:
+ 2544      75 66 66 65 
+ 2544      72 5F 66 69 
+ 2544      6C 6C 00 
+ 2545                 		.ascii "OQ_HANDLE\000"
+ 2546 030e 70 69 6F 5F 	.LASF87:
+ 2546      6D 6F 64 65 
+ 2546      5F 75 61 72 
+ 2546      74 5F 66 6C 
+ 2546      6F 77 5F 63 
+ 2547                 		.ascii "transfer_size\000"
+ 2548 031a 76 61 6C 69 	.LASF44:
+ 2548      64 5F 69 6E 
+ 2548      74 65 72 72 
+ 2548      75 70 74 00 
+ 2549                 		.ascii "mode\000"
+ 2550 0322 4F 51 5F 48 	.LASF31:
+ 2550      41 4E 44 4C 
+ 2550      45 00 
+ 2551                 		.ascii "pio_mode_i2c_clock\000"
+ 2552 0327 74 72 61 6E 	.LASF58:
+ 2552      73 66 65 72 
+ 2552      5F 73 69 7A 
+ 2552      65 00 
+ 2553                 		.ascii "TransactionEvent_DeassertSSEL\000"
+ 2554 032e 6D 6F 64 65 	.LASF34:
+ 2554      00 
+ 2555                 		.ascii "pio_mode_ana_mon_clk_pio\000"
+ 2556 0330 70 69 6F 5F 	.LASF72:
+ 2556      6D 6F 64 65 
+ 2556      5F 69 32 63 
+ 2556      5F 63 6C 6F 
+ 2556      63 6B 00 
+ 2557                 		.ascii "SPI_MASTER_STATE_T\000"
+ 2558 033a 54 72 61 6E 	.LASF23:
+ 2558      73 61 63 74 
+ 2558      69 6F 6E 45 
+ 2558      76 65 6E 74 
+ 2558      5F 44 65 61 
+ 2559                 		.ascii "pio_mode_radio_tx_en\000"
+ 2560 0349 70 69 6F 5F 	.LASF64:
+ 2560      6D 6F 64 65 
+ 2560      5F 61 6E 61 
+ 2560      5F 6D 6F 6E 
+ 2560      5F 63 6C 6B 
+ 2561                 		.ascii "_OQ_HANDLE_T\000"
+ 2562 0355 53 50 49 5F 	.LASF85:
+ 2562      4D 41 53 54 
+ 2562      45 52 5F 53 
+ 2562      54 41 54 45 
+ 2562      5F 54 00 
+ 2563                 		.ascii "SpiMasterInit\000"
+ 2564 035f 70 69 6F 5F 	.LASF13:
+ 2564      6D 6F 64 65 
+ 2564      5F 72 61 64 
+ 2564      69 6F 5F 74 
+ 2564      78 5F 65 6E 
+ 2565                 		.ascii "pio_mode_pwm0\000"
+ 2566 0369 5F 4F 51 5F 	.LASF14:
+ 2566      48 41 4E 44 
+ 2566      4C 45 5F 54 
+ 2566      00 
+ 2567                 		.ascii "pio_mode_pwm1\000"
+ 2568 0370 53 70 69 4D 	.LASF15:
+ 2568      61 73 74 65 
+ 2568      72 49 6E 69 
+ 2568      74 00 
+ 2569                 		.ascii "pio_mode_pwm2\000"
+ 2570 0377 70 69 6F 5F 	.LASF16:
+ 2570      6D 6F 64 65 
+ 2570      5F 70 77 6D 
+ 2570      30 00 
+ 2571                 		.ascii "pio_mode_pwm3\000"
+ 2572 037e 70 69 6F 5F 	.LASF47:
+ 2572      6D 6F 64 65 
+ 2572      5F 70 77 6D 
+ 2572      31 00 
+ 2573                 		.ascii "SpiMasterTransactionCallbackType\000"
+ 2574 0385 70 69 6F 5F 	.LASF51:
+ 2574      6D 6F 64 65 
+ 2574      5F 70 77 6D 
+ 2574      32 00 
+ 2575                 		.ascii "TransactionState_PioControllerOnHold\000"
+ 2576 038c 70 69 6F 5F 	.LASF96:
+ 2576      6D 6F 64 65 
+ 2576      5F 70 77 6D 
+ 2576      33 00 
+ 2577                 		.ascii "pio_tx_data_size\000"
+ 2578 0393 53 70 69 4D 	.LASF50:
+ 2578      61 73 74 65 
+ 2578      72 54 72 61 
+ 2578      6E 73 61 63 
+ 2578      74 69 6F 6E 
+ 2579                 		.ascii "TransactionState_TransactionStarted\000"
+ 2580 03a3 54 72 61 6E 	.LASF27:
+ 2580      73 61 63 74 
+ 2580      69 6F 6E 53 
+ 2580      74 61 74 65 
+ 2580      5F 50 69 6F 
+ 2581                 		.ascii "pio_mode_pio_control_rxd\000"
+ 2582 03b6 70 69 6F 5F 	.LASF29:
+ 2582      74 78 5F 64 
+ 2582      61 74 61 5F 
+ 2582      73 69 7A 65 
+ 2582      00 
+ 2583                 		.ascii "pio_mode_ser_flash_csb\000"
+ 2584 03be 54 72 61 6E 	.LASF94:
+ 2584      73 61 63 74 
+ 2584      69 6F 6E 53 
+ 2584      74 61 74 65 
+ 2584      5F 54 72 61 
+ 2585                 		.ascii "p_data\000"
+ 2586 03d0 70 69 6F 5F 	.LASF56:
+ 2586      6D 6F 64 65 
+ 2586      5F 70 69 6F 
+ 2586      5F 63 6F 6E 
+ 2586      74 72 6F 6C 
+ 2587                 		.ascii "TransactionEvent_PIOControllerStart\000"
+ 2588 03dd 70 69 6F 5F 	.LASF28:
+ 2588      6D 6F 64 65 
+ 2588      5F 73 65 72 
+ 2588      5F 66 6C 61 
+ 2588      73 68 5F 63 
+ 2589                 		.ascii "pio_mode_ser_flash_dout\000"
+ 2590 03e8 70 5F 64 61 	.LASF41:
+ 2590      74 61 00 
+ 2591                 		.ascii "start\000"
+ 2592 03ec 54 72 61 6E 	.LASF83:
+ 2592      73 61 63 74 
+ 2592      69 6F 6E 45 
+ 2592      76 65 6E 74 
+ 2592      5F 50 49 4F 
+ 2593                 		.ascii "inter_octet_delay\000"
+ 2594 03fe 70 69 6F 5F 	.LASF49:
+ 2594      6D 6F 64 65 
+ 2594      5F 73 65 72 
+ 2594      5F 66 6C 61 
+ 2594      73 68 5F 64 
+ 2595                 		.ascii "TransactionState_PIOControllerReady\000"
+ 2596 040a 73 74 61 72 		.ident	"GCC: (GNU) 4.3.4 CSR version 22 for xap [1468380]"
+ 2596      74 00 
+ 2597                 	...

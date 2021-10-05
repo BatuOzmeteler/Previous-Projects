@@ -1,0 +1,8 @@
+Name	Cref	Value	Units	Description	Type	Accuracy	Min	Max	Enums	Scale	Offset	Lookup	Rate
+Grade	Grade		(not defined)	(not defined)	real_T	0.001	0	100					100
+time_tick_ecu	time_tick_ecu		(not defined)	(not defined)	boolean_T	1	0	1					0
+trq_out	trq_out		N.m	(not defined)	real_T	0.001	-290	290					0
+trq_req	trq_req		N.m	(not defined)	real_T	0.001	-290	290					100
+v_current	v_current		km/h	(not defined)	real_T	0.001	0	80					100
+v_raw	v_raw		km/h	(not defined)	real_T	0.001	0	80					10
+v_ref	v_ref		km/h	(not defined)	real_T	0.001	0	80					100

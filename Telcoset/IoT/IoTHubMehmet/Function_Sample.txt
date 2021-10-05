@@ -1,0 +1,45 @@
+#r "Newtonsoft.Json"
+using System;
+using Microsoft.Azure.Devices;
+using Newtonsoft.Json;
+using System.Text;
+using System.Threading.Tasks;
+
+static ServiceClient serviceClient;
+
+public class OurObject{
+  public string Time;
+  public string IoTDeviceId;
+  public string FieldToChange;
+}
+
+public static void Run(string myQueueItem, TraceWriter log)
+{
+    log.Info($"C# ServiceBus queue trigger function processed message: {myQueueItem}");
+    
+//Retrieve IoT Hub Messages
+var CloudObject = new OurObject();
+try{
+      //(This line is what it’s all about. Take the Message that trigger this function and load it into our object by deserializing it.)
+   CloudObject =
+Newtonsoft.Json.JsonConvert.DeserializeObject<OurObject>(myQueueItem);
+}
+catch (Exception ex)
+{
+    log.Info($"Error deserializing: {ex.Message}");
+     return;
+}
+
+//Mundane business logic
+if (true) {
+      CloudObject.FieldToChange = "New value";
+}
+String deviceID = CloudObject.IoTDeviceId;
+string messageString = JsonConvert.SerializeObject(CloudObject);
+
+var connectionString = GetEnvironmentVariable("AZURE_IOTHUB");
+serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
+
+var commandMessage = new Message(Encoding.ASCII.GetBytes(messageString));
+serviceClient.SendAsync(deviceID, commandMessage);
+}

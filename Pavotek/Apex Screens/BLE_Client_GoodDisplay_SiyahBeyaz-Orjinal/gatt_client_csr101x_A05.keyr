@@ -1,0 +1,20 @@
+>DECIMAL_CS_VERSION=67
+
+// (0001) - Bluetooth device address
+&BDADDR = 6709 1000 8581
+
+// (0002) - Crystal frequency trim
+&CRYSTAL_FTRIM = 0020
+
+// (0017) - Identity Root
+&IDENTITY_ROOT = 00 00 00 00 00 03 00 00
+
+&TX_POWER_LEVEL = 0007
+
+&nvm_start_address = ccee
+&nvm_size = 2500
+
+// UART connection speed. By default, 115200 baud.
+&UART_RATE = 01d9
+
+&WD_TIMEOUT = 7530  //30 sn

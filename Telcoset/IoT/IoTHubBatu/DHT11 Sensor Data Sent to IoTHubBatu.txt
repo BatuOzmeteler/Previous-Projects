@@ -1,0 +1,27 @@
+******OLD CONFIGURATIONS******
+LED_PIN 0
+DHT_PIN 2
+DHT_TYPE: DHT22
+DEVICE_ID: Feather HUZZAH ESP8266 WiFi
+
+
+******INFO******
+
+Device ID: myDeviceID96 : Nodemcu 1.0 (ESP-12E Module)
+SSID: TelcosetAS
+Password: tlctwlan
+Connection String Primary Key (for device): 
+HostName=IoTHubBatu.azure-devices.net;DeviceId=myDeviceID96;SharedAccessKey=yQW6gjBFKLIc4HrDCliUfCZrfOAdLRk6OJ5GsqsnWUE=
+iothubowner Connection String Primary Key:
+HostName=IoTHubBatu.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=nfFFqhrmp82vM4CvE9EfaXZRD8DXsQjPqsW34r3NnlE=
+
+******IoTHubExplorer Commands******
+
+to Start the Session:
+iothub-explorer login HostName=IoTHubBatu.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=nfFFqhrmp82vM4CvE9EfaXZRD8DXsQjPqsW34r3NnlE=
+
+to Get Device Info:
+iothub-explorer get myDeviceID96 --HostName=IoTHubBatu.azure-devices.net;DeviceId=myDeviceID96;SharedAccessKey=yQW6gjBFKLIc4HrDCliUfCZrfOAdLRk6OJ5GsqsnWUE=
+
+to Monitor Device to Cloud Messages:
+iothub-explorer monitor-events myDeviceID96 --login HostName=IoTHubBatu.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=nfFFqhrmp82vM4CvE9EfaXZRD8DXsQjPqsW34r3NnlE=

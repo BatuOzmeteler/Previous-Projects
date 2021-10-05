@@ -1,0 +1,47 @@
+%implements s5_b0_bgc3h_Terminate "C"
+
+%function Terminate(block, system) Output
+%assign cfgTxt = ""
+%openfile cfgTxt
+%assign localVarDecl = ""
+%assign tlcTerminateFcnOfS4B0 = OpaqueTLCBlockFcn("Terminate", 4, 0, 0, 4)
+%assign tlcTerminateFcnOfS4B1 = OpaqueTLCBlockFcn("Terminate", 4, 1, 0, 4)
+%assign tlcTerminateFcnOfS4B2 = OpaqueTLCBlockFcn("Terminate", 4, 2, 0, 4)
+%assign tlcTerminateFcnOfS4B4 = OpaqueTLCBlockFcn("Terminate", 4, 4, 0, 4)
+%assign tlcTerminateFcnOfS5B10 = OpaqueTLCBlockFcn("Terminate", 5, 10, 0, 4)
+%assign   Terminate_open_data_out_5_9 = ""
+%openfile Terminate_open_data_out_5_9
+
+/* Terminate for Triggered SubSystem: '<Root>/data_out' */
+%closefile Terminate_open_data_out_5_9
+
+%assign    Terminate_body_data_out_5_9 = ""
+%openfile  Terminate_body_data_out_5_9
+
+%<tlcTerminateFcnOfS4B0>\
+%<tlcTerminateFcnOfS4B1>\
+%<tlcTerminateFcnOfS4B2>\
+%<tlcTerminateFcnOfS4B4>\
+%closefile Terminate_body_data_out_5_9
+
+%assign    Terminate_close_data_out_5_9 = ""
+%openfile  Terminate_close_data_out_5_9
+
+/* End of Terminate for SubSystem: '<Root>/data_out' */
+%closefile Terminate_close_data_out_5_9
+%<SLibCG_DumpSSCode(Terminate_open_data_out_5_9, Terminate_body_data_out_5_9, Terminate_close_data_out_5_9)>
+
+%<tlcTerminateFcnOfS5B10>\
+%closefile cfgTxt
+%<cfgTxt>
+%assign fcnProtoType = ""
+%openfile fcnProtoType
+static void Terminate(\
+%assign comma = ""
+%if SLibCG_ArgAccessed(0, 4, 0)
+%<comma>int32_T tid\
+%assign comma = ", "
+%endif
+%closefile fcnProtoType
+%<SLibCG_SetFcnProtoType(0, 4, fcnProtoType)>
+%endfunction

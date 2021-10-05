@@ -1,0 +1,137 @@
+############################################################################## 
+##
+##  Project:        OpenECU
+##  Version:        $Id: snoop_os_defs.snx 30730 2013-10-03 12:01:15Z sborders $
+##  File:           $URL: https://apple.ps.local/svn/OpenECU/development/platform/trunk/tool_integration/pisnoop/snoop_os_defs.snx $ 
+##  Description:    Defines platform variables that should be accessible or
+##                  categorised as OS "hidden" for PiSnoop, so that user application
+##                  variables are easier to list and select from.
+##
+##  Copyright (C) 2012 Pi Innovo 
+##  This document (program) contains proprietary information
+##  which is the property of Pi Innovo                  
+##  The contents of this document (program) must not be copied
+##  or disclosed to a third party without the prior agreement 
+##  of an authorised officer of Pi Innovo                
+##    
+##############################################################################
+
+# Each entry in the list is in the form:
+#     filename:identifier
+# or just:
+#     identifier
+# where both the filename and the identifier may end
+# in a wildcard '*'.
+
+# "Show" list wins, so variables listed here will be non-hidden even they would
+# be covered by a "hide" rule below
+[os-show]
+pdgc*
+pfsl_filesys_stats
+pkn_max_task_time
+pkn_task_time
+psc_app_copyright
+psc_app_esc
+psc_app_major_ver_num
+psc_app_minor_ver_num
+psc_app_name
+psc_app_sub_minor_ver_num
+psc_app_ver
+pscl_boot_build_day
+pscl_boot_build_month
+pscl_boot_build_year
+pscl_cpu_loaded
+pscl_flp_div_by_zero
+pscl_flp_inexact
+pscl_flp_invalid
+pscl_flp_overflow
+pscl_fl_underflow
+pscl_max_cpu_loaded
+pscl_plat_build_day
+pscl_plat_build_month
+pscl_plat_build_year
+pscl_plat_ver_major
+pscl_plat_ver_minor
+pscl_plat_ver_sub
+pscl_prg_build_day
+pscl_prg_build_month
+pscl_prg_build_year
+pscl_prg_ver_major
+pscl_prg_ver_minor
+pscl_prg_ver_sub
+pscl_reset_count
+pscl_run_time
+pscl_system_stable
+pscl_unstable_reset_count
+pscl_used_stack
+pscl_ver_str
+
+[os-hide]
+ccp*
+fadp*
+ns_*:*
+in_queue
+out_queue
+rx_message
+tx_state
+mplc_tcr1_scalar
+pax*
+pbt*
+pcan*
+pccp*
+pcfg*
+pcgl*
+pcp*
+pcx*
+pdb*
+pdg*
+pdtc*
+pdx*
+pem*
+pfc*
+pff*
+pff*:*
+pfl*
+pfs*:*
+pfs_directory
+pfs_max_num_platform_files
+pfs_max_num_user_files
+pfs_write_queue
+pfs_write_queue_size
+pgl*
+piso*:piso*
+pj1939*:*
+pj1939_common_multiframe_priority
+pj1939_aecd_table
+pj1939_can_link
+pj1939_dm*
+pj1939_mem_*
+pj1939_msg_buffer
+pj1939_num_*
+pj1939_pgn_*
+pj1939_req_test_list
+pj1939_rx_*
+pj1939_sent
+pj1939_size_j1939_rx_buf
+pj1939_st_ds_spns_list
+pj1939_state
+pj1939_transient
+pj1939_ttx_*
+pj1939_use_common_mf_priority
+pkn*
+pmios*
+pnv*
+ppid*
+ppp*
+ppr*
+pqadc*
+preg*:*
+prg*
+prsl*
+psc*:*
+psc*
+psp*
+pss*:*
+psy*
+ptpu*
+putl*

@@ -1,0 +1,8 @@
+Name	Cref	Value	Units	Description	Type	Accuracy	Min	Max	Enums	Scale	Offset	Lookup	Rate	Group
+v_current	v_current		km/h	(not defined)	real_T	0.001	0	80					100	/ByModelHeirarchy/mpc_v2/Speed Regulation,/ByModelHeirarchy/mpc_v2,/ByType/Signals
+time_tick_ecu	time_tick_ecu		(not defined)	(not defined)	boolean_T	1	0	1					0	/ByModelHeirarchy/mpc_v2,/ByType/Signals
+Grade	Grade		(not defined)	(not defined)	real_T	0.001	0	100					100	/ByModelHeirarchy/mpc_v2/data_out/MATLAB Function,/ByModelHeirarchy/mpc_v2,/ByType/Signals
+v_ref	v_ref		km/h	(not defined)	real_T	0.001	0	80					100	/ByModelHeirarchy/mpc_v2,/ByType/Signals
+trq_req	trq_req		N.m	(not defined)	real_T	0.001	-290	290					100	/ByDataDictionaryPrefix/trq,/ByModelHeirarchy/mpc_v2/Torque Regulation,/ByModelHeirarchy/mpc_v2,/ByType/Signals
+v_raw	v_raw		km/h	(not defined)	real_T	0.001	0	80					10	/ByModelHeirarchy/mpc_v2,/ByType/Signals
+trq_out	trq_out		N.m	(not defined)	real_T	0.001	-290	290					0	/ByDataDictionaryPrefix/trq,/ByModelHeirarchy/mpc_v2,/ByType/Signals

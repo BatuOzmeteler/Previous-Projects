@@ -1,0 +1,114 @@
+==========================================
+
+[No		]:	1 
+[LOG ID		]:	0X529002
+[Code Explain	]:	0X00529002
+[CPU ID		]:	1537
+[TIME        ]: 2020-09-24 18:55:11
+[CPU TICK	]:	91647
+[PID		]:	118
+[LEVEL		]:	2
+[REPEATE	]:	7
+[StringPara	]: Batu
+[ulSrvObjType	]:	8
+
+===========================================
+
+[No		]:	2 
+[LOG ID		]:	0X529003
+[Code Explain	]:	0X00529004
+[CPU ID		]:	1537
+[TIME        ]: 2020-09-25 15:59:11
+[CPU TICK	]:	91653
+[PID		]:	118
+[LEVEL		]:	2
+[REPEATE	]:	7
+[StringPara  ]: [Res,ERR]EwsPageReadData error. path: /platform/lmtlib/MMLHandl
+[ulSrvObjType	]:	8
+
+===========================================
+
+[No		]:	3 
+[LOG ID		]:	0X529004
+[Code Explain	]:	0X00529005
+[CPU ID		]:	1537
+[TIME        ]: 2020-09-25 15:35:10
+[CPU TICK	]:	91659
+[PID		]:	118
+[LEVEL		]:	2
+[REPEATE	]:	7
+[StringPara  ]: [Def,ERR]Send Request to log URL is NULL
+[ulSrvObjType	]:	8
+
+===========================================
+
+[No		]:	4 
+[LOG ID		]:	0X529005
+[Code Explain	]:	0X00529009
+[CPU ID		]:	1537
+[TIME        ]: 2020-09-25 15:35:11
+[CPU TICK	]:	91665
+[PID		]:	118
+[LEVEL		]:	2
+[REPEATE	]:	7
+[StringPara  ]: NULL
+[ulSrvObjType	]:	8
+
+===========================================
+
+
+[No		]:	5 
+[LOG ID		]:	0X529006
+[Code Explain	]:	0X00529001
+[CPU ID		]:	1537
+[TIME        ]: 2020-09-25 16:35:11
+[CPU TICK	]:	91671
+[PID		]:	118
+[LEVEL		]:	2
+[REPEATE	]:	7
+[StringPara  ]: Message Accepted-OK
+[ulSrvObjType	]:	8
+
+===========================================
+
+[No		]:	6 
+[LOG ID		]:	0X529007
+[Code Explain	]:	0X005290011
+[CPU ID		]:	1537
+[TIME        ]: 2020-09-25 17:35:11
+[CPU TICK	]:	91677
+[PID		]:	118
+[LEVEL		]:	2
+[REPEATE	]:	7
+[StringPara  ]: FAIL
+[ulSrvObjType	]:	8
+
+===========================================
+
+[No		]:	7
+[LOG ID		]:	0X529008
+[Code Explain	]:	0X005290013
+[CPU ID		]:	1537
+[TIME        ]: 2020-09-25 18:35:11
+[CPU TICK	]:	91683
+[PID		]:	118
+[LEVEL		]:	2
+[REPEATE	]:	7
+[StringPara  ]: HEY
+[ulSrvObjType	]:	8
+
+===========================================
+
+[No		]:	8 
+[LOG ID		]:	0X529008
+[Code Explain	]:	0X00529008
+[CPU ID		]:	1537
+[TIME        ]: 2020-09-26 15:35:11
+[CPU TICK	]:	91689
+[PID		]:	118
+[LEVEL		]:	2
+[REPEATE	]:	7
+[StringPara  ]: FAIL
+[ulSrvObjType	]:	8
+
+===========================================
