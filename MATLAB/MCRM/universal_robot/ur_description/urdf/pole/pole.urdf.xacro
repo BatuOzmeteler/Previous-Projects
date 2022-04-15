@@ -1,0 +1,123 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <xacro:property name="mass" value="0.5"/>
+    <xacro:property name="length" value="1"/>
+    <xacro:property name="damping" value="0.2"/>
+
+   <xacro:property name="extended_pole" value="$(arg extended_pole)" />
+
+    <xacro:macro name="pole" params="prefix">
+
+        <link name="${prefix}pole_link">
+            <visual>
+                <origin xyz="0.0 0.0 ${length/2}" />
+                <geometry>
+                    <cylinder length="${length}" radius="0.01"/>
+                </geometry>
+                <material name="LightGrey">
+                    <color rgba="0.7 0.7 0.7 1.0"/>
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0.0 0.0 ${length/2}" />
+                <geometry>
+                    <cylinder length="1.0" radius="0.01"/>
+                </geometry>
+            </collision>
+            <inertial>
+                <mass value="${mass}" />
+                <origin xyz="0.0 0.0 ${length/2}" />
+                <inertia ixx = "${length*length*mass/3}" ixy = "0.000000" ixz = "0.000000"
+                         iyx = "0.000000" iyy = "${length*length*mass/3}" iyz = "0.000000"
+                         izx = "0.000000" izy = "0.000000" izz = "${length*length*mass/3}" />
+            </inertial>
+        </link>
+
+	<link name="${prefix}pole_base">
+          <inertial>
+            <mass value="0.025" />
+           <inertia ixx="5.8083e-4" ixy="0" ixz="0" iyy="3.0833e-5" iyz="0" izz="5.9083e-4" />
+          </inertial>
+        </link>
+
+        <gazebo reference="pole_base">
+          <turnGravityOff>1</turnGravityOff>
+        </gazebo>
+
+	<joint name="${prefix}pole_connector" type="fixed">
+            <origin rpy="0.0 3.14 0.0" xyz="0.0 0.12 0.0"/>
+            <parent link="${prefix}wrist_3_link"/>
+            <child link="${prefix}pole_base"/>
+        </joint>
+
+
+        <xacro:if value="${extended_pole}">
+          <link name="${prefix}pole_link_dummy1">
+            <inertial>
+              <mass value="0.001" />
+             <inertia ixx="1.0e-4" ixy="0" ixz="0" iyy="1.0e-5" iyz="0" izz="1.0e-4" />
+            </inertial>
+          </link>	
+
+          <gazebo reference="pole_link_dummy1">
+            <turnGravityOff>1</turnGravityOff>
+          </gazebo>
+
+  	  <joint name="${prefix}pole_joint_psi" type="continuous">
+            <parent link="${prefix}pole_base"/>
+            <child link="${prefix}pole_link_dummy1"/>
+            <axis xyz="0 0 1"/>
+	    <dynamics damping="${damping}"/>
+          </joint>
+
+  	  <link name="${prefix}pole_link_dummy2">
+            <inertial>
+              <mass value="0.001" />
+             <inertia ixx="1.0e-4" ixy="0" ixz="0" iyy="1.0e-5" iyz="0" izz="1.0e-4" />
+            </inertial>
+          </link>
+
+          <gazebo reference="pole_link_dummy2">
+            <turnGravityOff>1</turnGravityOff>
+          </gazebo>
+
+          <joint name="${prefix}pole_joint_theta" type="continuous">
+            <parent link="${prefix}pole_link_dummy1"/>
+            <child link="${prefix}pole_link_dummy2"/>
+            <axis xyz="0 1 0"/>
+            <dynamics damping="${damping}"/>
+          </joint>
+
+	  <joint name="${prefix}pole_joint_phi" type="continuous">
+            <parent link="${prefix}pole_link_dummy2"/>
+            <child link="${prefix}pole_link"/>
+            <axis xyz="1 0 0"/>
+            <dynamics damping="${damping}"/>
+          </joint>
+        </xacro:if>
+
+        <xacro:unless value="${extended_pole}">
+          <joint name="${prefix}pole_joint_phi" type="continuous">
+            <parent link="${prefix}pole_base"/>
+            <child link="${prefix}pole_link"/>
+            <axis xyz="1 0 0"/>
+            <dynamics damping="${damping}"/>
+          </joint>
+        </xacro:unless>
+
+        <gazebo>
+          <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+            <robotNamespace>pole</robotNamespace>
+            <xacro:if value="${extended_pole}">
+              <jointName>${prefix}pole_joint_psi, ${prefix}pole_joint_theta, ${prefix}pole_joint_phi</jointName>
+            </xacro:if>
+            <xacro:unless value="${extended_pole}">
+              <jointName>${prefix}pole_joint_phi</jointName>
+            </xacro:unless>
+            <updateRate>100</updateRate>
+            <alwaysOn>true</alwaysOn>
+          </plugin>
+        </gazebo>
+    </xacro:macro>
+</robot>

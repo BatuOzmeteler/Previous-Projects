@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:property name="headlamp_size" value="0.5" /> <!-- Use a square to represent the camera , value is the Size of square 'camera' box -->
+
+  <xacro:macro name="headlamp" params="prefix parent">
+
+      <material name="headlamp_color">
+        <color rgba="192 192 192 1"/>
+      </material>
+
+      <link name="${prefix}headlamp_frame"/>
+
+      <link name="${prefix}headlamp_1"/>
+
+      <link name="${prefix}headlamp_visual">
+       <visual>
+         <geometry>
+           <mesh filename="package://ur_description/meshes/headlamp/headlight.stl" scale="0.03 0.03 0.03" />
+         </geometry>
+             <material name="headlamp_color"/>
+       </visual>
+       <collision>
+         <geometry>
+           <mesh filename="package://ur_description/meshes/headlamp/headlight.stl" scale="0.03 0.03 0.03" />
+         </geometry>
+             <material name="headlamp_color"/>
+       </collision>
+       <inertial>
+         <mass value="0.160" />
+         <origin xyz="0.0 0.0 0.0" />
+         <inertia ixx = "0.000111" ixy = "0.000000" ixz = "0.000000"
+                  iyx = "0.000000" iyy = "0.00007" iyz = "0.000003"
+                  izx = "0.000000" izy = "0.000003" izz = "0.000165" />
+         </inertial>
+      </link>
+
+
+      <joint name="${prefix}headlamp_joint1" type="fixed">
+         <origin xyz="0 0 0" rpy="0 ${pi/2} 0"/>
+         <parent link="${prefix}${parent}"/>
+         <child link="${prefix}headlamp_1"/>
+      </joint>
+
+      <joint name="${prefix}headlamp_joint2" type="fixed">
+         <origin xyz="0 0 0" rpy="0 0 ${-pi/2}"/>
+         <parent link="${prefix}headlamp_1"/>
+         <child link="${prefix}headlamp_frame"/>
+      </joint>
+      
+      <joint name="${prefix}headlamp_visual_joint" type="fixed">
+         <origin xyz="0 0 -0.2" rpy="0 0 ${-pi}"/>
+         <parent link="${prefix}headlamp_frame"/>
+         <child link="${prefix}headlamp_visual"/>
+      </joint>
+
+
+  <gazebo reference="headlamp_frame">
+    <turnGravityOff>1</turnGravityOff>
+  </gazebo>
+
+  </xacro:macro>
+</robot>

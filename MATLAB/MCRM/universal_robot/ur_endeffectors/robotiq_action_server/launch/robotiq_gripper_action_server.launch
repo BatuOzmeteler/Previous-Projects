@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <!-- robotiq_c_model_action_server arguments -->
+  <arg name="gripper_name" default="ur_driver/gripper" />
+  <arg name="min_gap" default="0.0" /> <!-- Percentage -->
+  <arg name="max_gap" default="100.0" /> <!-- Percentage -->
+  <arg name="min_effort" default="0.0" />
+  <arg name="max_effort" default="100.0" />
+  <arg name="min_speed" default="0.0" />
+  <arg name="max_speed" default="100.0" />
+  <arg name="usb_port" default="/dev/ttyACM0" />
+
+  <!-- usb_port must be given permissions before running this launch file: run "sudo chmod 777 usb_port" -->
+  <node name="CModelRtuNode" pkg="robotiq_c_model_control" type="CModelRtuNode.py" args="$(arg usb_port)" output="screen" />
+
+  <node name="robotiq_c_model_action_server" pkg="robotiq_action_server" type="robotiq_c_model_action_server_node" output="screen">
+    <param name="gripper_name" type="str" value="$(arg gripper_name)" />
+    <param name="min_gap" type="double" value="$(arg min_gap)" />
+    <param name="max_gap" type="double" value="$(arg max_gap)" />
+    <param name="min_effort" type="double" value="$(arg min_effort)" />
+    <param name="max_effort" type="double" value="$(arg max_effort)" />
+    <param name="min_speed" type="double" value="$(arg min_speed)" />
+    <param name="max_speed" type="double" value="$(arg max_speed)" />
+
+    <remap from="input" to="$(arg gripper_name)/input" />
+    <remap from="output" to="$(arg gripper_name)/output" />
+  </node>
+
+  <node name="gripper_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+    <remap from="/joint_states" to="$(arg gripper_name)/joint_states" />
+  </node>
+
+</launch>

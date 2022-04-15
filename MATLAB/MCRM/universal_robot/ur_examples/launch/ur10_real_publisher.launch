@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+  <include file="$(find ur_examples)/launch/ur_publisher_common.launch">
+    <arg name="robot_type" value="ur10"/>
+    <arg name="real_robot" value="true"/>    
+  </include>
+</launch>

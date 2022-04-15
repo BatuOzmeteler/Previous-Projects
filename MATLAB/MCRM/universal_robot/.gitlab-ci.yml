@@ -1,0 +1,216 @@
+stages:
+  - build
+  - benchmark
+  - analyze
+  - packages
+  - deploy
+
+build-kinetic:
+  variables:
+    ROSDISTRO: "kinetic"
+    CATKIN_WS: "/root/catkin_ws"
+  stage: build
+  image: osrf/ros:$ROSDISTRO-desktop-full
+  before_script:
+    - apt-get -qq update
+    - apt-get -qq install git-core python-catkin-tools curl
+    - mkdir -p $CATKIN_WS/src
+    - cp -a . $CATKIN_WS/src/
+    - cd $CATKIN_WS/src
+
+    - 'which ssh-agent || (apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - ssh-add <(echo "$SSH_DEPLOY_KEY_R")
+    - mkdir -p ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+
+    - git clone git@git.rst.e-technik.tu-dortmund.de:robotics-rigid-arms/robot_utilities.git
+    - cd ..
+
+    - rosdep update
+    - rosdep install -y --from-paths src --ignore-src --rosdistro $ROSDISTRO --as-root=apt:false
+  script:
+    - source /ros_entrypoint.sh
+    - cd $CATKIN_WS
+    - catkin_make
+    - cd /builds/robotics-rigid-arms/ur10
+    - mv $CATKIN_WS ./catkin_ws
+  only:
+  artifacts:
+    expire_in: 1h
+    paths:
+      - catkin_ws/
+  tags:
+    - ubuntu
+    - docker
+
+benchmark-kinetic:
+  variables:
+    ROSDISTRO: "kinetic"
+    CATKIN_WS: "/root/catkin_ws"
+  stage: benchmark
+  image: osrf/ros:$ROSDISTRO-desktop-full
+  before_script:
+    - rm catkin_ws/src/CMakeLists.txt
+    - ln -s /opt/ros/$ROSDISTRO/share/catkin/cmake/toplevel.cmake catkin_ws/src/CMakeLists.txt
+    - cp -rf catkin_ws/ $CATKIN_WS
+    - source $CATKIN_WS/devel/setup.bash
+    - roscore &
+    - sleep 4 #let roscore start
+  script:
+    - roslaunch ur_utilities prepare_benchmarks.launch
+    - sleep 2 #
+    - rosrun ur_utilities ur_kinematic_test
+    - sleep 2 #
+    - rosrun ur_utilities ur_inverse_kinematic_test
+    - sleep 2 #
+    - rosrun ur_utilities ur_collision_test
+  only:
+  except:
+  dependencies:
+    - build-kinetic
+  allow_failure: true
+  tags:
+    - ubuntu
+    - docker
+
+build-melodic:
+  variables:
+    ROSDISTRO: "melodic"
+    CATKIN_WS: "/root/catkin_ws"
+  stage: build
+  image: osrf/ros:$ROSDISTRO-desktop-full
+  before_script:
+    - apt-get -qq update
+    - apt-get -qq install git-core python-catkin-tools curl
+    - mkdir -p $CATKIN_WS/src
+    - cp -a . $CATKIN_WS/src/
+    - cd $CATKIN_WS/src
+
+    - 'which ssh-agent || (apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - ssh-add <(echo "$SSH_DEPLOY_KEY_R")
+    - mkdir -p ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+
+    - git clone git@git.rst.e-technik.tu-dortmund.de:robotics-rigid-arms/robot_utilities.git
+    - cd ..
+
+    - rosdep update
+    - rosdep install -y --from-paths src --ignore-src --rosdistro $ROSDISTRO --as-root=apt:false
+  script:
+    - source /ros_entrypoint.sh
+    - cd $CATKIN_WS
+    - catkin_make
+    - cd /builds/robotics-rigid-arms/ur10
+    - mv $CATKIN_WS ./catkin_ws
+  only:
+  artifacts:
+    expire_in: 1h
+    paths:
+      - catkin_ws/
+  tags:
+    - ubuntu
+    - docker
+
+benchmark-melodic:
+  variables:
+    ROSDISTRO: "melodic"
+    CATKIN_WS: "/root/catkin_ws"
+  stage: benchmark
+  image: osrf/ros:$ROSDISTRO-desktop-full
+  before_script:
+    - rm catkin_ws/src/CMakeLists.txt
+    - ln -s /opt/ros/$ROSDISTRO/share/catkin/cmake/toplevel.cmake catkin_ws/src/CMakeLists.txt
+    - cp -rf catkin_ws/ $CATKIN_WS
+    - source $CATKIN_WS/devel/setup.bash
+    - roscore &
+    - sleep 4 #let roscore start
+  script:
+    - roslaunch ur_utilities prepare_benchmarks.launch
+    - sleep 2 #
+    - rosrun ur_utilities ur_kinematic_test
+    - sleep 2 #
+    - rosrun ur_utilities ur_inverse_kinematic_test
+    - sleep 2 #
+    - rosrun ur_utilities ur_collision_test
+  only:
+  except:
+  dependencies:
+    - build-melodic
+  allow_failure: true
+  tags:
+    - ubuntu
+    - docker
+
+cppstyle-lint:
+  variables:
+    CATKIN_WS: "/root/catkin_ws"
+  stage: analyze
+  image: git.rst.e-technik.tu-dortmund.de:5005/common/docker-containers:ubuntu-coding
+  before_script:
+    - apt-get -qq update
+    - apt-get -qq install git python
+  script:
+    - git config --global user.name "$GITLAB_USER_ID"
+    - git config --global user.email $GITLAB_USER_EMAIL
+    - git clone https://github.com/google/styleguide.git
+    - cp styleguide/cpplint/cpplint.py .
+    # apply patch to fix issues with QT( https://github.com/google/styleguide/issues/30 )
+    - patch cpplint.py < .patch/cpplint.py.access_specifier.patch
+    - ./cpplint.py --filter=-build,+build/deprecated,+build/include,+build/include_alpha,+build/include_order,-build/include_what_you_use,+build/namespaces,+build/printf_format,+build/storage_class,-legal,+legal/copyright,-readability,+readability/alt_tokens,+readability/check,+readability/constructors,+readability/fn_size,+readability/inheritance,+readability/multiline_comment,+readability/multiline_string,+readability/namespace,+readability/nolint,+readability/nul,+readability/strings,+readability/todo,+readability/utf8,-runtime,+runtime/arrays,+runtime/casting,+runtime/explicit,+runtime/int,+runtime/init,+runtime/invalid_increment,+runtime/member_string_references,+runtime/memset,+runtime/indentation_namespace,+runtime/operator,+runtime/printf,+runtime/printf_format,+runtime/string,+runtime/threadsafe_fn,+runtime/vlog,-whitespace,+whitespace/blank_line,-whitespace/comma,+whitespace/comments,+whitespace/empty_conditional_body,+whitespace/empty_if_body,+whitespace/empty_loop_body,+whitespace/forcolon,+whitespace/indent,+whitespace/line_length,+whitespace/operators,+whitespace/parens,+whitespace/semicolon,+whitespace/tab,+whitespace/todo
+       --linelength=150 --extensions=hpp,cpp,h --counting=detailed
+       $( find . -name *.h -or -name *.cpp -or -name *.hpp | grep -vE "**/extern/|**/build/|**/styleguide/" )
+  only:
+  except:
+  allow_failure: true
+  tags:
+    - ubuntu
+    - docker
+
+package-zip:
+  stage: packages
+  script:
+    - apt-get -qq update
+    - apt-get -qq install zip git
+    - mkdir -p .package-zip
+
+    # Deploy complete repo
+    - git archive -o .package-zip/universal_robot.zip -9 --prefix=universal_robot/ HEAD
+
+    # Finally, move to public folder
+    - mv .package-zip package-zip
+  dependencies:
+    - build-kinetic
+    - build-melodic
+  artifacts:
+    paths:
+      - package-zip
+  only:
+    - master
+  tags:
+    - ubuntu
+    - docker
+
+pages:
+  stage: deploy
+  script:
+  - mkdir -p .public
+
+  # Copy artifacts
+  - cd package-zip
+  - mv *.zip ../.public/
+
+  # Finally, move to public folder
+  - cd ..
+  - mv .public public
+  dependencies:    
+    - package-zip
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
+  tags:
+    - ubuntu
+    - docker

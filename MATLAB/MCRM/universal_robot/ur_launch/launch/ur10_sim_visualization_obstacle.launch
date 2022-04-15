@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+  <include file="$(find ur_launch)/launch/ur10_sim_visualization.launch">
+    <arg name="obstacle" value="true"/>
+    <arg name="static_scene" value="empty.urdf"/>
+    <arg name="static_obstacles" value="static_obstacles.yaml"/>
+    <arg name="dynamic_obstacles" value="dynamic_obstacles.yaml"/>
+    <arg name="planes" value="planes.yaml"/>
+    <arg name="utility_objects" value="utility_objects.yaml"/>
+    <arg name="humans" value="humans.yaml"/>
+    <arg name="workspace_monitor_mode" value="manual"/>
+  </include>
+</launch>

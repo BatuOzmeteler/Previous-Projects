@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Launch arguments -->
+  <arg name="gui" default="true"/>
+  <arg name="paused" default="false"/>
+  <arg name="limited" default="true"/>
+  <arg name="gripper85" default="true"/>
+  <arg name="gazebo_world" default="$(find ur_gazebo)/worlds/ur_default.world"/>
+
+  <!-- Load joint controller configurations from YAML file to parameter server -->
+  <rosparam file="$(find ur_gazebo)/controller/controller_ur3.yaml" command="load"/>
+
+  <!-- Load gazebo model name to parameter server -->
+  <param name="gazebo_model_name" type="str" value="ur3" />
+
+  <!-- startup simulated world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" default="$(arg gazebo_world)"/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="gui" value="$(arg gui)"/>
+  </include>
+
+  <!-- push robot_description to factory and spawn robot in gazebo -->
+  <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model ur3 -z 0.0" respawn="false" output="screen" />
+
+  <!-- load and start joint position and state controller -->
+  <node name="ur3_base_controller_spawner"
+	pkg="controller_manager"
+	type="spawner"
+	respawn="false"
+	output="screen"
+	ns="/ur3"
+        args=  "vel_based_pos_traj_controller
+                joint_state_controller"
+  />
+
+  <group if="$(arg gripper85)">
+    <node name="ur3_gripper_controller_spawner"
+	pkg="controller_manager"
+	type="spawner"
+	respawn="false"
+	output="screen"
+	ns="/ur3"
+        args="gripper"
+    />
+  </group>
+
+  <!-- load velocity and trajectory controllers, use switch service call to switch to velocity controller -->
+  <node name="ur3_controller_manager"
+	pkg="controller_manager"
+	type="controller_manager"
+	respawn="false"
+	output="screen"
+	ns="/ur3"
+	args=  "load
+                joint0_velocity_controller
+                joint1_velocity_controller
+                joint2_velocity_controller
+                joint3_velocity_controller
+                joint4_velocity_controller
+                joint5_velocity_controller"
+  />
+
+  <!-- convert UR3 JointCommands into ROS Control Commands -->
+  <node name="ur_msgs_translation" pkg="ur_gazebo" type="ur_msgs_translation" respawn="false" output="screen" >
+    <remap from="/ur_msgs_translation/joint0_velocity_controller/command" to="/ur3/joint0_velocity_controller/command"/>
+    <remap from="/ur_msgs_translation/joint1_velocity_controller/command" to="/ur3/joint1_velocity_controller/command"/>
+    <remap from="/ur_msgs_translation/joint2_velocity_controller/command" to="/ur3/joint2_velocity_controller/command"/>
+    <remap from="/ur_msgs_translation/joint3_velocity_controller/command" to="/ur3/joint3_velocity_controller/command"/>
+    <remap from="/ur_msgs_translation/joint4_velocity_controller/command" to="/ur3/joint4_velocity_controller/command"/>
+    <remap from="/ur_msgs_translation/joint5_velocity_controller/command" to="/ur3/joint5_velocity_controller/command"/>
+    <remap from="/ur_msgs_translation/joint_speed" to="/ur3/joint_speed"/>
+  </node>
+
+</launch>

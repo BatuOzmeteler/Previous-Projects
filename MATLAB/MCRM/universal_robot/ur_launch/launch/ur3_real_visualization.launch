@@ -1,0 +1,109 @@
+<?xml version="1.0" ?>
+  <launch>
+  <arg name="limited" default="true"/>
+  <arg name="gripper85" default="false"/>
+  <arg name="ft_sensor" default="false"/>
+  <arg name="camera" default="false"/>
+  <arg name="pole" default="false"/>
+  <arg name="extended_pole" default="false"/>
+  <arg name="obstacle" default="false"/>
+  <arg name="robot_ip" default="10.10.2.2"/>
+  <arg name="min_payload"  default="0.0"/>
+  <arg name="max_payload"  default="3.0"/>
+  <arg name="ros_control"  default="true"/> <!-- mid-level self collision avoidance ONLY in ros_control mode!! -->
+  <arg name="rqt"  default="true"/>
+  <arg name="arpose" default="false"/>
+  <arg name="gripper_collision_model" default="normal"/>
+  <arg name="workspace_monitor_mode" default="manual"/>
+  <arg name="static_obstacles" default="no_static_obstacles.yaml"/>
+  <arg name="dynamic_obstacles" default="no_dynamic_obstacles.yaml"/>
+  <arg name="planes" default="no_planes.yaml"/>
+  <arg name="utility_objects" default="no_utility_objects.yaml"/>
+  <arg name="humans" default="no_humans.yaml"/>
+  <arg name="static_scene" default="empty.urdf"/>
+
+  <!-- Generate and Load URDF -->
+  <include file="$(find ur_description)/launch/ur3_upload.launch">
+    <arg name="gripper85" value="$(arg gripper85)"/>
+    <arg name="pole" value="$(arg pole)"/>
+    <arg name="extended_pole" value="$(arg extended_pole)"/>
+    <arg name="camera" value="$(arg camera)"/>
+    <arg name="ft_sensor" value="$(arg ft_sensor)"/>
+    <arg name="limited" value="$(arg limited)"/>
+    <arg name="gripper_collision_model" value="$(arg gripper_collision_model)"/>
+  </include>
+
+  <!-- Start Robot Driver -->
+  <group unless="$(arg ros_control)">
+    <include file="$(find ur_modern_driver)/launch/ur3_bringup.launch">
+      <arg name="robot_ip" value="$(arg robot_ip)"/>
+      <arg name="min_payload" value="$(arg min_payload)"/>
+      <arg name="max_payload" value="$(arg max_payload)"/>
+    </include>
+  </group>
+
+  <group if="$(arg ros_control)">
+    <include file="$(find ur_modern_driver)/launch/ur3_ros_control.launch">
+      <arg name="robot_ip" value="$(arg robot_ip)"/>
+      <arg name="min_payload" value="$(arg min_payload)"/>
+      <arg name="max_payload" value="$(arg max_payload)"/>
+    </include>
+
+    <group if="$(arg rqt)">
+      <!-- Start RQT Publisher -->
+      <include file="$(find ur_modern_driver)/launch/ur3_rqt.launch" />
+    </group>
+  </group>
+
+  <group if="$(arg obstacle)">
+    <include file="$(find robot_utilities)/launch/bringup_scenario.launch">
+      <arg name="static_obstacles" value="$(arg static_obstacles)"/>
+      <arg name="dynamic_obstacles" value="$(arg dynamic_obstacles)"/>
+      <arg name="planes" value="$(arg planes)"/>
+      <arg name="utility_objects" value="$(arg utility_objects)"/>
+      <arg name="humans" value="$(arg humans)"/>
+      <arg name="static_scene" value="$(arg static_scene)"/>
+      <arg name="workspace_monitor_mode" value="$(arg workspace_monitor_mode)"/>
+    </include>
+  </group>
+
+  <!-- Start RViz -->
+  <include file="$(find ur_description)/launch/rviz.launch" />
+
+  <!-- Start Distance Marker Publisher -->
+  <node name="ur_distance_publisher" pkg="ur_utilities" type="ur_distance_publisher" respawn="true" output="screen">
+    <remap from="/joint_states" to="/ur_driver/joint_states" />
+  </node>
+
+  <!-- Static Transform Publisher for MoCap Origin -->
+  <node pkg="tf" type="static_transform_publisher" name="mocap_transform_broadcaster" args="-2.0412 1.180 -0.0005 0.5 0.5 0.5 0.5 world mocap 100" />
+
+  <group if="$(arg arpose)">
+
+    <!-- Start ar_pose -->
+    <node ns="camera" pkg="image_proc" type="image_proc" name="image_proc"/>
+
+    <node name="ar_pose" pkg="ar_pose" type="ar_single" respawn="false" output="screen">
+      <param name="marker_pattern" type="string" value="$(find ur_gazebo)/patterns/marker.patt"/>
+      <param name="marker_width" type="double" value="25"/>
+      <param name="marker_center_x" type="double" value="0.0"/>
+      <param name="marker_center_y" type="double" value="0.0"/>
+      <param name="threshold" type="int" value="100"/>
+      <param name="use_history" type="bool" value="true"/>
+    </node>
+  </group>
+
+  <group if="$(arg gripper85)">
+    <include file="$(find robotiq_action_server)/launch/robotiq_gripper_action_server.launch" />
+
+    <node name="gripper_gui" pkg="gripper_gui" type="gripper_gui" respawn="false" output="screen">
+      <remap from="/gripper_topic" to="/ur_driver/gripper/follow_joint_trajectory/goal" />
+      <remap from="/gripper_state" to="/ur_driver/gripper/joint_states" />
+    </node>
+  </group>
+
+  <group if="$(arg ft_sensor)">
+    <include file="$(find robotiq_force_torque_sensor)/launch/force_torque_sensor.launch" />
+  </group>
+
+</launch>

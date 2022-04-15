@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="limited" default="true" />
+  <arg name="gripper140" default="false"/>
+  <arg name="ft_sensor" default="false"/>
+  <arg name="pole" default="false"/>
+  <arg name="extended_pole" default="false"/>
+  <arg name="camera" default="false"/>
+  <arg name="headlamp" default="false"/>
+  <arg name="gripper_collision_model" default="normal"/>
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find ur_description)/urdf/ur10_robot.urdf.xacro' limited:=$(arg limited) gripper140:=$(arg gripper140) ft_sensor:=$(arg ft_sensor) pole:=$(arg pole) extended_pole:=$(arg extended_pole) camera:=$(arg camera) gripper_collision_model:=$(arg gripper_collision_model) headlamp:=$(arg headlamp)" />
+</launch>

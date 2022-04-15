@@ -1,3 +1,0 @@
-
-
-from myvector import myvector

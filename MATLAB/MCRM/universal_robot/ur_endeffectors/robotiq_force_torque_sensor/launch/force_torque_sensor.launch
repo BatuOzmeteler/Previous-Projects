@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+  <node name="ft_sensor" pkg="robotiq_force_torque_sensor" type="rq_sensor"  respawn="true" output="screen" >
+    <param name="frame_id" type="str" value="robotiq_force_torque_measurement_frame"/>
+    <param name="serial_id" type="str" value="ttyUSB0"/>
+  </node>
+</launch>

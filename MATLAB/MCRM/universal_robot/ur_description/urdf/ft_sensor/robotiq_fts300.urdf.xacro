@@ -1,0 +1,71 @@
+<?xml version="2.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robotiq_fts300">
+
+    <xacro:macro name="robotiq_fts300" params="parent prefix">
+
+        <!-- mount the fts to the robot -->
+        <joint name="${prefix}fts_fix" type="fixed" >
+            <origin xyz="0 0 0" rpy="0 0 0"/> <!--In most cases origin would be flange adapter plate: /-->
+            <parent link="${prefix}${parent}" />
+            <child link="${prefix}fts_robotside" />
+        </joint>
+
+        <link name="${prefix}fts_robotside">
+            <inertial>
+                <origin xyz="0 0 0.01875" rpy="0 0 0"/>
+                <mass value="0.3"/>
+                <inertia ixx="0.000661171875" ixy="0" ixz="0" iyy="0.000661171875" iyz="0" izz="0.00117" />
+            </inertial>
+            <visual>
+                <origin xyz="0 0 0" rpy="0 1.57 0" />
+                <geometry>
+                    <mesh filename="package://ur_description/meshes/ft_sensor/visual/robotiq_fts300.dae"/>
+                </geometry>
+                <material name="black"/>
+            </visual>
+        </link>
+
+        <!-- virtual measurement frame -->
+        <joint name="${prefix}robotiq_force_torque_measurement_joint" type="fixed" >
+            <origin xyz="0.01625 0 0" rpy="-${pi/2} 0 -${pi/2}" />
+            <parent link="${prefix}fts_robotside" />
+            <child link="${prefix}robotiq_force_torque_measurement_frame" />
+        </joint>
+
+        <link name="${prefix}robotiq_force_torque_measurement_frame">
+          <inertial>
+            <mass value="1.0e-5" />
+            <inertia ixx="1.0e-10" ixy="0" ixz="0" iyy="1.0e-10" iyz="0" izz="1.0e-10" />
+          </inertial>
+        </link>
+
+        <!-- toolside frame -->
+        <joint name="${prefix}fts_toolside_joint" type="fixed" >
+            <origin xyz="0.0375 0 0" rpy="0 0 0" />
+            <parent link="${prefix}fts_robotside" />
+            <child link="${prefix}fts_toolside" />
+        </joint>
+
+        <link name="${prefix}fts_toolside"/>
+
+        <gazebo reference="${prefix}robotiq_force_torque_measurement_joint">
+          <provideFeedback>true</provideFeedback>
+          <disableFixedJointLumping>true</disableFixedJointLumping>
+        </gazebo>
+
+        <!-- The ft_sensor plugin -->  
+        <gazebo>
+          <plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+            <updateRate>100.0</updateRate>
+            <topicName>robotiq_force_torque_wrench</topicName>
+            <jointName>${prefix}robotiq_force_torque_measurement_joint</jointName>
+            <noise>
+              <type>gaussian</type>
+              <mean>0.0</mean>
+              <stddev>0.0</stddev>
+            </noise>
+          </plugin>
+        </gazebo>
+
+    </xacro:macro>
+</robot>

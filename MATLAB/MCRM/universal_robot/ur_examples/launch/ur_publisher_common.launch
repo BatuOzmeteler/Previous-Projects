@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<launch>
+
+<arg name="robot_type" default=""/>
+<arg name="real_robot" default="false"/>
+
+  <group if="$(arg real_robot)">
+    <node name="ur_mixed_publisher" pkg="ur_examples" type="ur_mixed_publisher" respawn="false" output="screen" args="_real_robot:=$(arg real_robot)">
+      <remap from="/ur_mixed_publisher/follow_joint_trajectory" to="/ur_driver/vel_based_pos_traj_controller/follow_joint_trajectory"/>
+
+      <remap from="/controller_manager/switch_controller" to="/ur_driver/controller_manager/switch_controller"/>
+
+      <remap from="/ur_mixed_publisher/joint_position_controls" to="/ur_driver/vel_based_pos_traj_controller/command"/>
+      <remap from="/ur_mixed_publisher/joint_speed_controls" to="/ur_driver/joint_speed"/>
+
+      <remap from="/joint_states" to="/ur_driver/joint_states"/>
+    </node>
+  </group>
+
+  <group unless="$(arg real_robot)">
+    <node name="ur_mixed_publisher" pkg="ur_examples" type="ur_mixed_publisher" respawn="false" output="screen" args="_real_robot:=$(arg real_robot)">
+      <remap from="/ur_mixed_publisher/follow_joint_trajectory" to="/$(arg robot_type)/vel_based_pos_traj_controller/follow_joint_trajectory"/>
+      <remap from="/controller_manager/switch_controller" to="/$(arg robot_type)/controller_manager/switch_controller"/>
+
+      <remap from="/ur_mixed_publisher/joint_position_controls" to="/$(arg robot_type)/vel_based_pos_traj_controller/command"/>
+      <remap from="/ur_mixed_publisher/joint_speed_controls" to="/$(arg robot_type)/joint_speed"/>
+
+      <remap from="/joint_states" to="/$(arg robot_type)/joint_states"/>
+    </node>
+  </group>
+
+</launch>

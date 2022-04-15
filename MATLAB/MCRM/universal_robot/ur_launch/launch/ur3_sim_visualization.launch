@@ -1,0 +1,82 @@
+<?xml version="1.0" ?>
+<launch>
+  <arg name="use_joint_publisher" default="true"/>
+  <arg name="limited" default="true"/>
+  <arg name="gripper85" default="false"/>
+  <arg name="pole" default="false"/>
+  <arg name="extended_pole" default="false"/>
+  <arg name="obstacle" default="false"/>
+  <arg name="ft_sensor" default="false"/>
+  <arg name="camera" default="false"/>
+  <arg name="arpose" default="false"/>
+  <arg name="gripper_collision_model" default="normal"/>
+  <arg name="workspace_monitor_mode" default="manual"/>
+  <arg name="static_obstacles" default="no_static_obstacles.yaml"/>
+  <arg name="dynamic_obstacles" default="no_dynamic_obstacles.yaml"/>
+  <arg name="planes" default="no_planes.yaml"/>
+  <arg name="utility_objects" default="no_utility_objects.yaml"/>
+  <arg name="humans" default="no_humans.yaml"/>
+  <arg name="static_scene" default="empty.urdf"/>
+
+  <!-- Generate and Load URDF -->
+  <include file="$(find ur_description)/launch/ur3_upload.launch">
+    <arg name="gripper85" value="$(arg gripper85)"/>
+    <arg name="pole" value="$(arg pole)"/>
+    <arg name="extended_pole" value="$(arg extended_pole)"/>
+    <arg name="limited" value="$(arg limited)"/>
+    <arg name="ft_sensor" value="$(arg ft_sensor)"/>
+    <arg name="camera" value="$(arg camera)"/>
+    <arg name="gripper_collision_model" value="$(arg gripper_collision_model)"/>
+  </include>
+
+  <group if="$(arg obstacle)">
+    <include file="$(find robot_utilities)/launch/bringup_scenario.launch">
+      <arg name="static_obstacles" value="$(arg static_obstacles)"/>
+      <arg name="dynamic_obstacles" value="$(arg dynamic_obstacles)"/>
+      <arg name="planes" value="$(arg planes)"/>
+      <arg name="utility_objects" value="$(arg utility_objects)"/>
+      <arg name="humans" value="$(arg humans)"/>
+      <arg name="static_scene" value="$(arg static_scene)"/>
+      <arg name="workspace_monitor_mode" value="$(arg workspace_monitor_mode)"/>
+    </include>
+  </group>
+
+  <!-- Start RViz -->
+  <include file="$(find ur_description)/launch/rviz.launch" />
+
+  <!-- Start Robot State Publisher -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+    <remap from="/joint_states" to="/ur3/joint_states" />
+  </node>
+
+  <!-- Start Joint State Publisher -->
+  <group if="$(arg use_joint_publisher)">
+    <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" >
+      <remap from="/joint_states" to="/ur3/joint_states" />
+    </node>
+  </group>
+
+  <!-- Start Distance Marker Publisher -->
+  <node name="ur_distance_publisher" pkg="ur_utilities" type="ur_distance_publisher" respawn="true" output="screen">
+    <remap from="/joint_states" to="/ur3/joint_states" />
+  </node>
+
+  <!-- Static Transform Publisher for MoCap Origin -->
+  <node pkg="tf" type="static_transform_publisher" name="mocap_transform_broadcaster" args="-2.0412 1.180 -0.0005 0.5 0.5 0.5 0.5 world mocap 100" />
+
+  <group if="$(arg arpose)">
+
+    <!-- Start ar_pose -->
+    <node ns="camera" pkg="image_proc" type="image_proc" name="image_proc"/>
+
+    <node name="ar_pose" pkg="ar_pose" type="ar_single" respawn="false" output="screen">
+      <param name="marker_pattern" type="string" value="$(find ur_gazebo)/patterns/marker.patt"/>
+      <param name="marker_width" type="double" value="25"/>
+      <param name="marker_center_x" type="double" value="0.0"/>
+      <param name="marker_center_y" type="double" value="0.0"/>
+      <param name="threshold" type="int" value="100"/>
+      <param name="use_history" type="bool" value="true"/>
+    </node>
+  </group>
+
+</launch>

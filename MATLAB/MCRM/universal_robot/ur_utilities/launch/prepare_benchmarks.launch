@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- Generate and Load URDF -->
+  <include file="$(find ur_description)/launch/ur10_upload.launch">
+    <arg name="gripper140" value="true"/>
+    <arg name="pole" value="false"/>
+    <arg name="extended_pole" value="false"/>
+    <arg name="camera" value="true"/>
+    <arg name="limited" value="true"/>
+    <arg name="gripper_collision_model" value="normal"/>
+  </include>
+</launch>

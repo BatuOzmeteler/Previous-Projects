@@ -1,0 +1,42 @@
+<?xml version="1.0" ?>
+
+<sdf version="1.6">
+  <world name="ur10_pick_and_place">
+
+    <!-- A global light source -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <!-- A ground plane -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <!-- A box -->
+    <include>
+      <uri>model://box</uri>
+      <pose>0.8 0 0.26 0 0 0</pose>
+    </include>
+
+    <!-- A row of blocks -->
+    <include>
+      <name>block1</name>
+      <uri>model://block</uri>
+      <pose>0.7 0.15 0.61 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>block2</name>
+      <uri>model://block</uri>
+      <pose>0.8 0.15 0.61 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>block3</name>
+      <uri>model://block</uri>
+      <pose>0.9 0.15 0.61 0 0 0</pose>
+    </include>
+
+  </world>
+</sdf>
